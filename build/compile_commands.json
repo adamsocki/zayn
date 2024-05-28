@@ -1,0 +1,8 @@
+[
+{
+  "directory": "/Users/socki/dev/ZaynEngine/build",
+  "command": "/usr/bin/clang++  -F/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX14.4.sdk/System/Library/Frameworks -isystem /usr/local/include -g -std=gnu++17 -isysroot /Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX14.4.sdk -o CMakeFiles/ZaynEngine.dir/src/main.cpp.o -c /Users/socki/dev/ZaynEngine/src/main.cpp",
+  "file": "/Users/socki/dev/ZaynEngine/src/main.cpp",
+  "output": "CMakeFiles/ZaynEngine.dir/src/main.cpp.o"
+}
+]

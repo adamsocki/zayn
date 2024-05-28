@@ -1,0 +1,3 @@
+/Users/socki/dev/ZaynEngine/build/CMakeFiles/ZaynEngine.dir
+/Users/socki/dev/ZaynEngine/build/CMakeFiles/edit_cache.dir
+/Users/socki/dev/ZaynEngine/build/CMakeFiles/rebuild_cache.dir
