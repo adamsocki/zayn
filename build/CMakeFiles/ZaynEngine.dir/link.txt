@@ -1,1 +1,0 @@
-/usr/bin/clang++ -g -isysroot /Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX14.4.sdk -Wl,-search_paths_first -Wl,-headerpad_max_install_names CMakeFiles/ZaynEngine.dir/src/main.cpp.o -o ZaynEngine  -Wl,-rpath,/usr/local/lib -framework OpenGL -framework OpenGL /usr/local/lib/libglfw.3.4.dylib
