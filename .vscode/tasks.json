@@ -9,7 +9,7 @@
                 "-g",
                 "${file}",
                 "-o",
-                "${fileDirname}//build\\${fileBasenameNoExtension}.exe",
+                "${workspaceFolder}\\build\\${fileBasenameNoExtension}_win.exe",
                 "-I",
                 "C:\\glfw-3.4.bin.WIN64\\include",
                 "-I",
