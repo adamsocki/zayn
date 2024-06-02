@@ -1,5 +1,12 @@
 
 
+
+#define OPENGL 1
+
+
+
+
+
 #ifdef __APPLE__
 #define GL_SILENCE_DEPRECATION
 #endif
@@ -77,15 +84,14 @@ int main(void)
     while (!glfwWindowShouldClose(platform.window) && zaynPlatform.running)
     {
 
-        glfwPollEvents();
-        
+    
 
         InputUpdate(&platform, inputManager);
 
 
 
 
-        ZaynUpdate(zaynMemory);
+        ZaynUpdateAndRender(zaynMemory);
 
 
 

@@ -1,5 +1,9 @@
 
 
+#include "math/math.h"
+
+#include "renderer/render.h"
+
 #include "memory.h"
 
 #include "dynamic_array.h"

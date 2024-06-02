@@ -1,3 +1,7 @@
 {
-    "cmake.ignoreCMakeListsMissing": true
+    "cmake.ignoreCMakeListsMissing": true,
+    "files.associations": {
+        "intro_cartridge.c": "cpp",
+        "cartridge_code.c": "cpp"
+    }
 }
