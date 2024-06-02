@@ -42,7 +42,7 @@
                 "-g",
                 "${workspaceFolder}/src/main.cpp",
                 "-o",
-                "${workspaceFolder}/build/main",
+                "${workspaceFolder}/build/main_mac",
                 "-lglfw",
                 "-framework",
                 "OpenGL",
