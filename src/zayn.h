@@ -11,6 +11,12 @@
 #include "input.h"
 
 
+struct ShaderCollection
+{
+    Shader shader_test_01;
+
+};
+
 
 struct ZaynMemory
 {
@@ -20,6 +26,8 @@ struct ZaynMemory
 
     MemoryArena permanentMemArena;
     MemoryArena frameMemArena;
+
+    ShaderCollection shaderCollection;
 };
 
 

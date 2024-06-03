@@ -3,6 +3,7 @@
 
 #include "zayn.h"
 
+#include "renderer/render.cpp"
 
 #include "memory.cpp"
 
@@ -20,6 +21,8 @@ void ZaynInit(ZaynMemory *zaynMem)
 
     AllocateMemoryArena(&Zayn->permanentMemArena, Megabytes(16));
     AllocateMemoryArena(&Zayn->frameMemArena, Megabytes(16));
+    
+    InitCartridge(zaynMem);
 
 }
 
@@ -30,6 +33,5 @@ void ZaynUpdateAndRender(ZaynMemory *zaynMem)
 
 
 
-
-    UpdateAndRenderCartridge();
+    UpdateAndRenderCartridge(zaynMem);
 }

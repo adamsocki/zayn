@@ -16,7 +16,7 @@
 
 #include "config.h"
 
-
+#include <glad/glad.h>
 #include <GLFW/glfw3.h>
 
 
@@ -32,7 +32,7 @@ struct SystemPlatform
 
 
 
-
+void framebuffer_size_callback(GLFWwindow* window, int width, int height);
 
 
 
@@ -62,23 +62,45 @@ int main(void)
     AllocateInputDevice(zaynMemory->keyboard, InputDeviceType_Keyboard, Input_KeyboardDiscreteCount, 0);
 
     // Keyboard =
-    ZaynInit(zaynMemory);
 
 
     /* Initialize the library */
     if (!glfwInit())
-        return -1;
+    {
 
-    /* Create a windowed mode window and its OpenGL context */
+        return -1;
+    }
+  
+   glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3);
+    glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 3);
+    glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
+
+#ifdef __APPLE__
+    glfwWindowHint(GLFW_OPENGL_FORWARD_COMPAT, GL_TRUE);
+#endif
+   /* Create a windowed mode window and its OpenGL context */
     platform.window = glfwCreateWindow(640, 480, "Hello World", NULL, NULL);
     if (!platform.window)
     {
         glfwTerminate();
         return -1;
     }
+  
 
     /* Make the window's context current */
     glfwMakeContextCurrent(platform.window);
+glfwSetFramebufferSizeCallback(platform.window, framebuffer_size_callback);
+
+    if (!gladLoadGLLoader((GLADloadproc)glfwGetProcAddress))
+    {
+        std::cout << "Failed to initialize GLAD" << std::endl;
+        return -1;
+    }
+
+    // GLenum err = glewInit();
+    ZaynInit(zaynMemory);
+
+    
 
     /* Loop until the user closes the window */
     while (!glfwWindowShouldClose(platform.window) && zaynPlatform.running)
@@ -86,21 +108,17 @@ int main(void)
 
     
 
+
+
+    //     /* Render here */
+    //     /* Swap front and back buffers */
+
+
         InputUpdate(&platform, inputManager);
-
-
-
-
         ZaynUpdateAndRender(zaynMemory);
 
-
-
-        /* Render here */
-        glClear(GL_COLOR_BUFFER_BIT);
-
-        /* Swap front and back buffers */
+        
         glfwSwapBuffers(platform.window);
-
 
         zaynPlatform.running = !glfwWindowShouldClose(platform.window);
 
@@ -111,4 +129,11 @@ int main(void)
 
     glfwTerminate();
     return 0;
+}
+
+void framebuffer_size_callback(GLFWwindow* window, int width, int height)
+{
+    // make sure the viewport matches the new window dimensions; note that width and 
+    // height will be significantly larger than specified on retina displays.
+    glViewport(0, 0, width, height);
 }

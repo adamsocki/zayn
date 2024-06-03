@@ -41,13 +41,15 @@
                 "-fansi-escape-codes",
                 "-g",
                 "${workspaceFolder}/src/main.cpp",
+                "${workspaceFolder}/src/glad.c",
                 "-o",
                 "${workspaceFolder}/build/main_mac",
                 "-lglfw",
                 "-framework",
                 "OpenGL",
                 "-L/usr/local/lib",
-                "-I/usr/local/include"
+                "-I/usr/local/include",
+                "-I${workspaceFolder}/include"
             ],
             "options": {
                 "cwd": "${fileDirname}"
