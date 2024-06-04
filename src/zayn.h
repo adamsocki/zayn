@@ -2,6 +2,7 @@
 
 #include "math/math.h"
 
+#include "renderer/mesh.h"
 #include "renderer/render.h"
 
 #include "memory.h"
@@ -10,6 +11,13 @@
 
 #include "input.h"
 
+
+
+struct MeshCollection
+{
+    Mesh triangleMesh;
+    Mesh quadMesh;
+};
 
 struct ShaderCollection
 {
@@ -28,6 +36,7 @@ struct ZaynMemory
     MemoryArena frameMemArena;
 
     ShaderCollection shaderCollection;
+    MeshCollection meshCollection;
 };
 
 

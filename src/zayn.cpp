@@ -3,6 +3,7 @@
 
 #include "zayn.h"
 
+#include "renderer/mesh.cpp"
 #include "renderer/render.cpp"
 
 #include "memory.cpp"
@@ -22,7 +23,19 @@ void ZaynInit(ZaynMemory *zaynMem)
     AllocateMemoryArena(&Zayn->permanentMemArena, Megabytes(16));
     AllocateMemoryArena(&Zayn->frameMemArena, Megabytes(16));
     
+    
+    AllocateTriangleMesh(&zaynMem->meshCollection.triangleMesh);
+    InitMesh(&zaynMem->meshCollection.triangleMesh);
+    AllocateQuadMesh(&zaynMem->meshCollection.quadMesh);
+    InitMesh(&zaynMem->meshCollection.quadMesh);
+    
+
+    
     InitCartridge(zaynMem);
+
+
+
+
 
 }
 
