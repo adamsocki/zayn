@@ -2,16 +2,20 @@
     "tasks": [
         {
             "type": "cppbuild",
-            "label": "C/C++: g++.exe build active file",
+            "label": "C/C++: WIN g++.exe build active file",
             "command": "C:\\msys64\\mingw64\\bin\\g++.exe",
             "args": [
+                "-std=gnu++20",
                 "-fdiagnostics-color=always",
                 "-g",
-                "${file}",
+                "${workspaceFolder}\\src\\main.cpp",
+                "${workspaceFolder}\\src\\glad.c",
                 "-o",
                 "${workspaceFolder}\\build\\${fileBasenameNoExtension}_win.exe",
                 "-I",
                 "C:\\glfw-3.4.bin.WIN64\\include",
+                "-I",
+                "${workspaceFolder}\\include",
                 "-I",
                 "C:\\glew-2.1.0\\include",
                 "-L",
@@ -33,7 +37,7 @@
         },
         {
             "type": "cppbuild",
-            "label": "C/C++: g++ build active file",
+            "label": "C/C++: MAC g++ build active file",
             "command": "/usr/bin/g++",
             "args": [
                 "-std=gnu++14",

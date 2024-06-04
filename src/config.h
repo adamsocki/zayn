@@ -1,9 +1,9 @@
 
 
 
-#define WINDOWS_OS 1
+#define WINDOWS 1
 
-#define METAL_MACOS 1
+// #define METAL_MACOS 0
 
 
 #include <assert.h>

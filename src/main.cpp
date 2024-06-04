@@ -6,15 +6,20 @@
 
 
 
-
 #ifdef __APPLE__
 #define GL_SILENCE_DEPRECATION
 #endif
+
 
 #include <iostream>
 #include "data_types.h"
 
 #include "config.h"
+
+
+#if WINDOWS
+#include <cstring>
+#endif
 
 #include <glad/glad.h>
 #include <GLFW/glfw3.h>
