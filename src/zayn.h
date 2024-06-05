@@ -1,5 +1,7 @@
 
 
+#include "commonlib.h"
+
 #include "math/math.h"
 
 #include "renderer/mesh.h"
@@ -8,6 +10,10 @@
 #include "memory.h"
 
 #include "dynamic_array.h"
+
+#include "camera.h"
+
+
 
 #include "input.h"
 
@@ -37,6 +43,8 @@ struct ZaynMemory
 
     ShaderCollection shaderCollection;
     MeshCollection meshCollection;
+
+
 };
 
 

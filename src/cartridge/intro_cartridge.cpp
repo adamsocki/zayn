@@ -36,5 +36,5 @@ void UpdateAndRenderCartridge(ZaynMemory *zaynMem)
     // ********
 	// RENDER
 	// ********
-    std::cout << "hi" << std::endl;
+    // std::cout << "hi" << std::endl;
 }

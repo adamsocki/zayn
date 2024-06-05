@@ -3,6 +3,8 @@
     "files.associations": {
         "intro_cartridge.c": "cpp",
         "cartridge_code.c": "cpp",
-        "cstring": "cpp"
+        "cstring": "cpp",
+        "ostream": "cpp",
+        "__locale": "cpp"
     }
 }

@@ -19,6 +19,7 @@ void ZaynInit(ZaynMemory *zaynMem)
     Zayn = zaynMem;
     Input = &zaynMem->inputManager;
 
+  
 
     AllocateMemoryArena(&Zayn->permanentMemArena, Megabytes(16));
     AllocateMemoryArena(&Zayn->frameMemArena, Megabytes(16));
@@ -33,7 +34,15 @@ void ZaynInit(ZaynMemory *zaynMem)
     
     InitCartridge(zaynMem);
 
-
+    {
+        // LoadShader("renderer/shaders/mesh.vert", "renderer/shaders/mesh.frag", &zaynMem->shaderCollection.shader_test_01);
+        // const char *uniforms[] = {
+        //     "model",
+        //     "viewProjection",
+        //     "color",
+        // };
+        // CompileShader(&zaynMem->shaderCollection.shader_test_01, 3, uniforms);
+    }
 
 
 
@@ -47,4 +56,5 @@ void ZaynUpdateAndRender(ZaynMemory *zaynMem)
 
 
     UpdateAndRenderCartridge(zaynMem);
+
 }

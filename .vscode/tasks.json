@@ -40,7 +40,7 @@
             "label": "C/C++: MAC g++ build active file",
             "command": "/usr/bin/g++",
             "args": [
-                "-std=gnu++14",
+                "-std=gnu++20",
                 "-fcolor-diagnostics",
                 "-fansi-escape-codes",
                 "-g",
@@ -56,7 +56,7 @@
                 "-I${workspaceFolder}/include"
             ],
             "options": {
-                "cwd": "${fileDirname}"
+                "cwd": "${workspaceFolder}"
             },
             "problemMatcher": [
                 "$gcc"
