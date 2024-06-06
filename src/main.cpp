@@ -1,9 +1,11 @@
 
 
 
-#define OPENGL 1
+#define OPENGL 0
+#define VULKAN 1
 
 
+#include <vulkan/vulkan.h>
 
 
 #ifdef __APPLE__
@@ -136,6 +138,9 @@ glfwSetFramebufferSizeCallback(platform.window, framebuffer_size_callback);
         /* Poll for and process events */
     }
 
+    RenderCleanup(Zayn);
+
+    glfwDestroyWindow(platform.window);
     glfwTerminate();
     return 0;
 }

@@ -49,11 +49,13 @@
                 "-o",
                 "${workspaceFolder}/build/main_mac",
                 "-lglfw",
+                "-lvulkan",
                 "-framework",
                 "OpenGL",
                 "-L/usr/local/lib",
+                "-Wl,-rpath,/usr/local/lib",
                 "-I/usr/local/include",
-                "-I${workspaceFolder}/include"
+                "-I${workspaceFolder}/include",
             ],
             "options": {
                 "cwd": "${workspaceFolder}"

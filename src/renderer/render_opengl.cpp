@@ -493,3 +493,9 @@ void UpdateRender_Learn(ZaynMemory *zaynMem)
     glDrawElements(GL_TRIANGLES,9, GL_UNSIGNED_INT, 0);
     
 }
+
+
+void RenderCleanup(ZaynMemory* zaynMem)
+{
+
+}

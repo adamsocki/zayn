@@ -26,9 +26,9 @@ void ZaynInit(ZaynMemory *zaynMem)
     
     
     AllocateTriangleMesh(&zaynMem->meshCollection.triangleMesh);
-    InitMesh(&zaynMem->meshCollection.triangleMesh);
+    //InitMesh(&zaynMem->meshCollection.triangleMesh);
     AllocateQuadMesh(&zaynMem->meshCollection.quadMesh);
-    InitMesh(&zaynMem->meshCollection.quadMesh);
+    //InitMesh(&zaynMem->meshCollection.quadMesh);
     
 
     

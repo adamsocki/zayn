@@ -45,6 +45,10 @@ struct ZaynMemory
     MeshCollection meshCollection;
 
 
+    VkInstance vkInstance;
+    VkDebugUtilsMessengerEXT vkDebugMessenger;
+
+
 };
 
 
