@@ -322,7 +322,59 @@ bool ShaderLinked(GLuint shader, char **infoLog)
     return isLinked;
 }
 
+void CompileShader(Shader *shader)
+{
+    char *infoLog = NULL;
 
+    if (shader->vertSrc != NULL)
+    {
+
+        shader->vertID = glCreateShader(GL_VERTEX_SHADER);
+
+        glShaderSource(shader->vertID, 1, (const GLchar**)&shader->vertSrc, (GLint *)&shader->vertSize);
+        glCheckError();
+        glCompileShader(shader->vertID);
+        glCheckError();
+
+        ShaderCompiled(shader->vertID, &infoLog);
+    }
+
+    if (shader->fragSrc != NULL)
+    {
+
+        shader->fragID = glCreateShader(GL_FRAGMENT_SHADER);
+
+        glShaderSource(shader->fragID, 1, (const GLchar**)&shader->fragSrc, (GLint *)&shader->fragSize);
+        glCheckError();
+        glCompileShader(shader->fragID);
+        glCheckError();
+
+        ShaderCompiled(shader->fragID, &infoLog);
+    }
+
+    shader->programID = glCreateProgram();
+
+    if (!glIsProgram(shader->programID)) 
+    {
+        std::cout << "NOT A SHADER!" << std::endl;
+    }
+     if (shader->vertID != 0) 
+     {
+        glAttachShader(shader->programID, shader->vertID);
+        glCheckError();
+    }
+    if (shader->fragID != 0) 
+    {
+        glAttachShader(shader->programID, shader->fragID);
+        glCheckError();
+    }
+
+    glLinkProgram(shader->programID);
+    glCheckError();
+
+
+   ShaderLinked(shader->programID, &infoLog);
+}
 
 
 void InitRender_Learn(ZaynMemory *zaynMem)
@@ -337,7 +389,8 @@ void InitRender_Learn(ZaynMemory *zaynMem)
 // src\renderer\shaders\mesh.vert   
     // load START
     // LoadShader("../shaders/mesh.vert", "../shaders/mesh.frag", firstShader);
-    LoadShader("C:/dev/zayn/src/renderer/shaders/mesh.vert", "C:/dev/zayn/src/renderer/shaders/mesh.frag", firstShader);
+    LoadShader("/Users/socki/dev/zayn/src/renderer/shaders/mesh.vert", "/Users/socki/dev/zayn/src/renderer/shaders/mesh.frag", firstShader);
+    // LoadShader("C:/dev/zayn/src/renderer/shaders/mesh.vert", "C:/dev/zayn/src/renderer/shaders/mesh.frag", firstShader);
 
     // END LOAD
     
@@ -349,56 +402,9 @@ void InitRender_Learn(ZaynMemory *zaynMem)
     // glCompileShader(zaynMem->shaderCollection.shader_test_01.vertID);
 
     // COMPLE START
-    char *infoLog = NULL;
 
-    if (firstShader->vertSrc != NULL)
-    {
-
-        firstShader->vertID = glCreateShader(GL_VERTEX_SHADER);
-
-        glShaderSource(firstShader->vertID, 1, (const GLchar**)&firstShader->vertSrc, (GLint *)&firstShader->vertSize);
-        glCheckError();
-        glCompileShader(firstShader->vertID);
-        glCheckError();
-
-        ShaderCompiled(firstShader->vertID, &infoLog);
-    }
-
-    if (firstShader->fragSrc != NULL)
-    {
-
-        firstShader->fragID = glCreateShader(GL_VERTEX_SHADER);
-
-        glShaderSource(firstShader->fragID, 1, (const GLchar**)&firstShader->fragSrc, (GLint *)&firstShader->fragSize);
-        glCheckError();
-        glCompileShader(firstShader->fragID);
-        glCheckError();
-
-        ShaderCompiled(firstShader->fragID, &infoLog);
-    }
-
-    firstShader->programID = glCreateProgram();
-
-    if (!glIsProgram(firstShader->programID)) 
-    {
-        std::cout << "NOT A SHADER!" << std::endl;
-    }
-     if (firstShader->vertID != 0) 
-     {
-        glAttachShader(firstShader->programID, firstShader->vertID);
-        glCheckError();
-    }
-    if (firstShader->fragID != 0) 
-    {
-        glAttachShader(firstShader->programID, firstShader->fragID);
-        glCheckError();
-    }
-
-    glLinkProgram(firstShader->programID);
-    glCheckError();
-
-
-   ShaderLinked(firstShader->programID, &infoLog);
+    CompileShader(firstShader);
+    
 
     // check for shader compile errors
     // int success;
