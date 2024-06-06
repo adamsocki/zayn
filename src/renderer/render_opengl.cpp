@@ -42,16 +42,24 @@ inline bool glCheckError_(const char *file, uint32 line) {
 
 void LoadShader(const char *vertPath, const char *fragPath, Shader *shader) {
     
-    std::filesystem::path projectRoot = std::filesystem::current_path().parent_path(); 
-    std::filesystem::path vertAbsolutePath = projectRoot / vertPath;
-    std::filesystem::path fragAbsolutePath = projectRoot / fragPath;
+//     std::filesystem::path projectRoot = std::filesystem::current_path().parent_path(); 
+//     std::filesystem::path vertAbsolutePath = projectRoot / vertPath;
+//     std::filesystem::path fragAbsolutePath = projectRoot / fragPath;
 
- std::cout << "Project Root: " << projectRoot << std::endl;
-    std::cout << "Absolute Vertex Shader Path: " << vertAbsolutePath << std::endl;
-    std::cout << "Absolute Fragment Shader Path: " << fragAbsolutePath << std::endl;
+//  std::cout << "Project Root: " << projectRoot << std::endl;
+//     std::cout << "Absolute Vertex Shader Path: " << vertAbsolutePath << std::endl;
+//     std::cout << "Absolute Fragment Shader Path: " << fragAbsolutePath << std::endl;
 
-    FILE *file = fopen(vertAbsolutePath.c_str(), "r");
-    
+        FILE *file = fopen(vertPath, "r");
+        char string[105];
+        if (file == NULL) {
+        fprintf(stderr, "can't open %s: %s\n", vertPath, strerror(errno));
+    //    exit(1);
+    }
+    while (fgets(string, 100, file)) {
+        printf("%s", string);
+    }
+        
     if (file != NULL) 
     {
         fseek(file, 0, SEEK_END);
@@ -72,10 +80,15 @@ void LoadShader(const char *vertPath, const char *fragPath, Shader *shader) {
     }
     else 
     {
-        std::cout << "Error opening file " << vertAbsolutePath << std::endl; 
+        std::cout << "Error opening file " << vertPath << std::endl; 
     }
 
-    file = fopen(fragAbsolutePath.c_str(), "r");
+    file = fopen(fragPath, "r");
+    if (!file)
+    {
+
+        perror("fopen");
+    }
 
     if (file != NULL) 
     {
@@ -97,7 +110,7 @@ void LoadShader(const char *vertPath, const char *fragPath, Shader *shader) {
     }
     else 
     {
-        std::cout << "Error opening file " << fragAbsolutePath << std::endl;
+        std::cout << "Error opening file " << fragPath << std::endl;
     }
 }
 
@@ -287,6 +300,7 @@ bool ShaderLinked(GLuint shader, char **infoLog)
 {
     int32 isLinked = 0;
     glGetProgramiv(shader, GL_LINK_STATUS, &isLinked);
+    
     if (isLinked == GL_FALSE) 
     {
         if (infoLog != NULL) 
@@ -320,15 +334,15 @@ void InitRender_Learn(ZaynMemory *zaynMem)
      // build and compile our shader program
     // ------------------------------------
     // vertex shader
-
+// src\renderer\shaders\mesh.vert   
     // load START
     // LoadShader("../shaders/mesh.vert", "../shaders/mesh.frag", firstShader);
-    LoadShader("/Users/socki/dev/zayn/shaders/mesh.vert", "/Users/socki/dev/zayn/shaders/mesh.frag", firstShader);
+    LoadShader("C:/dev/zayn/src/renderer/shaders/mesh.vert", "C:/dev/zayn/src/renderer/shaders/mesh.frag", firstShader);
 
     // END LOAD
     
     // src/renderer/shaders/mesh.vert
-    // CompileShader(firstShader, )
+    // CompileShader(firstShader, ) 
 
     // zaynMem->shaderCollection.shader_test_01.vertID = glCreateShader(GL_VERTEX_SHADER);
     // glShaderSource(zaynMem->shaderCollection.shader_test_01.vertID, 1, &vertexShaderSource, NULL);
@@ -384,7 +398,7 @@ void InitRender_Learn(ZaynMemory *zaynMem)
     glCheckError();
 
 
-    ShaderLinked(firstShader->programID, &infoLog);
+   ShaderLinked(firstShader->programID, &infoLog);
 
     // check for shader compile errors
     // int success;
