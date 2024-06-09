@@ -6,12 +6,16 @@
 
 
 #include <vulkan/vulkan.h>
-#include <vulkan/vulkan_beta.h>
 
 
 #ifdef __APPLE__
 #define GL_SILENCE_DEPRECATION
 #endif
+
+#if WINDOWS
+#include <cstring>
+#endif
+
 
 
 #include <iostream>
@@ -23,35 +27,20 @@
 
 #include "config.h"
 
-
-#if WINDOWS
-#include <cstring>
-#endif
-
 #include <glad/glad.h>
 #include <GLFW/glfw3.h>
-
-
-    
-
-
 
 struct SystemPlatform
 {
     bool running;
 };
 
-
-
 void framebuffer_size_callback(GLFWwindow* window, int width, int height);
 
-
-
 #include "zayn.cpp"
+
 int main(void)
 {
-
-
     SystemPlatform platform = {};
     ZaynPlatform zaynPlatform = {};
 
@@ -72,77 +61,32 @@ int main(void)
     zaynMemory->keyboard = &inputManager->devices[0];
     AllocateInputDevice(zaynMemory->keyboard, InputDeviceType_Keyboard, Input_KeyboardDiscreteCount, 0);
 
-    // Keyboard =
+    glfwInit();
+    const uint32_t WIDTH = 800;
+    const uint32_t HEIGHT = 600;    
 
-
-    /* Initialize the library */
-    if (!glfwInit())
-    {
-
-        return -1;
-    }
-
-#if OPENGL
-    // glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3);
-    // glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 3);
-    // glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
-#elif VULKAN   
     glfwWindowHint(GLFW_CLIENT_API, GLFW_NO_API);
     glfwWindowHint(GLFW_RESIZABLE, GLFW_FALSE);
-#endif
 
-#ifdef __APPLE__
-    // glfwWindowHint(GLFW_OPENGL_FORWARD_COMPAT, GL_TRUE);
-#endif
-   /* Create a windowed mode window and its OpenGL context */
-    Zayn->window = glfwCreateWindow(640, 480, "Hello World", NULL, NULL);
-    if (!Zayn->window)
-    {
-        glfwTerminate();
-        return -1;
-    }
+    zaynMemory->window = glfwCreateWindow(WIDTH, HEIGHT, "Vulkan", nullptr, nullptr);
   
+    
 
-    /* Make the window's context current */
     glfwMakeContextCurrent(Zayn->window);
     glfwSetFramebufferSizeCallback(Zayn->window, framebuffer_size_callback);
 
-#if OPENGL
-    if (!gladLoadGLLoader((GLADloadproc)glfwGetProcAddress))
-    {
-        std::cout << "Failed to initialize GLAD" << std::endl;
-        return -1;
-    }
-#endif
-
-    // GLenum err = glewInit();
     ZaynInit(zaynMemory);
 
-    
-
-    /* Loop until the user closes the window */
     while (!glfwWindowShouldClose(Zayn->window) && zaynPlatform.running)
     {
-
-    
-
-
-
-    //     /* Render here */
-    //     /* Swap front and back buffers */
-
-
         InputUpdate(Zayn, inputManager);
         ZaynUpdateAndRender(zaynMemory);
-
 
         glfwSwapBuffers(Zayn->window);
 
         zaynPlatform.running = !glfwWindowShouldClose(Zayn->window);
 
         ClearInputManager(inputManager);
-
-        /* Poll for and process events */
     }
 
     RenderCleanup(Zayn);

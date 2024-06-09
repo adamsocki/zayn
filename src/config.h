@@ -1,7 +1,8 @@
 
 
 
-#define WINDOWS 1
+#define WINDOWS 0
+#define MAC 1
 
 // #define METAL_MACOS 0
 

@@ -56,13 +56,13 @@ void cursorPosCallback(GLFWwindow* window, double xpos, double ypos)
 }
 
 
-void InputUpdate(SystemPlatform* systemPlatform, InputManager *inputManager)
+void InputUpdate(ZaynMemory* zaynMem, InputManager *inputManager)
 {
     glfwPollEvents();
 
-    glfwSetKeyCallback(systemPlatform->window, keyCallback);
-    glfwSetMouseButtonCallback(systemPlatform->window, mouseButtonCallback);
-    glfwSetCursorPosCallback(systemPlatform->window, cursorPosCallback);
+    glfwSetKeyCallback(zaynMem->window, keyCallback);
+    glfwSetMouseButtonCallback(zaynMem->window, mouseButtonCallback);
+    glfwSetCursorPosCallback(zaynMem->window, cursorPosCallback);
 
 
     for (int d = 0; d < inputManager->deviceCount; d++)

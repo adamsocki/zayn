@@ -1,4 +1,12 @@
 
+struct VKRenderData
+{
+    /* data */
+};
+
+
+
+
 struct ShaderUniform {
     char *name;
     int32 id;

@@ -81,6 +81,12 @@
         "execution": "cpp",
         "fstream": "cpp",
         "string_view": "cpp",
-        "variant": "cpp"
+        "variant": "cpp",
+        "set": "cpp",
+        "__hash_table": "cpp",
+        "__node_handle": "cpp",
+        "__tree": "cpp",
+        "map": "cpp",
+        "unordered_map": "cpp"
     }
 }

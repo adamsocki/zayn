@@ -26,7 +26,7 @@ void UpdateAndRenderCartridge(ZaynMemory *zaynMem)
     // ********
 	// LOGIC
 	// ********
-    glClear(GL_COLOR_BUFFER_BIT);
+    // glClear(GL_COLOR_BUFFER_BIT);
 
     //ClearColor(V4(0.1f, 0.9f, 0.4f, 1.0f));
     

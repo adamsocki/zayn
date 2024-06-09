@@ -1,5 +1,5 @@
 
-
+#include <vector>
 #include "commonlib.h"
 
 #include "math/math.h"
@@ -32,8 +32,12 @@ struct ShaderCollection
 };
 
 
+
 struct ZaynMemory
 {
+    GLFWwindow* window;
+
+
     InputManager inputManager;
     InputDevice* keyboard;
     InputDevice* mouse;
@@ -45,9 +49,30 @@ struct ZaynMemory
     MeshCollection meshCollection;
 
 
+    VKRenderData MyVKRenderData;
+
     VkInstance vkInstance;
     VkDebugUtilsMessengerEXT vkDebugMessenger;
-
+    VkPhysicalDevice vkPhysicalDevice = VK_NULL_HANDLE;
+    VkDevice vkDevice;
+    VkPhysicalDeviceFeatures vkDeviceFeatures{};
+    VkQueue vkGraphicsQueue;
+    VkSurfaceKHR vkSurface;
+    VkQueue vkPresentQueue;
+    VkSwapchainKHR vkSwapChain;
+    std::vector<VkImage> vkSwapChainImages;
+    VkFormat vkSwapChainImageFormat;
+    VkExtent2D vkSwapChainExtent;
+    std::vector<VkImageView> vkSwapChainImageViews;
+    VkPipelineLayout vkPipelineLayout;
+    VkRenderPass vkRenderPass;
+    VkPipeline vkGraphicsPipeline;
+    std::vector<VkFramebuffer> vkSwapChainFramebuffers;
+    VkCommandPool vkCommandPool;
+    VkCommandBuffer vkCommandBuffer;
+    VkSemaphore vkImageAvailableSemaphore;
+    VkSemaphore vkRenderFinishedSemaphore;
+    VkFence vkInFlightFence;
 
 };
 
