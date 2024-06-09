@@ -489,7 +489,7 @@ void UpdateRender_Learn(ZaynMemory *zaynMem)
 
     glUseProgram(zaynMem->shaderCollection.shader_test_01.programID);
     glBindVertexArray(zaynMem->shaderCollection.shader_test_01.VAO); // seeing as we only have a single VAO there's no need to bind it every time, but we'll do so to keep things a bit more organized
-        glDrawArrays(GL_TRIANGLES, 0, 6);
+    glDrawArrays(GL_TRIANGLES, 0, 6);
     glDrawElements(GL_TRIANGLES,9, GL_UNSIGNED_INT, 0);
     
 }

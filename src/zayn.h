@@ -74,6 +74,15 @@ struct ZaynMemory
     VkSemaphore vkRenderFinishedSemaphore;
     VkFence vkInFlightFence;
 
+
+    VkCommandBuffer* vkCommandBuffers;
+    std::vector<VkCommandBuffer> vkCommandBuffers2;
+
+    std::vector<VkSemaphore> vkImageAvailableSemaphores;
+    std::vector<VkSemaphore> vkRenderFinishedSemaphores;
+    std::vector<VkFence> vkInFlightFences;
+    uint32_t vkCurrentFrame = 0;
+
 };
 
 

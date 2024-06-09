@@ -15,6 +15,8 @@ const std::vector<const char *> deviceExtensions = {VK_KHR_SWAPCHAIN_EXTENSION_N
 const std::vector<const char *> deviceExtensions = {VK_KHR_SWAPCHAIN_EXTENSION_NAME, "VK_KHR_portability_subset"};
 #endif
 
+const int MAX_FRAMES_IN_FLIGHT = 2;
+
 struct SwapChainSupportDetails
 {
     VkSurfaceCapabilitiesKHR capabilities;
@@ -798,12 +800,12 @@ void CreateCommandPool(ZaynMemory *zaynMem)
     }
 }
 
-void recordCommandBuffer(ZaynMemory *zaynMem, uint32_t imageIndex)
+void recordCommandBuffer(ZaynMemory *zaynMem, VkCommandBuffer commandBufer,   uint32_t imageIndex)
 {
     VkCommandBufferBeginInfo beginInfo{};
     beginInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO;
 
-    if (vkBeginCommandBuffer(zaynMem->vkCommandBuffer, &beginInfo) != VK_SUCCESS)
+    if (vkBeginCommandBuffer(commandBufer, &beginInfo) != VK_SUCCESS)
     {
         throw std::runtime_error("failed to begin recording command buffer!");
     }
@@ -819,9 +821,9 @@ void recordCommandBuffer(ZaynMemory *zaynMem, uint32_t imageIndex)
     renderPassInfo.clearValueCount = 1;
     renderPassInfo.pClearValues = &clearColor;
 
-    vkCmdBeginRenderPass(zaynMem->vkCommandBuffer, &renderPassInfo, VK_SUBPASS_CONTENTS_INLINE);
+    vkCmdBeginRenderPass(commandBufer, &renderPassInfo, VK_SUBPASS_CONTENTS_INLINE);
 
-    vkCmdBindPipeline(zaynMem->vkCommandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, zaynMem->vkGraphicsPipeline);
+    vkCmdBindPipeline(commandBufer, VK_PIPELINE_BIND_POINT_GRAPHICS, zaynMem->vkGraphicsPipeline);
 
     VkViewport viewport{};
     viewport.x = 0.0f;
@@ -830,32 +832,34 @@ void recordCommandBuffer(ZaynMemory *zaynMem, uint32_t imageIndex)
     viewport.height = (float)zaynMem->vkSwapChainExtent.height;
     viewport.minDepth = 0.0f;
     viewport.maxDepth = 1.0f;
-    vkCmdSetViewport(zaynMem->vkCommandBuffer, 0, 1, &viewport);
+    vkCmdSetViewport(commandBufer, 0, 1, &viewport);
 
     VkRect2D scissor{};
     scissor.offset = {0, 0};
     scissor.extent = zaynMem->vkSwapChainExtent;
-    vkCmdSetScissor(zaynMem->vkCommandBuffer, 0, 1, &scissor);
+    vkCmdSetScissor(commandBufer, 0, 1, &scissor);
 
-    vkCmdDraw(zaynMem->vkCommandBuffer, 3, 1, 0, 0);
+    vkCmdDraw(commandBufer, 3, 1, 0, 0);
 
-    vkCmdEndRenderPass(zaynMem->vkCommandBuffer);
+    vkCmdEndRenderPass(commandBufer);
 
-    if (vkEndCommandBuffer(zaynMem->vkCommandBuffer) != VK_SUCCESS)
+    if (vkEndCommandBuffer(commandBufer) != VK_SUCCESS)
     {
         throw std::runtime_error("failed to record command buffer!");
     }
 }
 
-void CreateCommandBuffer(ZaynMemory *zaynMem)
+void CreateCommandBuffers(ZaynMemory *zaynMem)
 {
+    zaynMem->vkCommandBuffers = (VkCommandBuffer* )malloc(sizeof(VkCommandBuffer) * MAX_FRAMES_IN_FLIGHT);
+
     VkCommandBufferAllocateInfo allocInfo{};
     allocInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_ALLOCATE_INFO;
     allocInfo.commandPool = zaynMem->vkCommandPool;
     allocInfo.level = VK_COMMAND_BUFFER_LEVEL_PRIMARY;
-    allocInfo.commandBufferCount = 1;
+    allocInfo.commandBufferCount = MAX_FRAMES_IN_FLIGHT;
 
-    if (vkAllocateCommandBuffers(zaynMem->vkDevice, &allocInfo, &zaynMem->vkCommandBuffer) != VK_SUCCESS)
+    if (vkAllocateCommandBuffers(zaynMem->vkDevice, &allocInfo, zaynMem->vkCommandBuffers) != VK_SUCCESS)
     {
         throw std::runtime_error("failed to allocate command buffers!");
     }
@@ -863,6 +867,10 @@ void CreateCommandBuffer(ZaynMemory *zaynMem)
 
 void CreateSyncObjects(ZaynMemory *zaynMem)
 {
+    zaynMem->vkImageAvailableSemaphores.resize(MAX_FRAMES_IN_FLIGHT);
+    zaynMem->vkRenderFinishedSemaphores.resize(MAX_FRAMES_IN_FLIGHT);
+    zaynMem->vkInFlightFences.resize(MAX_FRAMES_IN_FLIGHT);
+
     VkSemaphoreCreateInfo semaphoreInfo{};
     semaphoreInfo.sType = VK_STRUCTURE_TYPE_SEMAPHORE_CREATE_INFO;
 
@@ -870,11 +878,15 @@ void CreateSyncObjects(ZaynMemory *zaynMem)
     fenceInfo.sType = VK_STRUCTURE_TYPE_FENCE_CREATE_INFO;
     fenceInfo.flags = VK_FENCE_CREATE_SIGNALED_BIT;
 
-    if (vkCreateSemaphore(zaynMem->vkDevice, &semaphoreInfo, nullptr, &zaynMem->vkImageAvailableSemaphore) != VK_SUCCESS ||
-        vkCreateSemaphore(zaynMem->vkDevice, &semaphoreInfo, nullptr, &zaynMem->vkRenderFinishedSemaphore) != VK_SUCCESS ||
-        vkCreateFence(zaynMem->vkDevice, &fenceInfo, nullptr, &zaynMem->vkInFlightFence) != VK_SUCCESS)
+    for (size_t i = 0; i < MAX_FRAMES_IN_FLIGHT; i++)
     {
-        throw std::runtime_error("failed to create synchronization objects for a frame!");
+        if (vkCreateSemaphore(zaynMem->vkDevice, &semaphoreInfo, nullptr, &zaynMem->vkImageAvailableSemaphores[i]) != VK_SUCCESS ||
+            vkCreateSemaphore(zaynMem->vkDevice, &semaphoreInfo, nullptr, &zaynMem->vkRenderFinishedSemaphores[i]) != VK_SUCCESS ||
+            vkCreateFence(zaynMem->vkDevice, &fenceInfo, nullptr, &zaynMem->vkInFlightFences[i]) != VK_SUCCESS)
+        {
+
+            throw std::runtime_error("failed to create synchronization objects for a frame!");
+        }
     }
 }
 
@@ -893,62 +905,71 @@ void InitRender_Learn(ZaynMemory *zaynMem)
     CreateGraphicsPipeline(zaynMem);
     CreateFrameBuffers(zaynMem);
     CreateCommandPool(zaynMem);
-    CreateCommandBuffer(zaynMem);
+    CreateCommandBuffers(zaynMem);
     CreateSyncObjects(zaynMem);
 }
 
 void UpdateRender_Learn(ZaynMemory *zaynMem)
 {
-    vkWaitForFences(zaynMem->vkDevice, 1, &zaynMem->vkInFlightFence, VK_TRUE, UINT64_MAX);
-    vkResetFences(zaynMem->vkDevice, 1, &zaynMem->vkInFlightFence);
+    vkWaitForFences(zaynMem->vkDevice, 1, &zaynMem->vkInFlightFences[zaynMem->vkCurrentFrame], VK_TRUE, UINT64_MAX);
+    vkResetFences(zaynMem->vkDevice, 1, &zaynMem->vkInFlightFences[zaynMem->vkCurrentFrame]);
+
     uint32_t imageIndex;
-    vkAcquireNextImageKHR(zaynMem->vkDevice, zaynMem->vkSwapChain, UINT64_MAX, zaynMem->vkImageAvailableSemaphore, VK_NULL_HANDLE, &imageIndex);
+    vkAcquireNextImageKHR(zaynMem->vkDevice, zaynMem->vkSwapChain, UINT64_MAX, zaynMem->vkImageAvailableSemaphores[zaynMem->vkCurrentFrame], VK_NULL_HANDLE, &imageIndex);
 
-    vkResetCommandBuffer(zaynMem->vkCommandBuffer, /*VkCommandBufferResetFlagBits*/ 0);
-        recordCommandBuffer(zaynMem, imageIndex);
+    vkResetCommandBuffer(zaynMem->vkCommandBuffers[zaynMem->vkCurrentFrame], /*VkCommandBufferResetFlagBits*/ 0);
+    recordCommandBuffer(zaynMem, zaynMem->vkCommandBuffers[zaynMem->vkCurrentFrame], imageIndex);
 
-        VkSubmitInfo submitInfo{};
-        submitInfo.sType = VK_STRUCTURE_TYPE_SUBMIT_INFO;
+    VkSubmitInfo submitInfo{};
+    submitInfo.sType = VK_STRUCTURE_TYPE_SUBMIT_INFO;
 
-        VkSemaphore waitSemaphores[] = {zaynMem->vkImageAvailableSemaphore};
-        VkPipelineStageFlags waitStages[] = {VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT};
-        submitInfo.waitSemaphoreCount = 1;
-        submitInfo.pWaitSemaphores = waitSemaphores;
-        submitInfo.pWaitDstStageMask = waitStages;
+    VkSemaphore waitSemaphores[] = {zaynMem->vkImageAvailableSemaphores[zaynMem->vkCurrentFrame]};
+    VkPipelineStageFlags waitStages[] = {VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT};
+    submitInfo.waitSemaphoreCount = 1;
+    submitInfo.pWaitSemaphores = waitSemaphores;
+    submitInfo.pWaitDstStageMask = waitStages;
 
-        submitInfo.commandBufferCount = 1;
-        submitInfo.pCommandBuffers = &zaynMem->vkCommandBuffer;
+    submitInfo.commandBufferCount = 1;
+    submitInfo.pCommandBuffers = &zaynMem->vkCommandBuffers[zaynMem->vkCurrentFrame];
 
-        VkSemaphore signalSemaphores[] = {zaynMem->vkRenderFinishedSemaphore};
-        submitInfo.signalSemaphoreCount = 1;
-        submitInfo.pSignalSemaphores = signalSemaphores;
+    VkSemaphore signalSemaphores[] = {zaynMem->vkRenderFinishedSemaphores[zaynMem->vkCurrentFrame]};
+    submitInfo.signalSemaphoreCount = 1;
+    submitInfo.pSignalSemaphores = signalSemaphores;
 
-        if (vkQueueSubmit(zaynMem->vkGraphicsQueue, 1, &submitInfo, zaynMem->vkInFlightFence) != VK_SUCCESS) {
-            throw std::runtime_error("failed to submit draw command buffer!");
-        }
+    if (vkQueueSubmit(zaynMem->vkGraphicsQueue, 1, &submitInfo, zaynMem->vkInFlightFences[zaynMem->vkCurrentFrame]) != VK_SUCCESS)
+    {
+        throw std::runtime_error("failed to submit draw command buffer!");
+    }
 
-        VkPresentInfoKHR presentInfo{};
-        presentInfo.sType = VK_STRUCTURE_TYPE_PRESENT_INFO_KHR;
+    VkPresentInfoKHR presentInfo{};
+    presentInfo.sType = VK_STRUCTURE_TYPE_PRESENT_INFO_KHR;
 
-        presentInfo.waitSemaphoreCount = 1;
-        presentInfo.pWaitSemaphores = signalSemaphores;
+    presentInfo.waitSemaphoreCount = 1;
+    presentInfo.pWaitSemaphores = signalSemaphores;
 
-        VkSwapchainKHR swapChains[] = {zaynMem->vkSwapChain};
-        presentInfo.swapchainCount = 1;
-        presentInfo.pSwapchains = &zaynMem->vkSwapChain;
+    VkSwapchainKHR swapChains[] = {zaynMem->vkSwapChain};
+    presentInfo.swapchainCount = 1;
+    presentInfo.pSwapchains = swapChains;
 
-        presentInfo.pImageIndices = &imageIndex;
+    presentInfo.pImageIndices = &imageIndex;
 
-        vkQueuePresentKHR(zaynMem->vkPresentQueue, &presentInfo);
+    vkQueuePresentKHR(zaynMem->vkPresentQueue, &presentInfo);
 
-
+    zaynMem->vkCurrentFrame = (zaynMem->vkCurrentFrame + 1) % MAX_FRAMES_IN_FLIGHT;
 }
 
 void RenderCleanup(ZaynMemory *zaynMem)
 {
-    vkDestroySemaphore(zaynMem->vkDevice, zaynMem->vkRenderFinishedSemaphore, nullptr);
-    vkDestroySemaphore(zaynMem->vkDevice, zaynMem->vkImageAvailableSemaphore, nullptr);
-    vkDestroyFence(zaynMem->vkDevice, zaynMem->vkInFlightFence, nullptr);
+    
+    free(zaynMem->vkCommandBuffers);
+
+
+    for (size_t i = 0; i < MAX_FRAMES_IN_FLIGHT; i++) 
+    {
+        vkDestroySemaphore(zaynMem->vkDevice, zaynMem->vkRenderFinishedSemaphores[i], nullptr);
+        vkDestroySemaphore(zaynMem->vkDevice, zaynMem->vkImageAvailableSemaphores[i], nullptr);
+        vkDestroyFence(zaynMem->vkDevice, zaynMem->vkInFlightFences[i], nullptr);
+    }
     vkDestroyCommandPool(zaynMem->vkDevice, zaynMem->vkCommandPool, nullptr);
     for (auto framebuffer : zaynMem->vkSwapChainFramebuffers)
     {
@@ -969,4 +990,7 @@ void RenderCleanup(ZaynMemory *zaynMem)
     }
     vkDestroySurfaceKHR(zaynMem->vkInstance, zaynMem->vkSurface, nullptr);
     vkDestroyInstance(zaynMem->vkInstance, nullptr);
+
+    vkDeviceWaitIdle(zaynMem->vkDevice);
+
 }

@@ -146,7 +146,7 @@ int main(void)
     }
 
     RenderCleanup(Zayn);
-
+    
     glfwDestroyWindow(Zayn->window);
     glfwTerminate();
     return 0;
