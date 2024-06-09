@@ -83,6 +83,7 @@ struct ZaynMemory
     std::vector<VkFence> vkInFlightFences;
     uint32_t vkCurrentFrame = 0;
 
+    bool vkFramebufferResized = false;
 };
 
 

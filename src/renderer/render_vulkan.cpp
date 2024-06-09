@@ -800,7 +800,7 @@ void CreateCommandPool(ZaynMemory *zaynMem)
     }
 }
 
-void recordCommandBuffer(ZaynMemory *zaynMem, VkCommandBuffer commandBufer,   uint32_t imageIndex)
+void recordCommandBuffer(ZaynMemory *zaynMem, VkCommandBuffer commandBufer, uint32_t imageIndex)
 {
     VkCommandBufferBeginInfo beginInfo{};
     beginInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO;
@@ -851,7 +851,7 @@ void recordCommandBuffer(ZaynMemory *zaynMem, VkCommandBuffer commandBufer,   ui
 
 void CreateCommandBuffers(ZaynMemory *zaynMem)
 {
-    zaynMem->vkCommandBuffers = (VkCommandBuffer* )malloc(sizeof(VkCommandBuffer) * MAX_FRAMES_IN_FLIGHT);
+    zaynMem->vkCommandBuffers = (VkCommandBuffer *)malloc(sizeof(VkCommandBuffer) * MAX_FRAMES_IN_FLIGHT);
 
     VkCommandBufferAllocateInfo allocInfo{};
     allocInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_ALLOCATE_INFO;
@@ -892,8 +892,6 @@ void CreateSyncObjects(ZaynMemory *zaynMem)
 
 void InitRender_Learn(ZaynMemory *zaynMem)
 {
-    // VkInstance instance;
-
     CreateVKInstance(zaynMem);
     SetupDebugMessenger(zaynMem);
     CreateSurface(zaynMem);
@@ -909,13 +907,65 @@ void InitRender_Learn(ZaynMemory *zaynMem)
     CreateSyncObjects(zaynMem);
 }
 
+void CleanUpSwapChain(ZaynMemory *zaynMem)
+{
+    for (size_t i = 0; i < zaynMem->vkSwapChainFramebuffers.size(); i++)
+    {
+        vkDestroyFramebuffer(zaynMem->vkDevice, zaynMem->vkSwapChainFramebuffers[i], nullptr);
+    }
+
+    for (size_t i = 0; i < zaynMem->vkSwapChainImageViews.size(); i++)
+    {
+        vkDestroyImageView(zaynMem->vkDevice, zaynMem->vkSwapChainImageViews[i], nullptr);
+    }
+
+    vkDestroySwapchainKHR(zaynMem->vkDevice, zaynMem->vkSwapChain, nullptr);
+}
+
+void RecreateSwapChain(ZaynMemory *zaynMem)
+{
+
+    // std::cout << "RecreateSwapChain" << std::endl;
+
+    int width = 0, height = 0;
+    glfwGetFramebufferSize(zaynMem->window, &width, &height);
+    while (width == 0 || height == 0)
+    {
+        // std::cout << "MIN" << std::endl;
+        glfwGetFramebufferSize(zaynMem->window, &width, &height);
+        glfwWaitEvents();
+    }
+
+    vkDeviceWaitIdle(zaynMem->vkDevice);
+
+    CleanUpSwapChain(zaynMem);
+
+    CreateSwapChain(zaynMem);
+    CreateImageViews(zaynMem);
+    CreateFrameBuffers(zaynMem);
+}
+
 void UpdateRender_Learn(ZaynMemory *zaynMem)
 {
     vkWaitForFences(zaynMem->vkDevice, 1, &zaynMem->vkInFlightFences[zaynMem->vkCurrentFrame], VK_TRUE, UINT64_MAX);
-    vkResetFences(zaynMem->vkDevice, 1, &zaynMem->vkInFlightFences[zaynMem->vkCurrentFrame]);
 
     uint32_t imageIndex;
-    vkAcquireNextImageKHR(zaynMem->vkDevice, zaynMem->vkSwapChain, UINT64_MAX, zaynMem->vkImageAvailableSemaphores[zaynMem->vkCurrentFrame], VK_NULL_HANDLE, &imageIndex);
+    // NEW
+    VkResult result = vkAcquireNextImageKHR(zaynMem->vkDevice, zaynMem->vkSwapChain, UINT64_MAX, zaynMem->vkImageAvailableSemaphores[zaynMem->vkCurrentFrame], VK_NULL_HANDLE, &imageIndex);
+
+    if (result == VK_ERROR_OUT_OF_DATE_KHR)
+    {
+        RecreateSwapChain(zaynMem);
+        return;
+    }
+    else if (result != VK_SUCCESS && result != VK_SUBOPTIMAL_KHR)
+    {
+        throw std::runtime_error("failed to acquire swap chain image!");
+    }
+
+    // END NEW
+
+    vkResetFences(zaynMem->vkDevice, 1, &zaynMem->vkInFlightFences[zaynMem->vkCurrentFrame]);
 
     vkResetCommandBuffer(zaynMem->vkCommandBuffers[zaynMem->vkCurrentFrame], /*VkCommandBufferResetFlagBits*/ 0);
     recordCommandBuffer(zaynMem, zaynMem->vkCommandBuffers[zaynMem->vkCurrentFrame], imageIndex);
@@ -953,18 +1003,29 @@ void UpdateRender_Learn(ZaynMemory *zaynMem)
 
     presentInfo.pImageIndices = &imageIndex;
 
-    vkQueuePresentKHR(zaynMem->vkPresentQueue, &presentInfo);
+    // vkQueuePresentKHR(zaynMem->vkPresentQueue, &presentInfo);
+
+    result = vkQueuePresentKHR(zaynMem->vkPresentQueue, &presentInfo);
+
+    if (result == VK_ERROR_OUT_OF_DATE_KHR || result == VK_SUBOPTIMAL_KHR || zaynMem->vkFramebufferResized)
+    {
+        zaynMem->vkFramebufferResized = false;
+        RecreateSwapChain(zaynMem);
+    }
+    else if (result != VK_SUCCESS)
+    {
+        throw std::runtime_error("failed to present swap chain image!");
+    }
 
     zaynMem->vkCurrentFrame = (zaynMem->vkCurrentFrame + 1) % MAX_FRAMES_IN_FLIGHT;
 }
 
 void RenderCleanup(ZaynMemory *zaynMem)
 {
-    
-    free(zaynMem->vkCommandBuffers);
 
+    CleanUpSwapChain(zaynMem);
 
-    for (size_t i = 0; i < MAX_FRAMES_IN_FLIGHT; i++) 
+    for (size_t i = 0; i < MAX_FRAMES_IN_FLIGHT; i++)
     {
         vkDestroySemaphore(zaynMem->vkDevice, zaynMem->vkRenderFinishedSemaphores[i], nullptr);
         vkDestroySemaphore(zaynMem->vkDevice, zaynMem->vkImageAvailableSemaphores[i], nullptr);
@@ -993,4 +1054,5 @@ void RenderCleanup(ZaynMemory *zaynMem)
 
     vkDeviceWaitIdle(zaynMem->vkDevice);
 
+    free(zaynMem->vkCommandBuffers);
 }

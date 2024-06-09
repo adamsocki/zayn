@@ -88,7 +88,7 @@ int main(void)
     // glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
 #elif VULKAN   
     glfwWindowHint(GLFW_CLIENT_API, GLFW_NO_API);
-    glfwWindowHint(GLFW_RESIZABLE, GLFW_FALSE);
+    glfwWindowHint(GLFW_RESIZABLE, GLFW_TRUE);
 #endif
 
 #ifdef __APPLE__
@@ -105,6 +105,7 @@ int main(void)
 
     /* Make the window's context current */
     glfwMakeContextCurrent(Zayn->window);
+    glfwSetWindowUserPointer(Zayn->window, Zayn);
     glfwSetFramebufferSizeCallback(Zayn->window, framebuffer_size_callback);
 
 #if OPENGL
@@ -146,7 +147,7 @@ int main(void)
     }
 
     RenderCleanup(Zayn);
-    
+
     glfwDestroyWindow(Zayn->window);
     glfwTerminate();
     return 0;
@@ -156,5 +157,14 @@ void framebuffer_size_callback(GLFWwindow* window, int width, int height)
 {
     // make sure the viewport matches the new window dimensions; note that width and 
     // height will be significantly larger than specified on retina displays.
-    glViewport(0, 0, width, height);
+    // glViewport(0, 0, width, height);
+
+    // window = glfwCreateWindow(width, height, "Hello World", nullptr, nullptr);
+
+    // glfwGetWindowUserPointer(window)
+    // auto app = reinterpret_cast<HelloTriangleApplication*>(glfwGetWindowUserPointer(window));
+    auto zaynMem = reinterpret_cast<ZaynMemory*>(glfwGetWindowUserPointer(window));
+    zaynMem->vkFramebufferResized = true;
+    // auto app = reinterpret_cast<HelloTriangleApplication*>(glfwGetWindowUserPointer(window));
+        // app->framebufferResized = true;
 }
