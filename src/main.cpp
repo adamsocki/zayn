@@ -13,11 +13,19 @@
 #define GL_SILENCE_DEPRECATION
 #endif
 
+#define GLM_FORCE_RADIANS
+#define GLM_FORCE_DEFAULT_ALIGNED_GENTYPES
+#include <glm/glm.hpp>
+#include <glm/gtc/matrix_transform.hpp>
+
+#include <chrono>
+
 
 #include <iostream>
 #include <filesystem>
 #include <stdio.h>
 #include <stdlib.h>
+// #include <glm/glm.hpp>
 
 #include "data_types.h"
 
@@ -164,6 +172,7 @@ void framebuffer_size_callback(GLFWwindow* window, int width, int height)
     // glfwGetWindowUserPointer(window)
     // auto app = reinterpret_cast<HelloTriangleApplication*>(glfwGetWindowUserPointer(window));
     auto zaynMem = reinterpret_cast<ZaynMemory*>(glfwGetWindowUserPointer(window));
+    std::cout << "fbscb" << std::endl;
     zaynMem->vkFramebufferResized = true;
     // auto app = reinterpret_cast<HelloTriangleApplication*>(glfwGetWindowUserPointer(window));
         // app->framebufferResized = true;

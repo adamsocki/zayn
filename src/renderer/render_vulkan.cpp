@@ -3,6 +3,8 @@
 #include <set>
 #include <fstream>
 
+
+
 #ifdef NDEBUG
 const bool enableValidationLayers = false;
 #else
@@ -16,6 +18,49 @@ const std::vector<const char *> deviceExtensions = {VK_KHR_SWAPCHAIN_EXTENSION_N
 #endif
 
 const int MAX_FRAMES_IN_FLIGHT = 2;
+
+const std::vector<Vertex> vertices =
+    {
+        {{-0.5f, -0.5f}, {1.0f, 0.0f, 0.0f}},
+        {{0.5f, -0.5f}, {0.0f, 1.0f, 0.0f}},
+        {{0.5f, 0.5f}, {0.0f, 0.0f, 1.0f}},
+        {{-0.5f, 0.5f}, {1.0f, 1.0f, 1.0f}}};
+
+struct UniformBufferObject
+{
+  alignas(16) glm::mat4 model;
+  alignas(16) glm::mat4 view;
+  alignas(16) glm::mat4 proj;
+};
+
+const std::vector<uint16_t> indices =
+    {
+        0, 1, 2, 2, 3, 0};
+
+// VkVertexInputBindingDescription getBindingDescription()
+// {
+//     VkVertexInputBindingDescription bindingDescription{};
+//     bindingDescription.binding = 0;
+//     bindingDescription.stride = sizeof(Vertex);
+//     bindingDescription.inputRate = VK_VERTEX_INPUT_RATE_VERTEX;
+//     return bindingDescription;
+// }
+
+// std::array<VkVertexInputAttributeDescription, 2> getAttributeDescriptions()
+// {
+//     std::array<VkVertexInputAttributeDescription, 2> attributeDescriptions{};
+//     attributeDescriptions[0].binding = 0;
+//     attributeDescriptions[0].location = 0;
+//     attributeDescriptions[0].format = VK_FORMAT_R32G32_SFLOAT;
+//     attributeDescriptions[0].offset = offsetof(Vertex, position);
+
+//     attributeDescriptions[1].binding = 0;
+//     attributeDescriptions[1].location = 1;
+//     attributeDescriptions[1].format = VK_FORMAT_R32G32B32_SFLOAT;
+//     attributeDescriptions[1].offset = offsetof(Vertex, color);
+
+//     return attributeDescriptions;
+// }
 
 struct SwapChainSupportDetails
 {
@@ -651,8 +696,8 @@ void CreateRenderPass(ZaynMemory *zaynMem)
 
 void CreateGraphicsPipeline(ZaynMemory *zaynMem)
 {
-    auto vertShaderCode = readFile("/Users/socki/dev/zayn/src/renderer/shaders/vkShader_vert.spv");
-    auto fragShaderCode = readFile("/Users/socki/dev/zayn/src/renderer/shaders/vkShader_frag.spv");
+    auto vertShaderCode = readFile("/Users/socki/dev/zayn/src/renderer/shaders/vkShader_uniform_01_vert.spv");
+    auto fragShaderCode = readFile("/Users/socki/dev/zayn/src/renderer/shaders/vkShader_01_frag.spv");
 
     VkShaderModule vertShaderModule = createShaderModule(vertShaderCode, zaynMem);
     VkShaderModule fragShaderModule = createShaderModule(fragShaderCode, zaynMem);
@@ -673,8 +718,14 @@ void CreateGraphicsPipeline(ZaynMemory *zaynMem)
 
     VkPipelineVertexInputStateCreateInfo vertexInputInfo{};
     vertexInputInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_VERTEX_INPUT_STATE_CREATE_INFO;
-    vertexInputInfo.vertexBindingDescriptionCount = 0;
-    vertexInputInfo.vertexAttributeDescriptionCount = 0;
+
+    auto bindingDescription = Vertex::getBindingDescription();
+    auto attributeDescriptions = Vertex::getAttributeDescriptions();
+
+    vertexInputInfo.vertexBindingDescriptionCount = 1;
+    vertexInputInfo.vertexAttributeDescriptionCount = static_cast<uint32_t>(attributeDescriptions.size());
+    vertexInputInfo.pVertexBindingDescriptions = &bindingDescription;
+    vertexInputInfo.pVertexAttributeDescriptions = attributeDescriptions.data();
 
     VkPipelineInputAssemblyStateCreateInfo inputAssembly{};
     inputAssembly.sType = VK_STRUCTURE_TYPE_PIPELINE_INPUT_ASSEMBLY_STATE_CREATE_INFO;
@@ -693,7 +744,7 @@ void CreateGraphicsPipeline(ZaynMemory *zaynMem)
     rasterizer.polygonMode = VK_POLYGON_MODE_FILL;
     rasterizer.lineWidth = 1.0f;
     rasterizer.cullMode = VK_CULL_MODE_BACK_BIT;
-    rasterizer.frontFace = VK_FRONT_FACE_CLOCKWISE;
+    rasterizer.frontFace = VK_FRONT_FACE_COUNTER_CLOCKWISE;
     rasterizer.depthBiasEnable = VK_FALSE;
 
     VkPipelineMultisampleStateCreateInfo multisampling{};
@@ -719,6 +770,7 @@ void CreateGraphicsPipeline(ZaynMemory *zaynMem)
     std::vector<VkDynamicState> dynamicStates = {
         VK_DYNAMIC_STATE_VIEWPORT,
         VK_DYNAMIC_STATE_SCISSOR};
+
     VkPipelineDynamicStateCreateInfo dynamicState{};
     dynamicState.sType = VK_STRUCTURE_TYPE_PIPELINE_DYNAMIC_STATE_CREATE_INFO;
     dynamicState.dynamicStateCount = static_cast<uint32_t>(dynamicStates.size());
@@ -726,8 +778,8 @@ void CreateGraphicsPipeline(ZaynMemory *zaynMem)
 
     VkPipelineLayoutCreateInfo pipelineLayoutInfo{};
     pipelineLayoutInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_LAYOUT_CREATE_INFO;
-    pipelineLayoutInfo.setLayoutCount = 0;
-    pipelineLayoutInfo.pushConstantRangeCount = 0;
+    pipelineLayoutInfo.setLayoutCount = 1;
+    pipelineLayoutInfo.pSetLayouts = &zaynMem->vkDescriptorSetLayout;
 
     if (vkCreatePipelineLayout(zaynMem->vkDevice, &pipelineLayoutInfo, nullptr, &zaynMem->vkPipelineLayout) != VK_SUCCESS)
     {
@@ -800,12 +852,12 @@ void CreateCommandPool(ZaynMemory *zaynMem)
     }
 }
 
-void recordCommandBuffer(ZaynMemory *zaynMem, VkCommandBuffer commandBufer, uint32_t imageIndex)
+void recordCommandBuffer(ZaynMemory *zaynMem, VkCommandBuffer commandBuffer, uint32_t imageIndex)
 {
     VkCommandBufferBeginInfo beginInfo{};
     beginInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO;
 
-    if (vkBeginCommandBuffer(commandBufer, &beginInfo) != VK_SUCCESS)
+    if (vkBeginCommandBuffer(commandBuffer, &beginInfo) != VK_SUCCESS)
     {
         throw std::runtime_error("failed to begin recording command buffer!");
     }
@@ -821,9 +873,9 @@ void recordCommandBuffer(ZaynMemory *zaynMem, VkCommandBuffer commandBufer, uint
     renderPassInfo.clearValueCount = 1;
     renderPassInfo.pClearValues = &clearColor;
 
-    vkCmdBeginRenderPass(commandBufer, &renderPassInfo, VK_SUBPASS_CONTENTS_INLINE);
+    vkCmdBeginRenderPass(commandBuffer, &renderPassInfo, VK_SUBPASS_CONTENTS_INLINE);
 
-    vkCmdBindPipeline(commandBufer, VK_PIPELINE_BIND_POINT_GRAPHICS, zaynMem->vkGraphicsPipeline);
+    vkCmdBindPipeline(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, zaynMem->vkGraphicsPipeline);
 
     VkViewport viewport{};
     viewport.x = 0.0f;
@@ -832,18 +884,26 @@ void recordCommandBuffer(ZaynMemory *zaynMem, VkCommandBuffer commandBufer, uint
     viewport.height = (float)zaynMem->vkSwapChainExtent.height;
     viewport.minDepth = 0.0f;
     viewport.maxDepth = 1.0f;
-    vkCmdSetViewport(commandBufer, 0, 1, &viewport);
+    vkCmdSetViewport(commandBuffer, 0, 1, &viewport);
 
     VkRect2D scissor{};
     scissor.offset = {0, 0};
     scissor.extent = zaynMem->vkSwapChainExtent;
-    vkCmdSetScissor(commandBufer, 0, 1, &scissor);
+    vkCmdSetScissor(commandBuffer, 0, 1, &scissor);
 
-    vkCmdDraw(commandBufer, 3, 1, 0, 0);
+    VkBuffer vertexBuffers[] = {zaynMem->vkVertexBuffer};
+    VkDeviceSize offsets[] = {0};
 
-    vkCmdEndRenderPass(commandBufer);
+    vkCmdBindVertexBuffers(commandBuffer, 0, 1, vertexBuffers, offsets);
+    vkCmdBindIndexBuffer(commandBuffer, zaynMem->vkIndexBuffer, 0, VK_INDEX_TYPE_UINT16);
 
-    if (vkEndCommandBuffer(commandBufer) != VK_SUCCESS)
+    vkCmdBindDescriptorSets(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, zaynMem->vkPipelineLayout, 0, 1, &zaynMem->vkDescriptorSets[zaynMem->vkCurrentFrame], 0, nullptr);
+
+    vkCmdDrawIndexed(commandBuffer, static_cast<uint32_t>(indices.size()), 1, 0, 0, 0);
+
+    vkCmdEndRenderPass(commandBuffer);
+
+    if (vkEndCommandBuffer(commandBuffer) != VK_SUCCESS)
     {
         throw std::runtime_error("failed to record command buffer!");
     }
@@ -890,6 +950,216 @@ void CreateSyncObjects(ZaynMemory *zaynMem)
     }
 }
 
+uint32_t findMemoryType(uint32_t typeFilter, VkMemoryPropertyFlags properties, ZaynMemory *zaynMem)
+{
+    VkPhysicalDeviceMemoryProperties memProperties;
+    vkGetPhysicalDeviceMemoryProperties(zaynMem->vkPhysicalDevice, &memProperties);
+    for (uint32_t i = 0; i < memProperties.memoryTypeCount; i++)
+    {
+        if ((typeFilter & (1 << i)) && (memProperties.memoryTypes[i].propertyFlags & properties) == properties)
+        {
+            return i;
+        }
+    }
+    throw std::runtime_error("failed to find suitable memory type!");
+}
+
+void createBuffer(VkDeviceSize size, VkBufferUsageFlags usage, VkMemoryPropertyFlags properties, VkBuffer &buffer, VkDeviceMemory &bufferMemory, ZaynMemory *zaynMem)
+{
+    VkBufferCreateInfo bufferInfo{};
+    bufferInfo.sType = VK_STRUCTURE_TYPE_BUFFER_CREATE_INFO;
+    bufferInfo.size = size;
+    bufferInfo.usage = usage;
+    bufferInfo.sharingMode = VK_SHARING_MODE_EXCLUSIVE;
+
+    if (vkCreateBuffer(zaynMem->vkDevice, &bufferInfo, nullptr, &buffer) != VK_SUCCESS)
+    {
+        throw std::runtime_error("failed to create buffer!");
+    }
+
+    VkMemoryRequirements memRequirements;
+    vkGetBufferMemoryRequirements(zaynMem->vkDevice, buffer, &memRequirements);
+
+    VkMemoryAllocateInfo allocInfo{};
+    allocInfo.sType = VK_STRUCTURE_TYPE_MEMORY_ALLOCATE_INFO;
+    allocInfo.allocationSize = memRequirements.size;
+    allocInfo.memoryTypeIndex = findMemoryType(memRequirements.memoryTypeBits, properties, zaynMem);
+
+    if (vkAllocateMemory(zaynMem->vkDevice, &allocInfo, nullptr, &bufferMemory) != VK_SUCCESS)
+    {
+        throw std::runtime_error("failed to allocate buffer memory!");
+    }
+
+    vkBindBufferMemory(zaynMem->vkDevice, buffer, bufferMemory, 0);
+}
+
+void copyBuffer(VkBuffer srcBuffer, VkBuffer dstBuffer, VkDeviceSize size, ZaynMemory *zaynMem)
+{
+    VkCommandBufferAllocateInfo allocInfo{};
+    allocInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_ALLOCATE_INFO;
+    allocInfo.level = VK_COMMAND_BUFFER_LEVEL_PRIMARY;
+    allocInfo.commandPool = zaynMem->vkCommandPool;
+    allocInfo.commandBufferCount = 1;
+
+    VkCommandBuffer commandBuffer;
+    vkAllocateCommandBuffers(zaynMem->vkDevice, &allocInfo, &commandBuffer);
+
+    VkCommandBufferBeginInfo beginInfo{};
+    beginInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO;
+    beginInfo.flags = VK_COMMAND_BUFFER_USAGE_ONE_TIME_SUBMIT_BIT;
+
+    vkBeginCommandBuffer(commandBuffer, &beginInfo);
+
+    VkBufferCopy copyRegion{};
+    copyRegion.size = size;
+    vkCmdCopyBuffer(commandBuffer, srcBuffer, dstBuffer, 1, &copyRegion);
+
+    vkEndCommandBuffer(commandBuffer);
+
+    VkSubmitInfo submitInfo{};
+    submitInfo.sType = VK_STRUCTURE_TYPE_SUBMIT_INFO;
+    submitInfo.commandBufferCount = 1;
+    submitInfo.pCommandBuffers = &commandBuffer;
+
+    vkQueueSubmit(zaynMem->vkGraphicsQueue, 1, &submitInfo, VK_NULL_HANDLE);
+    vkQueueWaitIdle(zaynMem->vkGraphicsQueue);
+
+    vkFreeCommandBuffers(zaynMem->vkDevice, zaynMem->vkCommandPool, 1, &commandBuffer);
+}
+
+void CreateVertexBuffer(ZaynMemory *zaynMem)
+{
+    VkDeviceSize bufferSize = sizeof(vertices[0]) * vertices.size();
+
+    VkBuffer stagingBuffer;
+    VkDeviceMemory stagingBufferMemory;
+    createBuffer(bufferSize, VK_BUFFER_USAGE_TRANSFER_SRC_BIT, VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT, stagingBuffer, stagingBufferMemory, zaynMem);
+
+    void *data;
+    vkMapMemory(zaynMem->vkDevice, stagingBufferMemory, 0, bufferSize, 0, &data);
+    memcpy(data, vertices.data(), (size_t)bufferSize);
+    vkUnmapMemory(zaynMem->vkDevice, stagingBufferMemory);
+
+    createBuffer(bufferSize, VK_BUFFER_USAGE_TRANSFER_DST_BIT | VK_BUFFER_USAGE_VERTEX_BUFFER_BIT, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT, zaynMem->vkVertexBuffer, zaynMem->vkVertexBufferMemory, zaynMem);
+
+    copyBuffer(stagingBuffer, zaynMem->vkVertexBuffer, bufferSize, zaynMem);
+
+    vkDestroyBuffer(zaynMem->vkDevice, stagingBuffer, nullptr);
+    vkFreeMemory(zaynMem->vkDevice, stagingBufferMemory, nullptr);
+}
+
+void CreateIndexBuffer(ZaynMemory *zaynMem)
+{
+    VkDeviceSize bufferSize = sizeof(indices[0]) * indices.size();
+
+    VkBuffer stagingBuffer;
+    VkDeviceMemory stagingBufferMemory;
+    createBuffer(bufferSize, VK_BUFFER_USAGE_TRANSFER_SRC_BIT, VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT, stagingBuffer, stagingBufferMemory, zaynMem);
+
+    void *data;
+    vkMapMemory(zaynMem->vkDevice, stagingBufferMemory, 0, bufferSize, 0, &data);
+    memcpy(data, indices.data(), (size_t)bufferSize);
+    vkUnmapMemory(zaynMem->vkDevice, stagingBufferMemory);
+
+    createBuffer(bufferSize, VK_BUFFER_USAGE_TRANSFER_DST_BIT | VK_BUFFER_USAGE_INDEX_BUFFER_BIT, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT, zaynMem->vkIndexBuffer, zaynMem->vkIndexBufferMemory, zaynMem);
+
+    copyBuffer(stagingBuffer, zaynMem->vkIndexBuffer, bufferSize, zaynMem);
+
+    vkDestroyBuffer(zaynMem->vkDevice, stagingBuffer, nullptr);
+    vkFreeMemory(zaynMem->vkDevice, stagingBufferMemory, nullptr);
+}
+
+void CreateDescriptorSetLayout(ZaynMemory *zaynMem)
+{
+    VkDescriptorSetLayoutBinding uboLayoutBinding{};
+    uboLayoutBinding.binding = 0;
+    uboLayoutBinding.descriptorType = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
+    uboLayoutBinding.descriptorCount = 1;
+    uboLayoutBinding.stageFlags = VK_SHADER_STAGE_VERTEX_BIT;
+
+    VkDescriptorSetLayoutCreateInfo layoutInfo{};
+    layoutInfo.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_LAYOUT_CREATE_INFO;
+    layoutInfo.bindingCount = 1;
+    layoutInfo.pBindings = &uboLayoutBinding;
+
+    if (vkCreateDescriptorSetLayout(zaynMem->vkDevice, &layoutInfo, nullptr, &zaynMem->vkDescriptorSetLayout) != VK_SUCCESS)
+    {
+        throw std::runtime_error("failed to create descriptor set layout!");
+    }
+}
+
+void CreateUniformBuffers(ZaynMemory *zaynMem)
+{
+    VkDeviceSize bufferSize = sizeof(UniformBufferObject);
+
+    zaynMem->vkUniformBuffers.resize(MAX_FRAMES_IN_FLIGHT);
+    zaynMem->vkUniformBuffersMemory.resize(MAX_FRAMES_IN_FLIGHT);
+    zaynMem->vkUniformBuffersMapped.resize(MAX_FRAMES_IN_FLIGHT);
+
+    for (size_t i = 0; i < MAX_FRAMES_IN_FLIGHT; i++)
+    {
+        createBuffer(bufferSize, VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT, VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT, zaynMem->vkUniformBuffers[i], zaynMem->vkUniformBuffersMemory[i], zaynMem);
+
+        vkMapMemory(zaynMem->vkDevice, zaynMem->vkUniformBuffersMemory[i], 0, bufferSize, 0, &zaynMem->vkUniformBuffersMapped[i]);
+    }
+}
+
+void CreateDescriptorPool(ZaynMemory *zaynMem)
+{
+    VkDescriptorPoolSize poolSize{};
+    poolSize.type = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
+    poolSize.descriptorCount = static_cast<uint32_t>(MAX_FRAMES_IN_FLIGHT);
+
+    VkDescriptorPoolCreateInfo poolInfo{};
+    poolInfo.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_POOL_CREATE_INFO;
+    poolInfo.poolSizeCount = 1;
+    poolInfo.pPoolSizes = &poolSize;
+
+    poolInfo.maxSets = static_cast<uint32_t>(MAX_FRAMES_IN_FLIGHT);
+
+    if (vkCreateDescriptorPool(zaynMem->vkDevice, &poolInfo, nullptr, &zaynMem->vkDescriptorPool) != VK_SUCCESS)
+    {
+        throw std::runtime_error("failed to create descriptor pool!");
+    }
+}
+
+void CreateDescriptorSets(ZaynMemory *zaynMem)
+{
+    std::vector<VkDescriptorSetLayout> layouts(MAX_FRAMES_IN_FLIGHT, zaynMem->vkDescriptorSetLayout);
+    VkDescriptorSetAllocateInfo allocInfo{};
+    allocInfo.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_ALLOCATE_INFO;
+    allocInfo.descriptorPool = zaynMem->vkDescriptorPool;
+    allocInfo.descriptorSetCount = static_cast<uint32_t>(MAX_FRAMES_IN_FLIGHT);
+    allocInfo.pSetLayouts = layouts.data();
+
+    zaynMem->vkDescriptorSets.resize(MAX_FRAMES_IN_FLIGHT);
+    if (vkAllocateDescriptorSets(zaynMem->vkDevice, &allocInfo, zaynMem->vkDescriptorSets.data()) != VK_SUCCESS)
+    {
+        throw std::runtime_error("failed to allocate descriptor sets!");
+    }
+
+    for (size_t i = 0; i < MAX_FRAMES_IN_FLIGHT; i++)
+    {
+        VkDescriptorBufferInfo bufferInfo{};
+        bufferInfo.buffer = zaynMem->vkUniformBuffers[i];
+        bufferInfo.offset = 0;
+        bufferInfo.range = sizeof(UniformBufferObject);
+
+        VkWriteDescriptorSet descriptorWrite{};
+        descriptorWrite.sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
+        descriptorWrite.dstSet = zaynMem->vkDescriptorSets[i];
+        descriptorWrite.dstBinding = 0;
+        descriptorWrite.dstArrayElement = 0;
+        descriptorWrite.descriptorType = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
+        descriptorWrite.descriptorCount = 1;
+        descriptorWrite.pBufferInfo = &bufferInfo;
+        descriptorWrite.pImageInfo = nullptr;       // Optional
+        descriptorWrite.pTexelBufferView = nullptr; // Optional
+
+        vkUpdateDescriptorSets(zaynMem->vkDevice, 1, &descriptorWrite, 0, nullptr);
+    }
+}
+
 void InitRender_Learn(ZaynMemory *zaynMem)
 {
     CreateVKInstance(zaynMem);
@@ -900,9 +1170,16 @@ void InitRender_Learn(ZaynMemory *zaynMem)
     CreateSwapChain(zaynMem);
     CreateImageViews(zaynMem);
     CreateRenderPass(zaynMem);
+    CreateDescriptorSetLayout(zaynMem);
     CreateGraphicsPipeline(zaynMem);
     CreateFrameBuffers(zaynMem);
     CreateCommandPool(zaynMem);
+    CreateVertexBuffer(zaynMem);
+    CreateIndexBuffer(zaynMem);
+    CreateUniformBuffers(zaynMem);
+    CreateDescriptorPool(zaynMem);
+    CreateDescriptorSets(zaynMem);
+
     CreateCommandBuffers(zaynMem);
     CreateSyncObjects(zaynMem);
 }
@@ -945,6 +1222,22 @@ void RecreateSwapChain(ZaynMemory *zaynMem)
     CreateFrameBuffers(zaynMem);
 }
 
+void UpdateUniformBuffer(uint32_t currentImage, ZaynMemory *zaynMem)
+{
+    static auto startTime = std::chrono::high_resolution_clock::now();
+
+    auto currentTime = std::chrono::high_resolution_clock::now();
+    float time = std::chrono::duration<float, std::chrono::seconds::period>(currentTime - startTime).count();
+
+    UniformBufferObject ubo{};
+    ubo.model = glm::rotate(glm::mat4(1.0f), time * glm::radians(90.0f), glm::vec3(0.0f, 0.0f, 1.0f));
+    ubo.view = glm::lookAt(glm::vec3(2.0f, 2.0f, 2.0f), glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(0.0f, 0.0f, 1.0f));
+    ubo.proj = glm::perspective(glm::radians(45.0f), zaynMem->vkSwapChainExtent.width / (float)zaynMem->vkSwapChainExtent.height, 0.1f, 10.0f);
+    ubo.proj[1][1] *= -1;
+
+    memcpy(zaynMem->vkUniformBuffersMapped[currentImage], &ubo, sizeof(ubo));
+}
+
 void UpdateRender_Learn(ZaynMemory *zaynMem)
 {
     vkWaitForFences(zaynMem->vkDevice, 1, &zaynMem->vkInFlightFences[zaynMem->vkCurrentFrame], VK_TRUE, UINT64_MAX);
@@ -963,6 +1256,7 @@ void UpdateRender_Learn(ZaynMemory *zaynMem)
         throw std::runtime_error("failed to acquire swap chain image!");
     }
 
+    UpdateUniformBuffer(zaynMem->vkCurrentFrame, zaynMem);
     // END NEW
 
     vkResetFences(zaynMem->vkDevice, 1, &zaynMem->vkInFlightFences[zaynMem->vkCurrentFrame]);
@@ -1010,6 +1304,7 @@ void UpdateRender_Learn(ZaynMemory *zaynMem)
     if (result == VK_ERROR_OUT_OF_DATE_KHR || result == VK_SUBOPTIMAL_KHR || zaynMem->vkFramebufferResized)
     {
         zaynMem->vkFramebufferResized = false;
+
         RecreateSwapChain(zaynMem);
     }
     else if (result != VK_SUCCESS)
@@ -1024,6 +1319,21 @@ void RenderCleanup(ZaynMemory *zaynMem)
 {
 
     CleanUpSwapChain(zaynMem);
+
+    for (size_t i = 0; i < MAX_FRAMES_IN_FLIGHT; i++)
+    {
+        vkDestroyBuffer(zaynMem->vkDevice, zaynMem->vkUniformBuffers[i], nullptr);
+        vkFreeMemory(zaynMem->vkDevice, zaynMem->vkUniformBuffersMemory[i], nullptr);
+    }
+
+    vkDestroyDescriptorPool(zaynMem->vkDevice, zaynMem->vkDescriptorPool, nullptr);
+    vkDestroyDescriptorSetLayout(zaynMem->vkDevice, zaynMem->vkDescriptorSetLayout, nullptr);
+
+    vkDestroyBuffer(zaynMem->vkDevice, zaynMem->vkVertexBuffer, nullptr);
+    vkFreeMemory(zaynMem->vkDevice, zaynMem->vkVertexBufferMemory, nullptr);
+
+    vkDestroyBuffer(zaynMem->vkDevice, zaynMem->vkIndexBuffer, nullptr);
+    vkFreeMemory(zaynMem->vkDevice, zaynMem->vkIndexBufferMemory, nullptr);
 
     for (size_t i = 0; i < MAX_FRAMES_IN_FLIGHT; i++)
     {

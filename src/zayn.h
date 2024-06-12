@@ -84,6 +84,21 @@ struct ZaynMemory
     uint32_t vkCurrentFrame = 0;
 
     bool vkFramebufferResized = false;
+
+    VkBuffer vkVertexBuffer;
+    VkDeviceMemory vkVertexBufferMemory;
+    VkBuffer vkIndexBuffer;
+    VkDeviceMemory vkIndexBufferMemory;
+
+    VkDescriptorSetLayout vkDescriptorSetLayout;
+
+    std::vector<VkBuffer> vkUniformBuffers;
+    std::vector<VkDeviceMemory> vkUniformBuffersMemory;
+    std::vector<void*> vkUniformBuffersMapped;
+
+    VkDescriptorPool vkDescriptorPool;
+    std::vector<VkDescriptorSet> vkDescriptorSets;
+
 };
 
 
