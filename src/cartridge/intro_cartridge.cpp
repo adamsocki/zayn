@@ -32,7 +32,7 @@ void UpdateAndRenderCartridge(ZaynMemory *zaynMem)
     
 
 
-    UpdateRender_Learn(zaynMem);
+   UpdateRender_Learn(zaynMem);
     // ********
 	// RENDER
 	// ********

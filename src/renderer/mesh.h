@@ -19,3 +19,20 @@ struct Mesh {
     int32 indexBufferID;
 };
 
+
+struct vkMesh {
+    uint32_t vertCount;
+    uint32_t indexCount;
+    VkDeviceSize size;
+    VkDeviceSize vertexBufferSize;
+    VkDeviceSize indexBufferSize;
+    VkBuffer vertexBuffer;
+    VkDeviceMemory vertexBufferMemory;
+    VkBuffer indexBuffer;
+    VkDeviceMemory indexBufferMemory;
+    void* data; // Vertex data
+    vec3* verts; // Pointer to vertex positions
+    vec2* texcoords; // Pointer to texture coordinates
+    uint32_t* indices; // Pointer to indices
+};
+

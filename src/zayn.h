@@ -4,6 +4,8 @@
 
 #include "math/math.h"
 
+#include "model.h"
+
 #include "renderer/mesh.h"
 #include "renderer/render.h"
 
@@ -36,6 +38,9 @@ struct ShaderCollection
 struct ZaynMemory
 {
     GLFWwindow* window;
+    vec2 windowSize;
+
+    Model model1;
 
 
     InputManager inputManager;
@@ -51,6 +56,15 @@ struct ZaynMemory
 
     VKRenderData MyVKRenderData;
 
+
+
+    PipelineConfigInfo MyPipelineConfigInfo = {};
+
+    VkPipeline vkGraphicsPipeline;
+    VkShaderModule vkVertShaderModule;
+    VkShaderModule vkFragShaderModule;
+
+
     VkInstance vkInstance;
     VkDebugUtilsMessengerEXT vkDebugMessenger;
     VkPhysicalDevice vkPhysicalDevice = VK_NULL_HANDLE;
@@ -60,13 +74,18 @@ struct ZaynMemory
     VkSurfaceKHR vkSurface;
     VkQueue vkPresentQueue;
     VkSwapchainKHR vkSwapChain;
+
+    std::vector<VkImage> vkDepthImages;
+    std::vector<VkDeviceMemory> vkDepthImageMemorys;
+    std::vector<VkImageView> vkDepthImageViews;
     std::vector<VkImage> vkSwapChainImages;
+
     VkFormat vkSwapChainImageFormat;
     VkExtent2D vkSwapChainExtent;
     std::vector<VkImageView> vkSwapChainImageViews;
     VkPipelineLayout vkPipelineLayout;
     VkRenderPass vkRenderPass;
-    VkPipeline vkGraphicsPipeline;
+    // VkPipeline vkGraphicsPipeline;
     std::vector<VkFramebuffer> vkSwapChainFramebuffers;
     VkCommandPool vkCommandPool;
     VkCommandBuffer vkCommandBuffer;
@@ -75,12 +94,16 @@ struct ZaynMemory
     VkFence vkInFlightFence;
 
 
-    VkCommandBuffer* vkCommandBuffers;
-    std::vector<VkCommandBuffer> vkCommandBuffers2;
+
+
+    // VkCommandBuffer* vkCommandBuffers;
+    std::vector<VkCommandBuffer> vkCommandBuffers;
 
     std::vector<VkSemaphore> vkImageAvailableSemaphores;
     std::vector<VkSemaphore> vkRenderFinishedSemaphores;
     std::vector<VkFence> vkInFlightFences;
+    std::vector<VkFence> vkImagesInFlight;
+
     uint32_t vkCurrentFrame = 0;
 
     bool vkFramebufferResized = false;
@@ -98,6 +121,14 @@ struct ZaynMemory
 
     VkDescriptorPool vkDescriptorPool;
     std::vector<VkDescriptorSet> vkDescriptorSets;
+
+
+    vkMesh triangleMesh;
+    // AllocateTriangle(&triangleMesh, vulkanMem);
+
+    vkMesh quadMesh;
+    // AllocateQuad(&quadMesh, vulkanMem);
+
 
 };
 

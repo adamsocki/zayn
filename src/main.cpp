@@ -17,6 +17,7 @@
 #define GLM_FORCE_DEFAULT_ALIGNED_GENTYPES
 #include <glm/glm.hpp>
 #include <glm/gtc/matrix_transform.hpp>
+#include <glm/gtc/quaternion.hpp>
 
 #include <chrono>
 
@@ -103,7 +104,12 @@ int main(void)
     // glfwWindowHint(GLFW_OPENGL_FORWARD_COMPAT, GL_TRUE);
 #endif
    /* Create a windowed mode window and its OpenGL context */
-    Zayn->window = glfwCreateWindow(640, 480, "Hello World", NULL, NULL);
+
+
+    Zayn->windowSize.x = 640;
+    Zayn->windowSize.y = 640;
+
+    Zayn->window = glfwCreateWindow(Zayn->windowSize.x, Zayn->windowSize.y, "Hello World", NULL, NULL);
     if (!Zayn->window)
     {
         glfwTerminate();
