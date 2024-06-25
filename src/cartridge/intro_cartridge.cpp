@@ -13,8 +13,7 @@ void InitCartridge(ZaynMemory *zaynMem)
 {
     InitRender_Learn(zaynMem);
 
-    // 1 INit Shader
-    // LoadShader();
+
 }
 
 

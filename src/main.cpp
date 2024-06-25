@@ -106,8 +106,8 @@ int main(void)
    /* Create a windowed mode window and its OpenGL context */
 
 
-    Zayn->windowSize.x = 640;
-    Zayn->windowSize.y = 640;
+    Zayn->windowSize.x = 2640;
+    Zayn->windowSize.y = 1640;
 
     Zayn->window = glfwCreateWindow(Zayn->windowSize.x, Zayn->windowSize.y, "Hello World", NULL, NULL);
     if (!Zayn->window)

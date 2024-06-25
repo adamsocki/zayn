@@ -1,4 +1,28 @@
 
+// void sierpinski(
+//     std::vector<Vertex>& vertices,
+//     int32_t depth,
+//     vec2 left,
+//     vec2 right,
+//     vec2 top) {
+//   if (depth <= 0) {
+//     vertices.push_back({top});
+//     vertices.push_back({right});
+//     vertices.push_back({left});
+//   } else {
+//     vec2 leftTop = {0.5f * (left.x + top.x), 0.5f * (left.y + top.y)};
+//     vec2 rightTop = {0.5f * (right.x + top.x), 0.5f * (right.y + top.y)};
+//     vec2 leftRight = {0.5f * (left.x + right.x), 0.5f * (left.y + right.y)};
+//     sierpinski(vertices, depth - 1, left, leftRight, leftTop);
+//     sierpinski(vertices, depth - 1, leftRight, right, rightTop);
+//     sierpinski(vertices, depth - 1, leftTop, rightTop, top);
+//   }
+// }
+
+
+
+
+
 uint32_t findMemoryType(uint32_t typeFilter, VkMemoryPropertyFlags properties, ZaynMemory* zaynMem)
 {
     VkPhysicalDeviceMemoryProperties memProperties;
@@ -102,10 +126,15 @@ std::vector<VkVertexInputBindingDescription> getBindingDescriptions()
 
 std::vector<VkVertexInputAttributeDescription> getAttributeDescriptions()
 {
-    std::vector<VkVertexInputAttributeDescription> attributeDescriptions(1);
+    std::vector<VkVertexInputAttributeDescription> attributeDescriptions(2);
     attributeDescriptions[0].binding = 0;
     attributeDescriptions[0].location = 0;
     attributeDescriptions[0].format = VK_FORMAT_R32G32_SFLOAT;
-    attributeDescriptions[0].offset = 0;
+    attributeDescriptions[0].offset = offsetof(Vertex, position);
+
+    attributeDescriptions[1].binding = 0;
+    attributeDescriptions[1].location = 1;
+    attributeDescriptions[1].format = VK_FORMAT_R32G32B32_SFLOAT;
+    attributeDescriptions[1].offset = offsetof(Vertex, color);
     return attributeDescriptions;
 }

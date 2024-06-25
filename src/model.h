@@ -2,6 +2,7 @@
 struct Vertex
 {
     vec2 position;
+    vec3 color;
 
 
     VkVertexInputBindingDescription* bindingDescriptions;

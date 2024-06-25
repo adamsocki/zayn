@@ -301,7 +301,6 @@ bool isDeviceSuitable(VkPhysicalDevice device, ZaynMemory *zaynMem)
     return indices.isComplete() && extensionsSupported && swapChainAdequate;
 }
 
-
 void printDeviceExtensions(VkPhysicalDevice device)
 {
     uint32_t extensionCount;
@@ -499,18 +498,20 @@ PipelineConfigInfo MakeMyDefaultPipelineConfig(ZaynMemory *zaynMem, uint32_t wid
     pipelineConfigInfo.inputAssemblyInfo.primitiveRestartEnable = VK_FALSE;
 
     // Tells our renderer how to position our image relative to our output window
-    pipelineConfigInfo.viewport.x = 0.0f;
-    pipelineConfigInfo.viewport.y = 0.0f;
-    pipelineConfigInfo.viewport.width = static_cast<float>(width);;
+    // pipelineConfigInfo.viewport.x = 0.0f;
+    // pipelineConfigInfo.viewport.y = 0.0f;
+    // pipelineConfigInfo.viewport.width = static_cast<float>(width);
+    
     // pipelineConfigInfo.viewport.width = (float)zaynMem->windowSize.x;
-    pipelineConfigInfo.viewport.height = static_cast<float>(height);;
+    // pipelineConfigInfo.viewport.height = static_cast<float>(height);
+    
     // pipelineConfigInfo.viewport.height = (float)zaynMem->windowSize.y;
-    pipelineConfigInfo.viewport.minDepth = 0.0f;
-    pipelineConfigInfo.viewport.maxDepth = 1.0f;
+    // pipelineConfigInfo.viewport.minDepth = 0.0f;
+    // pipelineConfigInfo.viewport.maxDepth = 1.0f;
 
     // cutoff on the viewport for rendering
-    pipelineConfigInfo.scissor.offset = {0, 0};
-    pipelineConfigInfo.scissor.extent = {width, height};
+    // pipelineConfigInfo.scissor.offset = {0, 0};
+    // pipelineConfigInfo.scissor.extent = {width, height};
 
     // rasterization breaks up geometry into fragemnts (to later become pixels)
     pipelineConfigInfo.rasterizationInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_RASTERIZATION_STATE_CREATE_INFO;
@@ -533,8 +534,6 @@ PipelineConfigInfo MakeMyDefaultPipelineConfig(ZaynMemory *zaynMem, uint32_t wid
     pipelineConfigInfo.multisampleInfo.pSampleMask = nullptr;            // Optional
     pipelineConfigInfo.multisampleInfo.alphaToCoverageEnable = VK_FALSE; // Optional
     pipelineConfigInfo.multisampleInfo.alphaToOneEnable = VK_FALSE;      // Optional
-
-
 
     // pipelineConfigInfo.colorBlendAttachment.colorWriteMask =
     //     VK_COLOR_COMPONENT_R_BIT | VK_COLOR_COMPONENT_G_BIT | VK_COLOR_COMPONENT_B_BIT |
@@ -568,10 +567,17 @@ PipelineConfigInfo MakeMyDefaultPipelineConfig(ZaynMemory *zaynMem, uint32_t wid
     pipelineConfigInfo.depthStencilInfo.front = {}; // Optional
     pipelineConfigInfo.depthStencilInfo.back = {};  // Optional
 
+    pipelineConfigInfo.dynamicStateEnables = {VK_DYNAMIC_STATE_VIEWPORT, VK_DYNAMIC_STATE_SCISSOR};
+    pipelineConfigInfo.dynamicStateInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_DYNAMIC_STATE_CREATE_INFO;
+    pipelineConfigInfo.dynamicStateInfo.pDynamicStates = pipelineConfigInfo.dynamicStateEnables.data();
+    pipelineConfigInfo.dynamicStateInfo.dynamicStateCount = static_cast<uint32_t>(pipelineConfigInfo.dynamicStateEnables.size());
+    pipelineConfigInfo.dynamicStateInfo.flags = 0;
+
+
     return pipelineConfigInfo;
 }
 
-void CreateGraphicsPipeline(ZaynMemory *zaynMem, const std::string &vertShaderFilePath, const std::string &fragShaderFilePath, PipelineConfigInfo* myDefaultPipelineConfigInfo)
+void CreateGraphicsPipeline(ZaynMemory *zaynMem, const std::string &vertShaderFilePath, const std::string &fragShaderFilePath, PipelineConfigInfo *myDefaultPipelineConfigInfo)
 {
 
     auto vertShaderCode = readFile(vertShaderFilePath);
@@ -610,30 +616,33 @@ void CreateGraphicsPipeline(ZaynMemory *zaynMem, const std::string &vertShaderFi
 
     VkPipelineVertexInputStateCreateInfo vertexInputInfo = {};
     vertexInputInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_VERTEX_INPUT_STATE_CREATE_INFO;
-    vertexInputInfo.vertexBindingDescriptionCount = static_cast<uint32_t>(bindingDescriptions.size());;
-    vertexInputInfo.pVertexBindingDescriptions = bindingDescriptions.data(); // Optional
-    vertexInputInfo.vertexAttributeDescriptionCount = static_cast<uint32_t>(attributeDescriptions.size());;
+    vertexInputInfo.vertexBindingDescriptionCount = static_cast<uint32_t>(bindingDescriptions.size());
+    
+    vertexInputInfo.vertexAttributeDescriptionCount = static_cast<uint32_t>(attributeDescriptions.size());
+    
+    vertexInputInfo.pVertexBindingDescriptions = bindingDescriptions.data();     // Optional
     vertexInputInfo.pVertexAttributeDescriptions = attributeDescriptions.data(); // Optional
 
     VkPipelineViewportStateCreateInfo viewportStateInfo = {};
     viewportStateInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_VIEWPORT_STATE_CREATE_INFO;
     viewportStateInfo.viewportCount = 1;
-    viewportStateInfo.pViewports = &myDefaultPipelineConfigInfo->viewport;
+    // viewportStateInfo.pViewports = &myDefaultPipelineConfigInfo->viewport;
+    viewportStateInfo.pViewports = nullptr;
     viewportStateInfo.scissorCount = 1;
-    viewportStateInfo.pScissors = &myDefaultPipelineConfigInfo->scissor;
-
+    // viewportStateInfo.pScissors = &myDefaultPipelineConfigInfo->scissor;
+    viewportStateInfo.pScissors = nullptr;
 
     VkPipelineColorBlendAttachmentState colorBlendAttachmentsInfo = {};
     colorBlendAttachmentsInfo.colorWriteMask =
         VK_COLOR_COMPONENT_R_BIT | VK_COLOR_COMPONENT_G_BIT | VK_COLOR_COMPONENT_B_BIT |
         VK_COLOR_COMPONENT_A_BIT;
     colorBlendAttachmentsInfo.blendEnable = VK_FALSE;
-    colorBlendAttachmentsInfo.srcColorBlendFactor = VK_BLEND_FACTOR_ONE;  // Optional
-    colorBlendAttachmentsInfo.dstColorBlendFactor = VK_BLEND_FACTOR_ZERO; // Optional
-    colorBlendAttachmentsInfo.colorBlendOp = VK_BLEND_OP_ADD;             // Optional
-    colorBlendAttachmentsInfo.srcAlphaBlendFactor = VkBlendFactor::VK_BLEND_FACTOR_ONE;  // Optional
-    colorBlendAttachmentsInfo.dstAlphaBlendFactor = VK_BLEND_FACTOR_ZERO; // Optional
-    colorBlendAttachmentsInfo.alphaBlendOp = VK_BLEND_OP_ADD;             // Optional   
+    colorBlendAttachmentsInfo.srcColorBlendFactor = VK_BLEND_FACTOR_ONE;                // Optional
+    colorBlendAttachmentsInfo.dstColorBlendFactor = VK_BLEND_FACTOR_ZERO;               // Optional
+    colorBlendAttachmentsInfo.colorBlendOp = VK_BLEND_OP_ADD;                           // Optional
+    colorBlendAttachmentsInfo.srcAlphaBlendFactor = VkBlendFactor::VK_BLEND_FACTOR_ONE; // Optional
+    colorBlendAttachmentsInfo.dstAlphaBlendFactor = VK_BLEND_FACTOR_ZERO;               // Optional
+    colorBlendAttachmentsInfo.alphaBlendOp = VK_BLEND_OP_ADD;                           // Optional
 
     VkPipelineColorBlendStateCreateInfo colorBlendInfo = {};
     colorBlendInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_COLOR_BLEND_STATE_CREATE_INFO;
@@ -656,7 +665,7 @@ void CreateGraphicsPipeline(ZaynMemory *zaynMem, const std::string &vertShaderFi
     pipelineInfo.pRasterizationState = &myDefaultPipelineConfigInfo->rasterizationInfo;
     pipelineInfo.pMultisampleState = &myDefaultPipelineConfigInfo->multisampleInfo;
     pipelineInfo.pColorBlendState = &colorBlendInfo;
-    pipelineInfo.pDynamicState = nullptr; // Optional
+    pipelineInfo.pDynamicState = &myDefaultPipelineConfigInfo->dynamicStateInfo; // Optional
     pipelineInfo.pDepthStencilState = &myDefaultPipelineConfigInfo->depthStencilInfo;
 
     pipelineInfo.layout = myDefaultPipelineConfigInfo->pipelineLayout;
@@ -691,7 +700,7 @@ VkSurfaceFormatKHR chooseSwapSurfaceFormat(const std::vector<VkSurfaceFormatKHR>
 {
     for (const auto &availableFormat : availableFormats)
     {
-        if (availableFormat.format == VK_FORMAT_B8G8R8A8_UNORM && availableFormat.colorSpace == VK_COLOR_SPACE_SRGB_NONLINEAR_KHR)
+        if (availableFormat.format == VK_FORMAT_B8G8R8A8_SRGB && availableFormat.colorSpace == VK_COLOR_SPACE_SRGB_NONLINEAR_KHR)
         {
             return availableFormat;
         }
@@ -841,16 +850,16 @@ VkFormat findSupportedFormat(const std::vector<VkFormat> &candidates, VkImageTil
     throw std::runtime_error("failed to find supported format!");
 }
 
-VkFormat findDepthFormat(ZaynMemory* zaynMem) 
+VkFormat findDepthFormat(ZaynMemory *zaynMem)
 {
     return findSupportedFormat(
         {VK_FORMAT_D32_SFLOAT, VK_FORMAT_D32_SFLOAT_S8_UINT, VK_FORMAT_D24_UNORM_S8_UINT},
         VK_IMAGE_TILING_OPTIMAL,
-        VK_FORMAT_FEATURE_DEPTH_STENCIL_ATTACHMENT_BIT, 
+        VK_FORMAT_FEATURE_DEPTH_STENCIL_ATTACHMENT_BIT,
         zaynMem);
 }
 
-void CreateRenderPass(ZaynMemory* zaynMem)
+void CreateRenderPass(ZaynMemory *zaynMem)
 {
     VkAttachmentDescription depthAttachment = {};
     depthAttachment.format = findDepthFormat(zaynMem);
@@ -910,8 +919,7 @@ void CreateRenderPass(ZaynMemory* zaynMem)
     }
 }
 
-
-void createImageWithInfo(const VkImageCreateInfo &imageInfo, VkMemoryPropertyFlags properties, VkImage &image, VkDeviceMemory &imageMemory, ZaynMemory* zaynMem)
+void createImageWithInfo(const VkImageCreateInfo &imageInfo, VkMemoryPropertyFlags properties, VkImage &image, VkDeviceMemory &imageMemory, ZaynMemory *zaynMem)
 {
     if (vkCreateImage(zaynMem->vkDevice, &imageInfo, nullptr, &image) != VK_SUCCESS)
     {
@@ -1032,8 +1040,7 @@ void CreateSyncObjects(ZaynMemory *zaynMem)
                 VK_SUCCESS ||
             vkCreateSemaphore(zaynMem->vkDevice, &semaphoreInfo, nullptr, &zaynMem->vkRenderFinishedSemaphores[i]) !=
                 VK_SUCCESS ||
-            vkCreateFence(zaynMem->vkDevice
-            , &fenceInfo, nullptr, &zaynMem->vkInFlightFences[i]) != VK_SUCCESS)
+            vkCreateFence(zaynMem->vkDevice, &fenceInfo, nullptr, &zaynMem->vkInFlightFences[i]) != VK_SUCCESS)
         {
             throw std::runtime_error("failed to create synchronization objects for a frame!");
         }
@@ -1060,7 +1067,7 @@ void VulkanInitDevice(ZaynMemory *zaynMem)
     CreateCommandPool(zaynMem);   // is SAME
 }
 
-void CreatePipelineLayout(ZaynMemory* zaynMem)
+void CreatePipelineLayout(ZaynMemory *zaynMem)
 {
     VkPipelineLayoutCreateInfo pipelineLayoutInfo = {};
     pipelineLayoutInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_LAYOUT_CREATE_INFO;
@@ -1074,22 +1081,36 @@ void CreatePipelineLayout(ZaynMemory* zaynMem)
     }
 }
 
-
-
-void CreatePipeline(ZaynMemory* zaynMem)
+void CreatePipeline(ZaynMemory *zaynMem)
 {
     zaynMem->MyPipelineConfigInfo = MakeMyDefaultPipelineConfig(zaynMem, zaynMem->vkSwapChainExtent.width, zaynMem->vkSwapChainExtent.height);
     zaynMem->MyPipelineConfigInfo.renderPass = zaynMem->vkRenderPass;
     zaynMem->MyPipelineConfigInfo.pipelineLayout = zaynMem->vkPipelineLayout;
+}
 
 
+void RecreateSwapChain(ZaynMemory* zaynMem)
+{
+    int width = 0, height = 0;
+    glfwGetFramebufferSize(zaynMem->window, &width, &height);
+    while (width == 0 || height == 0)
+    {
+        // std::cout << "MIN" << std::endl;
+        glfwGetFramebufferSize(zaynMem->window, &width, &height);
+        glfwWaitEvents();
+    }
+
+    vkDeviceWaitIdle(zaynMem->vkDevice);
+    CreatePipeline(zaynMem);
 
 }
 
-void bindCommandBufferToPipeline(VkCommandBuffer commandBuffer) {
+
+void bindCommandBufferToPipeline(VkCommandBuffer commandBuffer)
+{
 }
 
-void CreateCommandBuffers(ZaynMemory* zaynMem)
+void CreateCommandBuffers(ZaynMemory *zaynMem)
 {
     zaynMem->vkCommandBuffers.resize(zaynMem->vkSwapChainImages.size());
 
@@ -1106,46 +1127,13 @@ void CreateCommandBuffers(ZaynMemory* zaynMem)
 
     for (int i = 0; i < zaynMem->vkCommandBuffers.size(); i++)
     {
-        VkCommandBufferBeginInfo beginInfo{};
-        beginInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO;
-
-        if (vkBeginCommandBuffer(zaynMem->vkCommandBuffers[i], &beginInfo) != VK_SUCCESS)
-        {
-            throw std::runtime_error("failed to begin recording command buffer!");
-        }
-
-        VkRenderPassBeginInfo renderPassInfo{};
-        renderPassInfo.sType = VK_STRUCTURE_TYPE_RENDER_PASS_BEGIN_INFO;
-        renderPassInfo.renderPass = zaynMem->vkRenderPass;
-        renderPassInfo.framebuffer = zaynMem->vkSwapChainFramebuffers[i];
-
-        renderPassInfo.renderArea.offset = {0, 0};
-        renderPassInfo.renderArea.extent = zaynMem->vkSwapChainExtent;
-
-        std::array<VkClearValue, 2> clearValues{};
-        clearValues[0].color = {0.1f, 0.1f, 0.1f, 1.0f};
-        clearValues[1].depthStencil = {1.0f, 0};
-        renderPassInfo.clearValueCount = static_cast<uint32_t>(clearValues.size());
-        renderPassInfo.pClearValues = clearValues.data();
-
-        vkCmdBeginRenderPass(zaynMem->vkCommandBuffers[i], &renderPassInfo, VK_SUBPASS_CONTENTS_INLINE);
-
-        vkCmdBindPipeline(zaynMem->vkCommandBuffers[i], VK_PIPELINE_BIND_POINT_GRAPHICS, zaynMem->vkGraphicsPipeline);
-        BindModel(zaynMem->vkCommandBuffers[i], &zaynMem->model1);
-        DrawModel(zaynMem->vkCommandBuffers[i], &zaynMem->model1);
-        // vkCmdDraw(zaynMem->vkCommandBuffers[i], 3, 1, 0, 0);
-
-        vkCmdEndRenderPass(zaynMem->vkCommandBuffers[i]);
-        if (vkEndCommandBuffer(zaynMem->vkCommandBuffers[i]) != VK_SUCCESS)
-        {
-            throw std::runtime_error("failed to record command buffer!");
-        }
+        
     }
 }
 
-VkResult AcquireNextImage(uint32_t *imageIndex, ZaynMemory* zaynMem)
+VkResult AcquireNextImage(uint32_t *imageIndex, ZaynMemory *zaynMem)
 {
-    vkWaitForFences(zaynMem->vkDevice, 1, &zaynMem->vkInFlightFences[zaynMem->vkCurrentFrame],VK_TRUE,std::numeric_limits<uint64_t>::max());
+    vkWaitForFences(zaynMem->vkDevice, 1, &zaynMem->vkInFlightFences[zaynMem->vkCurrentFrame], VK_TRUE, std::numeric_limits<uint64_t>::max());
 
     VkResult result = vkAcquireNextImageKHR(
         zaynMem->vkDevice,
@@ -1158,7 +1146,7 @@ VkResult AcquireNextImage(uint32_t *imageIndex, ZaynMemory* zaynMem)
     return result;
 }
 
-VkResult SubmitCommandBuffers(const VkCommandBuffer *buffers, uint32_t *imageIndex, ZaynMemory* zaynMem)
+VkResult SubmitCommandBuffers(const VkCommandBuffer *buffers, uint32_t *imageIndex, ZaynMemory *zaynMem)
 {
     if (zaynMem->vkImagesInFlight[*imageIndex] != VK_NULL_HANDLE)
     {
@@ -1207,16 +1195,79 @@ VkResult SubmitCommandBuffers(const VkCommandBuffer *buffers, uint32_t *imageInd
     return result;
 }
 
-void DrawFrame(ZaynMemory* zaynMem)
+void RecordCommandBuffer(int32 ImageIndex, ZaynMemory* zaynMem)
+{
+    VkCommandBufferBeginInfo beginInfo{};
+    beginInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO;
+
+    if (vkBeginCommandBuffer(zaynMem->vkCommandBuffers[ImageIndex], &beginInfo) != VK_SUCCESS)
+    {
+        throw std::runtime_error("failed to begin recording command buffer!");
+    }
+
+    VkRenderPassBeginInfo renderPassInfo{};
+    renderPassInfo.sType = VK_STRUCTURE_TYPE_RENDER_PASS_BEGIN_INFO;
+    renderPassInfo.renderPass = zaynMem->vkRenderPass;
+    renderPassInfo.framebuffer = zaynMem->vkSwapChainFramebuffers[ImageIndex];
+
+    renderPassInfo.renderArea.offset = {0, 0};
+    renderPassInfo.renderArea.extent = zaynMem->vkSwapChainExtent;
+
+    std::array<VkClearValue, 2> clearValues{};
+    clearValues[0].color = {0.03f, 0.03f, 0.03f, 1.0f};
+    clearValues[1].depthStencil = {1.0f, 0};
+    renderPassInfo.clearValueCount = static_cast<uint32_t>(clearValues.size());
+    renderPassInfo.pClearValues = clearValues.data();
+
+    vkCmdBeginRenderPass(zaynMem->vkCommandBuffers[ImageIndex], &renderPassInfo, VK_SUBPASS_CONTENTS_INLINE);
+
+    VkViewport viewport{};
+    viewport.x = 0.0f;
+    viewport.y = 0.0f;
+    viewport.width = static_cast<float>(zaynMem->vkSwapChainExtent.width);
+    viewport.height = static_cast<float>(zaynMem->vkSwapChainExtent.height);
+    viewport.minDepth = 0.0f;
+    viewport.maxDepth = 1.0f;
+    VkRect2D scissor{{0, 0}, zaynMem->vkSwapChainExtent};
+    vkCmdSetViewport(zaynMem->vkCommandBuffers[ImageIndex], 0, 1, &viewport);
+    vkCmdSetScissor(zaynMem->vkCommandBuffers[ImageIndex], 0, 1, &scissor);
+
+    vkCmdBindPipeline(zaynMem->vkCommandBuffers[ImageIndex], VK_PIPELINE_BIND_POINT_GRAPHICS, zaynMem->vkGraphicsPipeline);
+    BindModel(zaynMem->vkCommandBuffers[ImageIndex], &zaynMem->model1);
+    DrawModel(zaynMem->vkCommandBuffers[ImageIndex], &zaynMem->model1);
+
+    vkCmdEndRenderPass(zaynMem->vkCommandBuffers[ImageIndex]);
+    if (vkEndCommandBuffer(zaynMem->vkCommandBuffers[ImageIndex]) != VK_SUCCESS)
+    {
+        throw std::runtime_error("failed to record command buffer!");
+    }
+}
+
+void DrawFrame(ZaynMemory *zaynMem)
 {
     uint32_t imageIndex;
     auto result = AcquireNextImage(&imageIndex, zaynMem);
+
+    if (result == VK_ERROR_OUT_OF_DATE_KHR)
+    {
+        RecreateSwapChain(zaynMem);
+    }
+
     if (result != VK_SUCCESS && result != VK_SUBOPTIMAL_KHR)
     {
         throw std::runtime_error("failed to acquire swap chain image!");
     }
 
+    RecordCommandBuffer(imageIndex, zaynMem);
+
     result = SubmitCommandBuffers(&zaynMem->vkCommandBuffers[imageIndex], &imageIndex, zaynMem);
+
+    if (result == VK_ERROR_OUT_OF_DATE_KHR || result == VK_SUBOPTIMAL_KHR || zaynMem->vkFramebufferResized)
+    {
+        zaynMem->vkFramebufferResized = false;
+        RecreateSwapChain(zaynMem);
+        return;
+    }
     if (result != VK_SUCCESS)
     {
         throw std::runtime_error("failed to present swap chain image!");
@@ -1231,23 +1282,27 @@ void InitRender_Learn(ZaynMemory *zaynMem)
     VulkanInitDevice(zaynMem); // iTHis is the contstructor code for the online video
 
     MySwapChainCreation(zaynMem);
-    
+
     CreatePipelineLayout(zaynMem);
 
     std::vector<Vertex> vertices = {
-        {{0.0f, -0.5f}, nullptr, nullptr},
-        {{0.5f, 0.5f}, nullptr, nullptr},
-        {{-0.1f, 0.5f}, nullptr, nullptr}
-    };
+        {{0.0f, -0.5f}, {0.4f, 0.6f, 0.2f}},
+        {{
+             0.5f,
+             0.5f,
+         },
+         {0.1f, 0.1f, 0.1f}},
+        {{-0.1f, 0.5f}, {0.9f, 0.3f, 0.9f}}};
+
+    // std::vector<Vertex> vertices = {};
+    // sierpinski(vertices, 3, {-1.0f, 1.0f}, {1.0f, 1.0f}, {0.0f, -1.0f});
     ModelInit(&zaynMem->vkDevice, vertices, &zaynMem->model1, zaynMem);
 
-    CreatePipeline(zaynMem);
-
+    // CreatePipeline(zaynMem);
+    RecreateSwapChain(zaynMem);
     CreateGraphicsPipeline(zaynMem, "/Users/socki/dev/zayn/src/renderer/shaders/vkShader_03_vert.spv", "/Users/socki/dev/zayn/src/renderer/shaders/vkShader_03_frag.spv", &zaynMem->MyPipelineConfigInfo);
 
     CreateCommandBuffers(zaynMem);
-
-     
 
     // Model model;
 }

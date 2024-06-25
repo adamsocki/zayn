@@ -37,7 +37,7 @@
         },
         {
             "type": "cppbuild",
-            "label": "C/C++: MAC g++ build active file",
+            "label": "C/C++: MACBOOK PRO g++ build active file",
             "command": "/usr/bin/g++",
             "args": [
                 "-std=gnu++20",
