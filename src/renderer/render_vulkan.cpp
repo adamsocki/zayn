@@ -789,7 +789,18 @@ void CreateSwapChain(ZaynMemory *zaynMem)
     createInfo.presentMode = presentMode;
     createInfo.clipped = VK_TRUE;
 
-    createInfo.oldSwapchain = VK_NULL_HANDLE;
+
+    VkSwapchainKHR oldSwapChain = zaynMem->vkSwapChain; 
+
+    if (oldSwapChain == VK_NULL_HANDLE) 
+    {
+        createInfo.oldSwapchain = VK_NULL_HANDLE; // No existing swapchain
+    } 
+    else 
+    {
+        createInfo.oldSwapchain = oldSwapChain; // Use the existing swapchain
+    }
+
 
     if (vkCreateSwapchainKHR(zaynMem->vkDevice, &createInfo, nullptr, &zaynMem->vkSwapChain) != VK_SUCCESS)
     {
@@ -1049,6 +1060,7 @@ void CreateSyncObjects(ZaynMemory *zaynMem)
 
 void MySwapChainCreation(ZaynMemory *zaynMem)
 {
+
     CreateSwapChain(zaynMem);
     CreateImageViews(zaynMem);
     CreateRenderPass(zaynMem);
@@ -1069,12 +1081,18 @@ void VulkanInitDevice(ZaynMemory *zaynMem)
 
 void CreatePipelineLayout(ZaynMemory *zaynMem)
 {
+    VkPushConstantRange pushConstantRange = {};
+    pushConstantRange.stageFlags = VK_SHADER_STAGE_VERTEX_BIT | VK_SHADER_STAGE_FRAGMENT_BIT;
+    pushConstantRange.offset = 0;
+    pushConstantRange.size = sizeof(PushConstantData);
+
+
     VkPipelineLayoutCreateInfo pipelineLayoutInfo = {};
     pipelineLayoutInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_LAYOUT_CREATE_INFO;
     pipelineLayoutInfo.setLayoutCount = 0;
     pipelineLayoutInfo.pSetLayouts = nullptr;
-    pipelineLayoutInfo.pushConstantRangeCount = 0;
-    pipelineLayoutInfo.pPushConstantRanges = nullptr;
+    pipelineLayoutInfo.pushConstantRangeCount = 1;
+    pipelineLayoutInfo.pPushConstantRanges = &pushConstantRange;
     if (vkCreatePipelineLayout(zaynMem->vkDevice, &pipelineLayoutInfo, nullptr, &zaynMem->vkPipelineLayout) != VK_SUCCESS)
     {
         throw std::runtime_error("failed to create pipeline layout!");
@@ -1089,26 +1107,12 @@ void CreatePipeline(ZaynMemory *zaynMem)
 }
 
 
-void RecreateSwapChain(ZaynMemory* zaynMem)
+void FreeCommandBuffers(ZaynMemory* zaynMem)
 {
-    int width = 0, height = 0;
-    glfwGetFramebufferSize(zaynMem->window, &width, &height);
-    while (width == 0 || height == 0)
-    {
-        // std::cout << "MIN" << std::endl;
-        glfwGetFramebufferSize(zaynMem->window, &width, &height);
-        glfwWaitEvents();
-    }
-
-    vkDeviceWaitIdle(zaynMem->vkDevice);
-    CreatePipeline(zaynMem);
-
+    vkFreeCommandBuffers(zaynMem->vkDevice, zaynMem->vkCommandPool, static_cast<uint32_t>(zaynMem->vkCommandBuffers.size()), zaynMem->vkCommandBuffers.data());
+    zaynMem->vkCommandBuffers.clear();
 }
 
-
-void bindCommandBufferToPipeline(VkCommandBuffer commandBuffer)
-{
-}
 
 void CreateCommandBuffers(ZaynMemory *zaynMem)
 {
@@ -1125,11 +1129,45 @@ void CreateCommandBuffers(ZaynMemory *zaynMem)
         throw std::runtime_error("failed to allocate command buffers!");
     }
 
-    for (int i = 0; i < zaynMem->vkCommandBuffers.size(); i++)
-    {
+    // for (int i = 0; i < zaynMem->vkCommandBuffers.size(); i++)
+    // {
         
-    }
+    // }
 }
+
+void RecreateSwapChain(ZaynMemory* zaynMem)
+{
+    int width = 0, height = 0;
+    glfwGetFramebufferSize(zaynMem->window, &width, &height);
+    while (width == 0 || height == 0)
+    {
+        // std::cout << "MIN" << std::endl;
+        glfwGetFramebufferSize(zaynMem->window, &width, &height);
+        glfwWaitEvents();
+    }
+
+    vkDeviceWaitIdle(zaynMem->vkDevice);
+
+    CreateSwapChain(zaynMem);
+
+    if (zaynMem->vkSwapChain != nullptr)
+    {
+        if (zaynMem->vkSwapChainImages.size() != zaynMem->vkCommandBuffers.size()) 
+        {
+            FreeCommandBuffers(zaynMem);
+            CreateCommandBuffers(zaynMem);
+        }
+    }
+   
+    CreatePipeline(zaynMem);
+
+}
+
+
+void bindCommandBufferToPipeline(VkCommandBuffer commandBuffer)
+{
+}
+
 
 VkResult AcquireNextImage(uint32_t *imageIndex, ZaynMemory *zaynMem)
 {
@@ -1234,7 +1272,17 @@ void RecordCommandBuffer(int32 ImageIndex, ZaynMemory* zaynMem)
 
     vkCmdBindPipeline(zaynMem->vkCommandBuffers[ImageIndex], VK_PIPELINE_BIND_POINT_GRAPHICS, zaynMem->vkGraphicsPipeline);
     BindModel(zaynMem->vkCommandBuffers[ImageIndex], &zaynMem->model1);
-    DrawModel(zaynMem->vkCommandBuffers[ImageIndex], &zaynMem->model1);
+
+    for (int i = 0; i < 4; i++)
+    {
+        PushConstantData pushData;
+        pushData.offset = {-0.3f + i * 0.1f, -0.7f + i * 0.2f};
+        pushData.color = {0.03f + i * 0.1f, 0.4f + i * 0.2f, 0.8f - i * 0.2f};
+        vkCmdPushConstants(zaynMem->vkCommandBuffers[ImageIndex], zaynMem->vkPipelineLayout, VK_SHADER_STAGE_VERTEX_BIT | VK_SHADER_STAGE_FRAGMENT_BIT, 0, sizeof(PushConstantData), &pushData);
+        DrawModel(zaynMem->vkCommandBuffers[ImageIndex], &zaynMem->model1);
+    }
+
+
 
     vkCmdEndRenderPass(zaynMem->vkCommandBuffers[ImageIndex]);
     if (vkEndCommandBuffer(zaynMem->vkCommandBuffers[ImageIndex]) != VK_SUCCESS)
@@ -1298,13 +1346,19 @@ void InitRender_Learn(ZaynMemory *zaynMem)
     // sierpinski(vertices, 3, {-1.0f, 1.0f}, {1.0f, 1.0f}, {0.0f, -1.0f});
     ModelInit(&zaynMem->vkDevice, vertices, &zaynMem->model1, zaynMem);
 
-    // CreatePipeline(zaynMem);
-    RecreateSwapChain(zaynMem);
+    CreatePipeline(zaynMem);
+    // RecreateSwapChain(zaynMem);
     CreateGraphicsPipeline(zaynMem, "/Users/socki/dev/zayn/src/renderer/shaders/vkShader_03_vert.spv", "/Users/socki/dev/zayn/src/renderer/shaders/vkShader_03_frag.spv", &zaynMem->MyPipelineConfigInfo);
 
     CreateCommandBuffers(zaynMem);
 
-    // Model model;
+    VkPhysicalDeviceProperties deviceProperties; // Create a struct to hold properties
+    vkGetPhysicalDeviceProperties(zaynMem->vkPhysicalDevice, &deviceProperties);
+
+    // Now you can access the properties:
+    std::cout << "Max Push Constant Size: "
+              << deviceProperties.limits.maxPushConstantsSize
+              << std::endl; // Model model;
 }
 
 void UpdateRender_Learn(ZaynMemory *zaynMem)

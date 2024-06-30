@@ -1,22 +1,24 @@
 
 
-
 #include "zayn.h"
+
+
+
 
 #include "model.cpp"
 
+
 #include "renderer/mesh.cpp"
-
 #include "renderer/render.cpp"
-
-
 
 #include "memory.cpp"
 
 #include "input.cpp"
 
 
-#include "cartridge/cartridge_code.cpp"
+
+
+#include "casette/casette.cpp"
 
 
 void ZaynInit(ZaynMemory *zaynMem)
@@ -24,11 +26,9 @@ void ZaynInit(ZaynMemory *zaynMem)
     Zayn = zaynMem;
     Input = &zaynMem->inputManager;
 
-  
 
     // AllocateMemoryArena(&Zayn->permanentMemArena, Megabytes(16));
     // AllocateMemoryArena(&Zayn->frameMemArena, Megabytes(16));
-    
     
     // AllocateTriangleMesh(&zaynMem->meshCollection.triangleMesh);
     // //InitMesh(&zaynMem->meshCollection.triangleMesh);
@@ -39,7 +39,7 @@ void ZaynInit(ZaynMemory *zaynMem)
     // AllocateTriangle(&zaynMem->triangleMesh, zaynMem);
 
     
-    InitCartridge(zaynMem);
+    InitCasette(zaynMem);
     // AllocateQuad(&zaynMem->quadMesh, zaynMem);
 
 
@@ -70,6 +70,6 @@ void ZaynUpdateAndRender(ZaynMemory *zaynMem)
     // // DrawMesh(zaynMem, &triangleMesh, pos, rotation, scale, color, false);
     // DrawMesh(zaynMem, &zaynMem->quadMesh, pos, rotation, scale, color, false);
 
-    UpdateAndRenderCartridge(zaynMem);
+    UpdateAndRenderCasette(zaynMem);
 
 }

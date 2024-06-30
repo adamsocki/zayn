@@ -20,6 +20,9 @@
 #include "input.h"
 
 
+#include "casette/casette.h"
+
+
 
 struct MeshCollection
 {
@@ -42,7 +45,6 @@ struct ZaynMemory
 
     Model model1;
 
-
     InputManager inputManager;
     InputDevice* keyboard;
     InputDevice* mouse;
@@ -56,14 +58,11 @@ struct ZaynMemory
 
     VKRenderData MyVKRenderData;
 
-
-
     PipelineConfigInfo MyPipelineConfigInfo = {};
 
     VkPipeline vkGraphicsPipeline;
     VkShaderModule vkVertShaderModule;
     VkShaderModule vkFragShaderModule;
-
 
     VkInstance vkInstance;
     VkDebugUtilsMessengerEXT vkDebugMessenger;
@@ -74,6 +73,8 @@ struct ZaynMemory
     VkSurfaceKHR vkSurface;
     VkQueue vkPresentQueue;
     VkSwapchainKHR vkSwapChain;
+
+    VkSwapchainKHR vkOldSwapChain;
 
     std::vector<VkImage> vkDepthImages;
     std::vector<VkDeviceMemory> vkDepthImageMemorys;
@@ -92,9 +93,6 @@ struct ZaynMemory
     VkSemaphore vkImageAvailableSemaphore;
     VkSemaphore vkRenderFinishedSemaphore;
     VkFence vkInFlightFence;
-
-
-
 
     // VkCommandBuffer* vkCommandBuffers;
     std::vector<VkCommandBuffer> vkCommandBuffers;
@@ -122,13 +120,19 @@ struct ZaynMemory
     VkDescriptorPool vkDescriptorPool;
     std::vector<VkDescriptorSet> vkDescriptorSets;
 
-
     vkMesh triangleMesh;
     // AllocateTriangle(&triangleMesh, vulkanMem);
 
     vkMesh quadMesh;
     // AllocateQuad(&quadMesh, vulkanMem);
 
+
+    void *myCasette;
+};
+
+
+struct ZaynManagers
+{
 
 };
 

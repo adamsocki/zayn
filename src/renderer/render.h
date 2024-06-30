@@ -1,6 +1,15 @@
 
 
 #if VULKAN
+
+
+struct PushConstantData
+{
+    vec2 offset;
+    alignas(16) vec3 color;
+};
+
+
 struct PipelineConfigInfo
 {
     // VkViewport viewport;
@@ -23,6 +32,9 @@ struct PipelineConfigInfo
     uint32_t subpass = 0;
     ;
 };
+
+
+
 #endif
 
 struct VKRenderData

@@ -601,9 +601,20 @@ void CreateSwapChain(ZaynMemory *zaynMem)
     createInfo.presentMode = presentMode;
     createInfo.clipped = VK_TRUE;
 
-    createInfo.oldSwapchain = VK_NULL_HANDLE;
 
-    if (vkCreateSwapchainKHR(zaynMem->vkDevice, &createInfo, nullptr, &zaynMem->vkSwapChain) != VK_SUCCESS)
+    VkSwapchainKHR oldSwapChain = zaynMem->vkSwapChain; 
+
+    if (oldSwapChain == VK_NULL_HANDLE) 
+    {
+        createInfo.oldSwapchain = VK_NULL_HANDLE; // No existing swapchain
+    } 
+    else 
+    {
+        createInfo.oldSwapchain = oldSwapChain; // Use the existing swapchain
+    }
+
+
+    if (vkCreateSwapchainKHR(zaynMem->vkDevice, &createInfo, nullptr, &zaynMem->vkSwapChain) != VK_SUCCESS)     // Make new swapchain
     {
         throw std::runtime_error("failed to create swap chain!");
     }

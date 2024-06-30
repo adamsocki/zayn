@@ -1,0 +1,9 @@
+struct EntityHandle
+{
+
+};
+
+struct EntityManager
+{
+
+};
