@@ -1,9 +1,6 @@
-struct EntityHandle
-{
 
-};
 
-struct EntityManager
-{
+// struct EntityManager
+// {
 
-};
+// };

@@ -2,6 +2,7 @@
 
 #include "zayn.h"
 
+#include "entity.cpp"
 
 
 

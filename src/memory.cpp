@@ -1,11 +1,6 @@
 
 
 
-inline void *AllocateMem(MAllocator *allocator, uint64 size) {
-    return allocator->allocate(allocator, size);
-}
-
-
 void AllocateMemoryArena(MemoryArena *arena, uint64 capacity)
 {
     std::cout << "AllocateMemoryArena" << std::endl;

@@ -6,7 +6,6 @@ struct ArrayChunk
     uint8 data[0];
 };
 
-
 struct DynamicArray_Untyped
 {
     MAllocator *allocator;
@@ -20,9 +19,6 @@ struct DynamicArray_Untyped
     ArrayChunk *tailChunk;
 };
 
-
-
-
 template <typename T>
 struct DynamicArray
 {
@@ -35,19 +31,19 @@ struct DynamicArray
 
     ArrayChunk *headChunk;
     ArrayChunk *tailChunk;
-    inline T& operator[](const int index) const
+    inline T &operator[](const int index) const
     {
-           // (index / elementsPerChunk) to get the chunk
-           // then index % chunkCount to get the index
+        // (index / elementsPerChunk) to get the chunk
+        // then index % chunkCount to get the index
 
-           s32 chunkIndex = index / elementsPerChunk;
-           ArrayChunk *chunk = headChunk;
-           for (int32 i = 0; i < chunkIndex; i++)
-           {
-               chunk = chunk->nextChunk;
-           }
+        s32 chunkIndex = index / elementsPerChunk;
+        ArrayChunk *chunk = headChunk;
+        for (int32 i = 0; i < chunkIndex; i++)
+        {
+            chunk = chunk->nextChunk;
+        }
 
-           return *(T *)(chunk->data + (sizeof(T) * (index % elementsPerChunk)));
+        return *(T *)(chunk->data + (sizeof(T) * (index % elementsPerChunk)));
     }
 };
 
@@ -72,6 +68,16 @@ void DynamicArrayAllocateChunk(DynamicArray<T> *array)
     array->chunkCount++;
 }
 
+inline void *DynamicArrayGetData(DynamicArray_Untyped const *array, int32 elementSize, int32 index) {
+
+    s32 dynamicIndex = index / array->elementsPerChunk;
+    ArrayChunk *chunk = array->headChunk;
+    for (int32 i = 0; i < dynamicIndex; i++) {
+        chunk = chunk->nextChunk;
+    }
+
+    return ((uint8 *)chunk->data + (elementSize * (index % array->elementsPerChunk)));    
+}
 
 template <typename T>
 void DynamicArrayEnsureCapacity(DynamicArray<T> *array, uint32 capacity)
@@ -86,6 +92,45 @@ void DynamicArrayEnsureCapacity(DynamicArray<T> *array, uint32 capacity)
         for (int i = 0; i < chunksToAdd; i++)
         {
             DynamicArrayAllocateChunk(array);
+        }
+    }
+}
+
+void DynamicArrayAllocateDynamic(DynamicArray_Untyped *array, uint32 elementSize) 
+{
+    ArrayChunk *newDynamic = NULL;
+    newDynamic = (ArrayChunk *)AllocateMem(array->allocator, sizeof(ArrayChunk) + (array->elementsPerChunk * elementSize));
+    
+    newDynamic->nextChunk = NULL;
+
+    if (array->headChunk == NULL) {
+        array->headChunk = newDynamic;
+        array->tailChunk = newDynamic;
+    }
+    else {
+        ArrayChunk *dynamic = array->tailChunk;
+        dynamic->nextChunk = newDynamic;
+        array->tailChunk = dynamic->nextChunk;
+    }
+
+    array->chunkCount++;
+}
+
+void DynamicArrayEnsureCapacity(DynamicArray_Untyped *array, uint32 elementSize, uint32 capacity) 
+{
+
+    //ASSERT(array->allocator != NULL);
+    //ASSERT(array->elementsPerChunk > 0);
+
+    if (array->elementsPerChunk == 0) {
+        array->elementsPerChunk = 8;
+    }
+    
+    if (array->chunkCount * array->elementsPerChunk < capacity) {
+        uint32 dynamicsToAdd = ((capacity / array->elementsPerChunk) - array->chunkCount) + 1;
+
+        for (int i = 0; i < dynamicsToAdd; i++) {
+            DynamicArrayAllocateDynamic(array, elementSize);
         }
     }
 }
@@ -112,21 +157,61 @@ inline uint32 PushBack(DynamicArray<T> *array, T elem)
     return index;
 }
 
-
-// template <typename T>
-// inline T *PushBackPtr(DynamicArray<T> *array)
-// {
-//     DynamicArrayEnsureCapacity(array, array->count + 1);
-//     uint32 index = array->count;
-//     array->count++;
-//     T *result = &(*array)[index];
-//     memset(result, 0, sizeof(T));
-//     return result;
-// }
-
-
+template <typename T>
+inline T *PushBackPtr(DynamicArray<T> *array)  {
+    DynamicArrayEnsureCapacity(array, array->count + 1);
+    uint32 index = array->count;
+    array->count++;
+    T *result = &(*array)[index];
+    memset(result, 0, sizeof(T));
+    return result;
+}
 
 template <typename T>
-inline void DynamicArrayClear(DynamicArray<T> *array) {
+inline bool PopBack(DynamicArray<T> *array, T *element = NULL) 
+{
+    bool result = false;
+
+    if (array->count > 0) {
+        if (element != NULL) {
+            int32 index = array->count - 1;
+            *element = (*array)[index];
+        }
+        array->count--;
+        result = true;
+    }
+
+    return result;
+}
+
+template <typename T>
+inline void DynamicArrayClear(DynamicArray<T> *array)
+{
     array->count = 0;
+}
+
+
+inline void *PushBackPtr(DynamicArray_Untyped *array, u32 size)  
+{
+    DynamicArrayEnsureCapacity(array, size, array->count + 1);
+    uint32 index = array->count;
+    array->count++;
+
+    void *ptr = DynamicArrayGetData(array, size, index);
+    memset(ptr, 0, size);
+    return ptr;
+}
+
+inline DynamicArray_Untyped MakeDynamicArray(MAllocator *allocator, uint32 size, uint32 elementsPerChunk, uint32 chunkCount = 1) {
+    DynamicArray_Untyped array = {};
+    array.allocator = allocator;
+
+    if (elementsPerChunk == 0) {
+        elementsPerChunk = 1;
+    }
+
+    array.elementsPerChunk = elementsPerChunk;
+
+    DynamicArrayEnsureCapacity(&array, size, elementsPerChunk);
+    return array;
 }

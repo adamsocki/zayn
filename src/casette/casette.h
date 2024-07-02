@@ -13,8 +13,9 @@ struct MyCasette
 {
 
 
-    Coordinator coordinator;
+    // Coordinator coordinator;
 
+    EntityManager em;
 
 
 };

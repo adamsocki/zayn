@@ -17,6 +17,14 @@ struct MAllocator
 };
 
 
+
+
+inline void *AllocateMem(MAllocator *allocator, uint64 size) 
+{
+    return allocator->allocate(allocator, size);
+}
+
+
 struct MemoryArena : MAllocator
 {
     uint32 capacity;

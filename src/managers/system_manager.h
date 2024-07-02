@@ -1,12 +1,12 @@
 
-struct System
-{
-    void* entities;
-};
+// struct System
+// {
+//     void* entities;
+// };
 
 
 
-struct SystemManager
-{
+// struct SystemManager
+// {
 
-};
+// };

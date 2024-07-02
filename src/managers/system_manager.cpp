@@ -1,12 +1,12 @@
 
 
 
-void InitSystemManager(SystemManager* systemManager)
-{
+// void InitSystemManager(SystemManager* systemManager)
+// {
 
-}
+// }
 
-void EntityDestroyed_SystemManager(EntityHandle& eh)
-{
+// void EntityDestroyed_SystemManager(EntityHandle& eh)
+// {
 
-}
+// }

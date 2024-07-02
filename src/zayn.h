@@ -4,6 +4,7 @@
 
 #include "math/math.h"
 
+
 #include "model.h"
 
 #include "renderer/mesh.h"
@@ -12,6 +13,9 @@
 #include "memory.h"
 
 #include "dynamic_array.h"
+
+#include "entity.h"
+
 
 #include "camera.h"
 

@@ -1,11 +1,11 @@
 
 
-void InitEventManager(EventManager* manager)
-{
+// void InitEventManager(EventManager* manager)
+// {
 
-}
+// }
 
-void EntityDestroyed_EventManager(EntityHandle& eh)
-{
+// void EntityDestroyed_EventManager(EntityHandle& eh)
+// {
 
-}
+// }

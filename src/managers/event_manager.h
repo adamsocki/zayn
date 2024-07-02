@@ -1,6 +1,6 @@
 
 
-struct EventManager
-{
+// struct EventManager
+// {
 
-};
+// };
