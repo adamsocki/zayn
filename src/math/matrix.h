@@ -2,6 +2,19 @@
 #ifndef _ETC_MATH_MATRIX_H
 #define _ETC_MATH_MATRIX_H
 
+union mat2
+{
+    real32 data[4];
+    vec2 columns[2];
+    struct 
+    {
+        real32 m00;
+        real32 m10;
+        real32 m01;
+        real32 m11;
+    };
+};
+
 union mat3 {
     real32 data[9];
     vec3 columns[3];
@@ -41,6 +54,12 @@ union mat4 {
     };
 };
 
+inline mat2 Zero2() 
+{
+    mat2 result = {};
+    return result;
+};
+
 inline mat3 Zero3() {
     mat3 result = {};
     return result;
@@ -48,6 +67,14 @@ inline mat3 Zero3() {
 
 inline mat4 Zero4() {
     mat4 result = {};
+    return result;
+}
+
+inline mat2 Identity2() 
+{
+    mat2 result = {1.0f, 0.0f,
+                   0.0f, 1.0f};
+
     return result;
 }
 

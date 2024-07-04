@@ -24,7 +24,12 @@ void AllocateEntityManager(EntityManager *manager, MemoryArena *arena, int32 *en
     manager->entityInfo = MakeDynamicArray<EntityInfo>(arena, totalEntityCount);
     manager->freelist = MakeDynamicArray<uint32>(arena, totalEntityCount);
     manager->entitiesToDelete = MakeDynamicArray<EntityHandle>(arena, totalEntityCount);
+
+
 }
+
+
+
 
 
 void *AddEntityToStorage(EntityManager *manager, EntityInfo *info) 

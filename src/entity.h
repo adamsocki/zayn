@@ -39,9 +39,17 @@ struct EntityHandle
     int32 generation;
 };
 
+struct Transform2DComponent
+{
+    vec2 translation;
+    // mat2 
+};
+
 struct Entity
 {
     EntityHandle handle;
+    Model *model;
+    vec3 color;
 };
 
 struct Player : public Entity {
@@ -71,6 +79,7 @@ int32 entityTypeCounts[] =
 }; 
 
 
+
 struct EntityManager
 {
     DynamicArray<EntityInfo> entityInfo;
@@ -78,4 +87,12 @@ struct EntityManager
     DynamicArray<EntityHandle> entitiesToDelete;
 
     EntityTypeStorage entities[EntityType_Count];
+
 };
+
+
+struct System 
+{
+    DynamicArray<EntityHandle> entities;
+};
+
