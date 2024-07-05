@@ -115,6 +115,15 @@ void ModelInit(VkDevice *device, const std::vector<Vertex>& vertices, Model *mod
 
 }
 
+// void EntityInit(VkDevice *device, const std::vector<Vertex>& vertices, Enitty *model, ZaynMemory* zaynMem)
+// {
+//     model->vkDevice = device;
+//     // model->vertexCount = static_cast<int32_t>(vertices.size());;
+
+//     CreateVertexBuffers(vertices, model, zaynMem);
+
+// }
+
 std::vector<VkVertexInputBindingDescription> getBindingDescriptions()
 {
     std::vector<VkVertexInputBindingDescription> bindingDescriptions(1);

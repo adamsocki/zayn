@@ -5,9 +5,10 @@ layout(location = 0) in vec2 position;
 
 layout(push_constant) uniform Push {
   vec2 position;
+  mat2 transform;
   vec3 color;
 } push;
 
 void main() {
-  gl_Position = vec4(position + push.position, 0.0, 1.0);
+  gl_Position = vec4(push.transform * position + push.position, 0.0, 1.0);
 }

@@ -164,6 +164,13 @@ Entity *GetEntity_(EntityManager *manager, EntityHandle handle)
     return (Entity *)DynamicArrayGetData(&storage->array, EntitySizeTable[handle.type], info->index);
 }
 
+
+
+
+
+
+
+
 #define GetEntity(em, type_name, handle) (type_name *)GetEntity_(em, handle)
 #define AddEntity(em, type_name, data) AddEntity_(em, EntityType_ ## type_name, data)
 #define AccessEntity(storage, type_name, index) (type_name *)AccessEntity_(storage, index)

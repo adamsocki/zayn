@@ -1233,6 +1233,23 @@ VkResult SubmitCommandBuffers(const VkCommandBuffer *buffers, uint32_t *imageInd
     return result;
 }
 
+void RenderEntity(ZaynMemory *zaynMem, VkCommandBuffer imageBuffer,  Entity* entity)
+{
+    vkCmdBindPipeline(imageBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, zaynMem->vkGraphicsPipeline);
+
+    for (int i = 0; i < 4; i++)
+    {
+        PushConstantData pushData;
+        pushData.offset = entity->transform2d.translation;
+        pushData.color = entity->color;
+        // pushData.scale = entity->transform2d.scale;
+        pushData.transform = entity->transform2d.scale;
+        vkCmdPushConstants(imageBuffer, zaynMem->vkPipelineLayout, VK_SHADER_STAGE_VERTEX_BIT | VK_SHADER_STAGE_FRAGMENT_BIT, 0, sizeof(PushConstantData), &pushData);
+        DrawModel(imageBuffer, &zaynMem->model1);
+        BindModel(imageBuffer, &zaynMem->model1);
+    }
+}
+
 void RecordCommandBuffer(int32 ImageIndex, ZaynMemory* zaynMem)
 {
     VkCommandBufferBeginInfo beginInfo{};
@@ -1273,14 +1290,18 @@ void RecordCommandBuffer(int32 ImageIndex, ZaynMemory* zaynMem)
     vkCmdBindPipeline(zaynMem->vkCommandBuffers[ImageIndex], VK_PIPELINE_BIND_POINT_GRAPHICS, zaynMem->vkGraphicsPipeline);
     BindModel(zaynMem->vkCommandBuffers[ImageIndex], &zaynMem->model1);
 
-    for (int i = 0; i < 4; i++)
-    {
-        PushConstantData pushData;
-        pushData.offset = {-0.3f + i * 0.1f, -0.7f + i * 0.2f};
-        pushData.color = {0.03f + i * 0.1f, 0.4f + i * 0.2f, 0.8f - i * 0.2f};
-        vkCmdPushConstants(zaynMem->vkCommandBuffers[ImageIndex], zaynMem->vkPipelineLayout, VK_SHADER_STAGE_VERTEX_BIT | VK_SHADER_STAGE_FRAGMENT_BIT, 0, sizeof(PushConstantData), &pushData);
-        DrawModel(zaynMem->vkCommandBuffers[ImageIndex], &zaynMem->model1);
-    }
+    // for (int i = 0; i < 4; i++)
+    // {
+    //     PushConstantData pushData;
+    //     pushData.offset = {-0.3f + i * 0.1f, -0.7f + i * 0.2f};
+    //     pushData.color = {0.03f + i * 0.1f, 0.4f + i * 0.2f, 0.8f - i * 0.2f};
+    //     vkCmdPushConstants(zaynMem->vkCommandBuffers[ImageIndex], zaynMem->vkPipelineLayout, VK_SHADER_STAGE_VERTEX_BIT | VK_SHADER_STAGE_FRAGMENT_BIT, 0, sizeof(PushConstantData), &pushData);
+    //     DrawModel(zaynMem->vkCommandBuffers[ImageIndex], &zaynMem->model1);
+    // }
+
+    Monkey* testMonkey = GetEntity(&Casette->em, Monkey, zaynMem->monkeyHandle1);
+
+    RenderEntity(zaynMem, zaynMem->vkCommandBuffers[ImageIndex], testMonkey);
 
 
 
@@ -1290,6 +1311,9 @@ void RecordCommandBuffer(int32 ImageIndex, ZaynMemory* zaynMem)
         throw std::runtime_error("failed to record command buffer!");
     }
 }
+
+
+
 
 void DrawFrame(ZaynMemory *zaynMem)
 {
@@ -1360,6 +1384,9 @@ void InitRender_Learn(ZaynMemory *zaynMem)
               << deviceProperties.limits.maxPushConstantsSize
               << std::endl; // Model model;
 }
+
+
+
 
 void UpdateRender_Learn(ZaynMemory *zaynMem)
 {

@@ -42,7 +42,8 @@ struct EntityHandle
 struct Transform2DComponent
 {
     vec2 translation;
-    // mat2 
+    mat2 iMatrix2 = Identity2();
+    mat2 scale;
 };
 
 struct Entity
@@ -50,6 +51,7 @@ struct Entity
     EntityHandle handle;
     Model *model;
     vec3 color;
+    Transform2DComponent transform2d;
 };
 
 struct Player : public Entity {

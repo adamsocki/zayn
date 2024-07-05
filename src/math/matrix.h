@@ -615,6 +615,20 @@ inline mat3 Scale3(vec3 scale) {
     return result;
 }
 
+inline mat2 Scale2(real32 scale) 
+{
+    mat2 result = {scale, 0.0f,
+                   0.0f, scale};
+    return result;
+}
+
+inline mat2 Scale2(vec2 scale) {
+    mat2 result = {scale.x, 0.0f,
+                   0.0f, scale.y,};
+
+    return result;
+}
+
 inline mat4 TRS(vec3 translation, mat4 rotation, real32 scale) {
     mat4 result = rotation * Scale4(scale);
 

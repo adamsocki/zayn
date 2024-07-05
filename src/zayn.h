@@ -48,6 +48,8 @@ struct ZaynMemory
     vec2 windowSize;
 
     Model model1;
+    Monkey monkey_1;
+    EntityHandle monkeyHandle1;
 
     InputManager inputManager;
     InputDevice* keyboard;

@@ -37,17 +37,28 @@ void InitCasette(ZaynMemory *zaynMem)
     Monkey fifthMonkey = {};
 
 
-    EntityHandle monkeyHandle = AddEntity(&Casette->em, Monkey, &firstMonkey);
+    zaynMem->monkeyHandle1 = AddEntity(&Casette->em, Monkey, &firstMonkey);
     AddEntity(&Casette->em, Monkey, &secondMonkey);
     AddEntity(&Casette->em, Monkey, &thirdMonkey);
     AddEntity(&Casette->em, Monkey, &fourthMonkey);
     AddEntity(&Casette->em, Monkey, &fifthMonkey);
 
     
+
+    Monkey* testMonkey = GetEntity(&Casette->em, Monkey, zaynMem->monkeyHandle1);
+    testMonkey->model = &zaynMem->model1;
+    testMonkey->color = V3(0.1f, 0.2f, 0.6f);
+    testMonkey->transform2d.translation = V2(-0.4f, 0.0f);
+    mat2 sc = Scale2(V2(3.4f, 0.2f));
+    testMonkey->transform2d.scale = sc;
+
+
     InitRender_Learn(zaynMem);
 
+
+
     
-    Monkey* testMonkey = GetEntity(&Casette->em, Monkey, monkeyHandle);
+    
 
     if (testMonkey)
     {
@@ -81,6 +92,9 @@ void UpdateAndRenderCasette(ZaynMemory *zaynMem)
 
 
    UpdateRender_Learn(zaynMem);
+
+
+
     // ********
 	// RENDER
 	// ********
