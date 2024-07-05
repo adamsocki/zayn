@@ -49,8 +49,8 @@ void InitCasette(ZaynMemory *zaynMem)
     testMonkey->model = &zaynMem->model1;
     testMonkey->color = V3(0.1f, 0.2f, 0.6f);
     testMonkey->transform2d.translation = V2(-0.4f, 0.0f);
-    mat2 sc = Scale2(V2(3.4f, 0.2f));
-    testMonkey->transform2d.scale = sc;
+    // mat2 sc = Scale2();
+    testMonkey->transform2d.scale = V2(3.4f, 0.12f);
 
 
     InitRender_Learn(zaynMem);

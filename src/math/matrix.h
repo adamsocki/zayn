@@ -411,6 +411,20 @@ inline mat4 OrthogonalInverse(mat4 a) {
     return result;
 }
 
+inline mat2 operator*(mat2 a, mat2 b) 
+{
+    mat2 result;
+
+    result.data[0] = a.data[0] * b.data[0] + a.data[2] * b.data[1];
+    result.data[1] = a.data[1] * b.data[0] + a.data[3] * b.data[1];
+
+    result.data[2] = a.data[0] * b.data[2] + a.data[2] * b.data[3];
+    result.data[3] = a.data[1] * b.data[2] + a.data[3] * b.data[3];
+
+    return result;
+}
+
+
 inline mat3 operator*(mat3 a, mat3 b)  {
     mat3 result;
 

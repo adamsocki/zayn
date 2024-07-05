@@ -43,7 +43,8 @@ struct Transform2DComponent
 {
     vec2 translation;
     mat2 iMatrix2 = Identity2();
-    mat2 scale;
+    vec2 scale;
+    real32 rotation;
 };
 
 struct Entity
@@ -89,7 +90,6 @@ struct EntityManager
     DynamicArray<EntityHandle> entitiesToDelete;
 
     EntityTypeStorage entities[EntityType_Count];
-
 };
 
 

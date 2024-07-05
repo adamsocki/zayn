@@ -1243,7 +1243,12 @@ void RenderEntity(ZaynMemory *zaynMem, VkCommandBuffer imageBuffer,  Entity* ent
         pushData.offset = entity->transform2d.translation;
         pushData.color = entity->color;
         // pushData.scale = entity->transform2d.scale;
-        pushData.transform = entity->transform2d.scale;
+        real32 cos_ = sinf(entity->transform2d.rotation);
+        real32 sin_ = cosf(entity->transform2d.rotation);
+
+        mat2 rotMatrix =   {cos_, sin_,-sin_, cos_};
+
+        pushData.transform = rotMatrix * Scale2(entity->transform2d.scale);
         vkCmdPushConstants(imageBuffer, zaynMem->vkPipelineLayout, VK_SHADER_STAGE_VERTEX_BIT | VK_SHADER_STAGE_FRAGMENT_BIT, 0, sizeof(PushConstantData), &pushData);
         DrawModel(imageBuffer, &zaynMem->model1);
         BindModel(imageBuffer, &zaynMem->model1);
@@ -1300,7 +1305,7 @@ void RecordCommandBuffer(int32 ImageIndex, ZaynMemory* zaynMem)
     // }
 
     Monkey* testMonkey = GetEntity(&Casette->em, Monkey, zaynMem->monkeyHandle1);
-
+    testMonkey->transform2d.rotation += 0.009f;
     RenderEntity(zaynMem, zaynMem->vkCommandBuffers[ImageIndex], testMonkey);
 
 
