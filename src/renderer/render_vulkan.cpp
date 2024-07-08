@@ -670,6 +670,7 @@ void CreateGraphicsPipeline(ZaynMemory *zaynMem, const std::string &vertShaderFi
 
     pipelineInfo.layout = myDefaultPipelineConfigInfo->pipelineLayout;
     pipelineInfo.renderPass = myDefaultPipelineConfigInfo->renderPass;
+    // pipelineInfo.renderPass = myDefaultPipelineConfigInfo->renderPass;
     pipelineInfo.subpass = myDefaultPipelineConfigInfo->subpass;
 
     pipelineInfo.basePipelineHandle = VK_NULL_HANDLE; // Optional
@@ -1184,6 +1185,125 @@ VkResult AcquireNextImage(uint32_t *imageIndex, ZaynMemory *zaynMem)
     return result;
 }
 
+
+
+void RenderEntity(ZaynMemory *zaynMem, VkCommandBuffer imageBuffer,  Entity* entity)
+{
+    vkCmdBindPipeline(imageBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, zaynMem->vkGraphicsPipeline);
+
+    for (int i = 0; i < 4; i++)
+    {
+        PushConstantData pushData;
+        pushData.offset = entity->transform2d.translation;
+        pushData.color = entity->color;
+        // pushData.scale = entity->transform2d.scale;
+        real32 cos_ = sinf(entity->transform2d.rotation);
+        real32 sin_ = cosf(entity->transform2d.rotation);
+
+        mat2 rotMatrix =   {cos_, sin_,-sin_, cos_};
+
+        pushData.transform = rotMatrix * Scale2(entity->transform2d.scale);
+        vkCmdPushConstants(imageBuffer, zaynMem->vkPipelineLayout, VK_SHADER_STAGE_VERTEX_BIT | VK_SHADER_STAGE_FRAGMENT_BIT, 0, sizeof(PushConstantData), &pushData);
+        BindModel(imageBuffer, &zaynMem->model1);
+        DrawModel(imageBuffer, &zaynMem->model1);
+    }
+}
+
+void RecordCommandBuffer(int32 ImageIndex, ZaynMemory* zaynMem)
+{
+    // VkCommandBufferBeginInfo beginInfo{};
+    // beginInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO;
+
+    // if (vkBeginCommandBuffer(zaynMem->vkCommandBuffers[ImageIndex], &beginInfo) != VK_SUCCESS)
+    // {
+    //     throw std::runtime_error("failed to begin recording command buffer!");
+    // }
+
+    // VkRenderPassBeginInfo renderPassInfo{};
+    // renderPassInfo.sType = VK_STRUCTURE_TYPE_RENDER_PASS_BEGIN_INFO;
+    // renderPassInfo.renderPass = zaynMem->vkRenderPass;
+    // renderPassInfo.framebuffer = zaynMem->vkSwapChainFramebuffers[ImageIndex];
+
+    // renderPassInfo.renderArea.offset = {0, 0};
+    // renderPassInfo.renderArea.extent = zaynMem->vkSwapChainExtent;
+
+    // std::array<VkClearValue, 2> clearValues{};
+    // clearValues[0].color = {0.03f, 0.03f, 0.03f, 1.0f};
+    // clearValues[1].depthStencil = {1.0f, 0};
+    // renderPassInfo.clearValueCount = static_cast<uint32_t>(clearValues.size());
+    // renderPassInfo.pClearValues = clearValues.data();
+
+    // vkCmdBeginRenderPass(zaynMem->vkCommandBuffers[ImageIndex], &renderPassInfo, VK_SUBPASS_CONTENTS_INLINE);
+
+    // VkViewport viewport{};
+    // viewport.x = 0.0f;
+    // viewport.y = 0.0f;
+    // viewport.width = static_cast<float>(zaynMem->vkSwapChainExtent.width);
+    // viewport.height = static_cast<float>(zaynMem->vkSwapChainExtent.height);
+    // viewport.minDepth = 0.0f;
+    // viewport.maxDepth = 1.0f;
+    // VkRect2D scissor{{0, 0}, zaynMem->vkSwapChainExtent};
+    // vkCmdSetViewport(zaynMem->vkCommandBuffers[ImageIndex], 0, 1, &viewport);
+    // vkCmdSetScissor(zaynMem->vkCommandBuffers[ImageIndex], 0, 1, &scissor);
+
+    vkCmdBindPipeline(zaynMem->vkCommandBuffers[ImageIndex], VK_PIPELINE_BIND_POINT_GRAPHICS, zaynMem->vkGraphicsPipeline);
+    BindModel(zaynMem->vkCommandBuffers[ImageIndex], &zaynMem->model1);
+
+    // for (int i = 0; i < 4; i++)
+    // {
+    //     PushConstantData pushData;
+    //     pushData.offset = {-0.3f + i * 0.1f, -0.7f + i * 0.2f};
+    //     pushData.color = {0.03f + i * 0.1f, 0.4f + i * 0.2f, 0.8f - i * 0.2f};
+    //     vkCmdPushConstants(zaynMem->vkCommandBuffers[ImageIndex], zaynMem->vkPipelineLayout, VK_SHADER_STAGE_VERTEX_BIT | VK_SHADER_STAGE_FRAGMENT_BIT, 0, sizeof(PushConstantData), &pushData);
+    //     DrawModel(zaynMem->vkCommandBuffers[ImageIndex], &zaynMem->model1);
+    // }
+
+    // Monkey* testMonkey = GetEntity(&Casette->em, Monkey, zaynMem->monkeyHandle1);
+    // testMonkey->transform2d.rotation += 0.009f;
+    // RenderEntity(zaynMem, zaynMem->vkCommandBuffers[ImageIndex], testMonkey);
+
+
+
+    // if (vkEndCommandBuffer(zaynMem->vkCommandBuffers[ImageIndex]) != VK_SUCCESS)
+    // {
+    //     throw std::runtime_error("failed to record command buffer!");
+    // }
+}
+
+bool BeginFrame(ZaynMemory *zaynMem)
+{
+    assert(!zaynMem->vkIsFrameStarted && "cannot call begin frame when frame buffer is already in progress");
+
+    // uint32_t imageIndex;
+    auto result = AcquireNextImage(&zaynMem->vkCurrentImageIndex, zaynMem);
+
+    if (result == VK_ERROR_OUT_OF_DATE_KHR)
+    {
+        RecreateSwapChain(zaynMem);
+        return true;
+    }
+
+    if (result != VK_SUCCESS && result != VK_SUBOPTIMAL_KHR)
+    {
+        throw std::runtime_error("failed to acquire swap chain image!");
+    }
+
+    zaynMem->vkIsFrameStarted = true;
+
+    // zaynMem->vkNextCommandBuffer = zaynMem->vkCommandBuffers[zaynMem->vkCurrentFrame];
+
+    VkCommandBufferBeginInfo beginInfo{};
+    beginInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO;
+
+    if (vkBeginCommandBuffer(zaynMem->vkCommandBuffers[zaynMem->vkCurrentFrame], &beginInfo) != VK_SUCCESS)
+    {
+        throw std::runtime_error("failed to begin recording command buffer!");
+        return false;
+    }
+
+    return true;
+}
+
 VkResult SubmitCommandBuffers(const VkCommandBuffer *buffers, uint32_t *imageIndex, ZaynMemory *zaynMem)
 {
     if (zaynMem->vkImagesInFlight[*imageIndex] != VK_NULL_HANDLE)
@@ -1233,42 +1353,44 @@ VkResult SubmitCommandBuffers(const VkCommandBuffer *buffers, uint32_t *imageInd
     return result;
 }
 
-void RenderEntity(ZaynMemory *zaynMem, VkCommandBuffer imageBuffer,  Entity* entity)
+void EndFrame(ZaynMemory *zaynMem)
 {
-    vkCmdBindPipeline(imageBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, zaynMem->vkGraphicsPipeline);
+    assert(zaynMem->vkIsFrameStarted && "Can't call endFrame while frame is not in progress");
+    auto _commandBuffer = zaynMem->vkCommandBuffers[zaynMem->vkCurrentFrame];
 
-    for (int i = 0; i < 4; i++)
+    if (vkEndCommandBuffer(_commandBuffer) != VK_SUCCESS)
     {
-        PushConstantData pushData;
-        pushData.offset = entity->transform2d.translation;
-        pushData.color = entity->color;
-        // pushData.scale = entity->transform2d.scale;
-        real32 cos_ = sinf(entity->transform2d.rotation);
-        real32 sin_ = cosf(entity->transform2d.rotation);
-
-        mat2 rotMatrix =   {cos_, sin_,-sin_, cos_};
-
-        pushData.transform = rotMatrix * Scale2(entity->transform2d.scale);
-        vkCmdPushConstants(imageBuffer, zaynMem->vkPipelineLayout, VK_SHADER_STAGE_VERTEX_BIT | VK_SHADER_STAGE_FRAGMENT_BIT, 0, sizeof(PushConstantData), &pushData);
-        DrawModel(imageBuffer, &zaynMem->model1);
-        BindModel(imageBuffer, &zaynMem->model1);
+        throw std::runtime_error("failed to record command buffer!");
     }
+    
+    auto result = SubmitCommandBuffers(&_commandBuffer, &zaynMem->vkCurrentImageIndex, zaynMem);
+
+    if (result == VK_ERROR_OUT_OF_DATE_KHR || result == VK_SUBOPTIMAL_KHR || zaynMem->vkFramebufferResized)
+    {
+        zaynMem->vkFramebufferResized = false;
+        RecreateSwapChain(zaynMem);
+    }
+    if (result != VK_SUCCESS)
+    {
+        throw std::runtime_error("failed to present swap chain image!");
+    }
+
+    zaynMem->vkIsFrameStarted = false;
+
+    zaynMem->vkCurrentFrame = (zaynMem->vkCurrentFrame + 1) % MAX_FRAMES_IN_FLIGHT;
+
 }
 
-void RecordCommandBuffer(int32 ImageIndex, ZaynMemory* zaynMem)
-{
-    VkCommandBufferBeginInfo beginInfo{};
-    beginInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO;
 
-    if (vkBeginCommandBuffer(zaynMem->vkCommandBuffers[ImageIndex], &beginInfo) != VK_SUCCESS)
-    {
-        throw std::runtime_error("failed to begin recording command buffer!");
-    }
+void BeginSwapChainRenderPass(ZaynMemory* zaynMem, VkCommandBuffer commandBuffer)
+{
+    assert(zaynMem->vkIsFrameStarted && "Can't call beginSwapChainRenderPass if frame is not in progress");
+    assert(commandBuffer == zaynMem->vkCommandBuffers[zaynMem->vkCurrentFrame] && "Can't begin render pass on command buffer from a different frame");
 
     VkRenderPassBeginInfo renderPassInfo{};
     renderPassInfo.sType = VK_STRUCTURE_TYPE_RENDER_PASS_BEGIN_INFO;
     renderPassInfo.renderPass = zaynMem->vkRenderPass;
-    renderPassInfo.framebuffer = zaynMem->vkSwapChainFramebuffers[ImageIndex];
+    renderPassInfo.framebuffer = zaynMem->vkSwapChainFramebuffers[zaynMem->vkCurrentImageIndex];
 
     renderPassInfo.renderArea.offset = {0, 0};
     renderPassInfo.renderArea.extent = zaynMem->vkSwapChainExtent;
@@ -1279,7 +1401,7 @@ void RecordCommandBuffer(int32 ImageIndex, ZaynMemory* zaynMem)
     renderPassInfo.clearValueCount = static_cast<uint32_t>(clearValues.size());
     renderPassInfo.pClearValues = clearValues.data();
 
-    vkCmdBeginRenderPass(zaynMem->vkCommandBuffers[ImageIndex], &renderPassInfo, VK_SUBPASS_CONTENTS_INLINE);
+    vkCmdBeginRenderPass(commandBuffer, &renderPassInfo, VK_SUBPASS_CONTENTS_INLINE);
 
     VkViewport viewport{};
     viewport.x = 0.0f;
@@ -1289,66 +1411,49 @@ void RecordCommandBuffer(int32 ImageIndex, ZaynMemory* zaynMem)
     viewport.minDepth = 0.0f;
     viewport.maxDepth = 1.0f;
     VkRect2D scissor{{0, 0}, zaynMem->vkSwapChainExtent};
-    vkCmdSetViewport(zaynMem->vkCommandBuffers[ImageIndex], 0, 1, &viewport);
-    vkCmdSetScissor(zaynMem->vkCommandBuffers[ImageIndex], 0, 1, &scissor);
+    vkCmdSetViewport(commandBuffer, 0, 1, &viewport);
+    vkCmdSetScissor(commandBuffer, 0, 1, &scissor);
 
-    vkCmdBindPipeline(zaynMem->vkCommandBuffers[ImageIndex], VK_PIPELINE_BIND_POINT_GRAPHICS, zaynMem->vkGraphicsPipeline);
-    BindModel(zaynMem->vkCommandBuffers[ImageIndex], &zaynMem->model1);
-
-    // for (int i = 0; i < 4; i++)
-    // {
-    //     PushConstantData pushData;
-    //     pushData.offset = {-0.3f + i * 0.1f, -0.7f + i * 0.2f};
-    //     pushData.color = {0.03f + i * 0.1f, 0.4f + i * 0.2f, 0.8f - i * 0.2f};
-    //     vkCmdPushConstants(zaynMem->vkCommandBuffers[ImageIndex], zaynMem->vkPipelineLayout, VK_SHADER_STAGE_VERTEX_BIT | VK_SHADER_STAGE_FRAGMENT_BIT, 0, sizeof(PushConstantData), &pushData);
-    //     DrawModel(zaynMem->vkCommandBuffers[ImageIndex], &zaynMem->model1);
-    // }
-
-    Monkey* testMonkey = GetEntity(&Casette->em, Monkey, zaynMem->monkeyHandle1);
-    testMonkey->transform2d.rotation += 0.009f;
-    RenderEntity(zaynMem, zaynMem->vkCommandBuffers[ImageIndex], testMonkey);
-
-
-
-    vkCmdEndRenderPass(zaynMem->vkCommandBuffers[ImageIndex]);
-    if (vkEndCommandBuffer(zaynMem->vkCommandBuffers[ImageIndex]) != VK_SUCCESS)
-    {
-        throw std::runtime_error("failed to record command buffer!");
-    }
 }
+void EndSwapChainRenderPass(ZaynMemory* zaynMem, VkCommandBuffer commandBuffer)
+{
+    assert(zaynMem->vkIsFrameStarted && "Can't call beginSwapChainRenderPass if frame is not in progress");
+    assert(commandBuffer == zaynMem->vkCommandBuffers[zaynMem->vkCurrentFrame] && "Can't begin render pass on command buffer from a different frame");
 
+    vkCmdEndRenderPass(commandBuffer);
 
+}
 
 
 void DrawFrame(ZaynMemory *zaynMem)
 {
-    uint32_t imageIndex;
-    auto result = AcquireNextImage(&imageIndex, zaynMem);
+    // uint32_t imageIndex;
+    // auto result = AcquireNextImage(&imageIndex, zaynMem);
 
-    if (result == VK_ERROR_OUT_OF_DATE_KHR)
-    {
-        RecreateSwapChain(zaynMem);
-    }
+    // if (result == VK_ERROR_OUT_OF_DATE_KHR)
+    // {
+    //     RecreateSwapChain(zaynMem);
+    // }
 
-    if (result != VK_SUCCESS && result != VK_SUBOPTIMAL_KHR)
-    {
-        throw std::runtime_error("failed to acquire swap chain image!");
-    }
+    // if (result != VK_SUCCESS && result != VK_SUBOPTIMAL_KHR)
+    // {
+    //     throw std::runtime_error("failed to acquire swap chain image!");
+    // }
 
-    RecordCommandBuffer(imageIndex, zaynMem);
+    // RecordCommandBuffer(imageIndex, zaynMem);
 
-    result = SubmitCommandBuffers(&zaynMem->vkCommandBuffers[imageIndex], &imageIndex, zaynMem);
+    // result = SubmitCommandBuffers(&zaynMem->vkCommandBuffers[imageIndex], &imageIndex, zaynMem);
 
-    if (result == VK_ERROR_OUT_OF_DATE_KHR || result == VK_SUBOPTIMAL_KHR || zaynMem->vkFramebufferResized)
-    {
-        zaynMem->vkFramebufferResized = false;
-        RecreateSwapChain(zaynMem);
-        return;
-    }
-    if (result != VK_SUCCESS)
-    {
-        throw std::runtime_error("failed to present swap chain image!");
-    }
+    // if (result == VK_ERROR_OUT_OF_DATE_KHR || result == VK_SUBOPTIMAL_KHR || zaynMem->vkFramebufferResized)
+    // {
+    //     zaynMem->vkFramebufferResized = false;
+    //     RecreateSwapChain(zaynMem);
+    //     return;
+    // }
+    // if (result != VK_SUCCESS)
+    // {
+    //     throw std::runtime_error("failed to present swap chain image!");
+    // }
 }
 
 
@@ -1395,7 +1500,20 @@ void InitRender_Learn(ZaynMemory *zaynMem)
 
 void UpdateRender_Learn(ZaynMemory *zaynMem)
 {
-    DrawFrame(zaynMem);
+    // DrawFrame(zaynMem);
+
+    if (BeginFrame(zaynMem) )
+    {
+        BeginSwapChainRenderPass(zaynMem, zaynMem->vkCommandBuffers[zaynMem->vkCurrentFrame]);
+
+        Monkey *testMonkey = GetEntity(&Casette->em, Monkey, zaynMem->monkeyHandle1);
+        testMonkey->transform2d.rotation += 0.009f;
+        RenderEntity(zaynMem, zaynMem->vkCommandBuffers[zaynMem->vkCurrentFrame], testMonkey);
+
+        EndSwapChainRenderPass(zaynMem, zaynMem->vkCommandBuffers[zaynMem->vkCurrentFrame]);
+        EndFrame(zaynMem);
+    }
+    
 }
 
 void RenderCleanup(ZaynMemory *zaynMem)

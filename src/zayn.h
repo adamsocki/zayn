@@ -133,6 +133,12 @@ struct ZaynMemory
     // AllocateQuad(&quadMesh, vulkanMem);
 
 
+
+    uint32 vkCurrentImageIndex;
+    bool vkIsFrameStarted;
+    VkCommandBuffer vkNextCommandBuffer;
+
+
     void *myCasette;
 };
 
