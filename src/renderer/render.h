@@ -3,10 +3,18 @@
 #if VULKAN
 
 
-struct PushConstantData
+struct PushConstantData2D
 {
     vec2 offset;
     mat2 transform;
+
+    alignas(16) vec3 color;
+};
+
+struct PushConstantData3D
+{
+    // vec2 offset;
+    mat4 transform;
 
     alignas(16) vec3 color;
 };

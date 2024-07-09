@@ -47,12 +47,22 @@ struct Transform2DComponent
     real32 rotation;
 };
 
+struct Transform3DComponent
+{
+    vec3 translation;
+    mat4 iMatrix4 = Identity4();
+    vec3 scale;
+    vec3 rotation;
+    real32 angleRotation;
+};
+
 struct Entity
 {
     EntityHandle handle;
     Model *model;
     vec3 color;
     Transform2DComponent transform2d;
+    Transform3DComponent transform3d;
 };
 
 struct Player : public Entity {

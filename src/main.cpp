@@ -4,6 +4,11 @@
 #define OPENGL 0
 #define VULKAN 1
 
+#ifdef VULKAN
+#define ENGINE_2D 0
+#define ENGINE_3D 1
+#endif
+
 
 #include <vulkan/vulkan.h>
 #include <vulkan/vulkan_beta.h>
@@ -139,17 +144,11 @@ int main(void)
     while (!glfwWindowShouldClose(Zayn->window) && zaynPlatform.running)
     {
 
-    
-
-
-
     //     /* Render here */
     //     /* Swap front and back buffers */
 
-
         InputUpdate(Zayn, inputManager);
         ZaynUpdateAndRender(zaynMemory);
-
 
         glfwSwapBuffers(Zayn->window);
 

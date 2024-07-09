@@ -21,6 +21,61 @@
 
 
 
+std::vector<Vertex> CreateCubeModel()
+{
+    return {
+        // Left Face (White)
+        {{-0.5f, -0.5f, -0.5f}, {0.9f, 0.9f, 0.9f}},
+        {{-0.5f,  0.5f,  0.5f}, {0.9f, 0.9f, 0.9f}},
+        {{-0.5f, -0.5f,  0.5f}, {0.9f, 0.9f, 0.9f}},
+        {{-0.5f, -0.5f, -0.5f}, {0.9f, 0.9f, 0.9f}},
+        {{-0.5f,  0.5f, -0.5f}, {0.9f, 0.9f, 0.9f}},
+        {{-0.5f,  0.5f,  0.5f}, {0.9f, 0.9f, 0.9f}},
+
+        // Right Face (Yellow)
+        {{ 0.5f, -0.5f, -0.5f}, {0.8f, 0.8f, 0.1f}},
+        {{ 0.5f,  0.5f,  0.5f}, {0.8f, 0.8f, 0.1f}},
+        {{ 0.5f, -0.5f,  0.5f}, {0.8f, 0.8f, 0.1f}},
+        {{ 0.5f, -0.5f, -0.5f}, {0.8f, 0.8f, 0.1f}},
+        {{ 0.5f,  0.5f, -0.5f}, {0.8f, 0.8f, 0.1f}},
+        {{ 0.5f,  0.5f,  0.5f}, {0.8f, 0.8f, 0.1f}},
+
+
+
+        {{-.5f, -.5f, -.5f}, {.9f, .6f, .1f}},
+      {{.5f, -.5f, .5f}, {.9f, .6f, .1f}},
+      {{-.5f, -.5f, .5f}, {.9f, .6f, .1f}},
+      {{-.5f, -.5f, -.5f}, {.9f, .6f, .1f}},
+      {{.5f, -.5f, -.5f}, {.9f, .6f, .1f}},
+      {{.5f, -.5f, .5f}, {.9f, .6f, .1f}},
+ 
+      // bottom face (red)
+      {{-.5f, .5f, -.5f}, {.8f, .1f, .1f}},
+      {{.5f, .5f, .5f}, {.8f, .1f, .1f}},
+      {{-.5f, .5f, .5f}, {.8f, .1f, .1f}},
+      {{-.5f, .5f, -.5f}, {.8f, .1f, .1f}},
+      {{.5f, .5f, -.5f}, {.8f, .1f, .1f}},
+      {{.5f, .5f, .5f}, {.8f, .1f, .1f}},
+ 
+      // nose face (blue)
+      {{-.5f, -.5f, 0.5f}, {.1f, .1f, .8f}},
+      {{.5f, .5f, 0.5f}, {.1f, .1f, .8f}},
+      {{-.5f, .5f, 0.5f}, {.1f, .1f, .8f}},
+      {{-.5f, -.5f, 0.5f}, {.1f, .1f, .8f}},
+      {{.5f, -.5f, 0.5f}, {.1f, .1f, .8f}},
+      {{.5f, .5f, 0.5f}, {.1f, .1f, .8f}},
+ 
+      // tail face (green)
+      {{-.5f, -.5f, -0.5f}, {.1f, .8f, .1f}},
+      {{.5f, .5f, -0.5f}, {.1f, .8f, .1f}},
+      {{-.5f, .5f, -0.5f}, {.1f, .8f, .1f}},
+      {{-.5f, -.5f, -0.5f}, {.1f, .8f, .1f}},
+      {{.5f, -.5f, -0.5f}, {.1f, .8f, .1f}},
+      {{.5f, .5f, -0.5f}, {.1f, .8f, .1f}},
+
+    };
+}
+
 
 
 uint32_t findMemoryType(uint32_t typeFilter, VkMemoryPropertyFlags properties, ZaynMemory* zaynMem)
@@ -109,7 +164,7 @@ void BindModel(VkCommandBuffer commandBuffer, Model* model)
 void ModelInit(VkDevice *device, const std::vector<Vertex>& vertices, Model *model, ZaynMemory* zaynMem)
 {
     model->vkDevice = device;
-    // model->vertexCount = static_cast<int32_t>(vertices.size());;
+    model->vertexCount = static_cast<int32_t>(vertices.size());;
 
     CreateVertexBuffers(vertices, model, zaynMem);
 
@@ -138,7 +193,7 @@ std::vector<VkVertexInputAttributeDescription> getAttributeDescriptions()
     std::vector<VkVertexInputAttributeDescription> attributeDescriptions(2);
     attributeDescriptions[0].binding = 0;
     attributeDescriptions[0].location = 0;
-    attributeDescriptions[0].format = VK_FORMAT_R32G32_SFLOAT;
+    attributeDescriptions[0].format = VK_FORMAT_R32G32B32_SFLOAT;
     attributeDescriptions[0].offset = offsetof(Vertex, position);
 
     attributeDescriptions[1].binding = 0;

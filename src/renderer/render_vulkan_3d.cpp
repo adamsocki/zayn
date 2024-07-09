@@ -1085,7 +1085,7 @@ void CreatePipelineLayout(ZaynMemory *zaynMem)
     VkPushConstantRange pushConstantRange = {};
     pushConstantRange.stageFlags = VK_SHADER_STAGE_VERTEX_BIT | VK_SHADER_STAGE_FRAGMENT_BIT;
     pushConstantRange.offset = 0;
-    pushConstantRange.size = sizeof(PushConstantData);
+    pushConstantRange.size = sizeof(PushConstantData3D);
 
 
     VkPipelineLayoutCreateInfo pipelineLayoutInfo = {};
@@ -1149,7 +1149,7 @@ void RecreateSwapChain(ZaynMemory* zaynMem)
 
     vkDeviceWaitIdle(zaynMem->vkDevice);
 
-    CreateSwapChain(zaynMem);
+    // CreateSwapChain(zaynMem);
 
     if (zaynMem->vkSwapChain != nullptr)
     {
@@ -1160,7 +1160,7 @@ void RecreateSwapChain(ZaynMemory* zaynMem)
         }
     }
    
-    CreatePipeline(zaynMem);
+    // CreatePipeline(zaynMem);
 
 }
 
@@ -1187,23 +1187,48 @@ VkResult AcquireNextImage(uint32_t *imageIndex, ZaynMemory *zaynMem)
 
 
 
-void RenderEntity(ZaynMemory *zaynMem, VkCommandBuffer imageBuffer,  Entity* entity)
+void RenderEntity_2D(ZaynMemory *zaynMem, VkCommandBuffer imageBuffer,  Entity* entity)
 {
     vkCmdBindPipeline(imageBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, zaynMem->vkGraphicsPipeline);
 
     for (int i = 0; i < 4; i++)
     {
-        PushConstantData pushData;
+        PushConstantData2D pushData;
         pushData.offset = entity->transform2d.translation;
         pushData.color = entity->color;
         // pushData.scale = entity->transform2d.scale;
-        real32 cos_ = sinf(entity->transform2d.rotation);
-        real32 sin_ = cosf(entity->transform2d.rotation);
+        real32 cos_ = sinf(entity->transform2d.rotation * i);
+        real32 sin_ = cosf(entity->transform2d.rotation * i);
 
         mat2 rotMatrix =   {cos_, sin_,-sin_, cos_};
 
         pushData.transform = rotMatrix * Scale2(entity->transform2d.scale);
-        vkCmdPushConstants(imageBuffer, zaynMem->vkPipelineLayout, VK_SHADER_STAGE_VERTEX_BIT | VK_SHADER_STAGE_FRAGMENT_BIT, 0, sizeof(PushConstantData), &pushData);
+        vkCmdPushConstants(imageBuffer, zaynMem->vkPipelineLayout, VK_SHADER_STAGE_VERTEX_BIT | VK_SHADER_STAGE_FRAGMENT_BIT, 0, sizeof(PushConstantData2D), &pushData);
+        BindModel(imageBuffer, &zaynMem->model1);
+        DrawModel(imageBuffer, &zaynMem->model1);
+    }
+}
+
+void RenderEntity_3D(ZaynMemory *zaynMem, VkCommandBuffer imageBuffer,  Entity* entity)
+{
+    vkCmdBindPipeline(imageBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, zaynMem->vkGraphicsPipeline);
+
+    for (int i = 0; i < 1; i++)
+    {
+        PushConstantData3D pushData;
+
+        mat4 model = TRS(entity->transform3d.translation, AxisAngle(entity->transform3d.rotation, entity->transform3d.angleRotation), entity->transform3d.scale);
+        pushData.transform = Identity4() * model;
+        // pushData.offset = entity->transform2d.translation;
+        pushData.color = entity->color;
+        // pushData.scale = entity->transform2d.scale;
+        // real32 cos_ = sinf(entity->transform2d.rotation * i);
+        // real32 sin_ = cosf(entity->transform2d.rotation * i);
+
+        // mat2 rotMatrix =   {cos_, sin_,-sin_, cos_};
+
+        // pushData.transform = rotMatrix * Scale2(entity->transform2d.scale);
+        vkCmdPushConstants(imageBuffer, zaynMem->vkPipelineLayout, VK_SHADER_STAGE_VERTEX_BIT | VK_SHADER_STAGE_FRAGMENT_BIT, 0, sizeof(PushConstantData3D), &pushData);
         BindModel(imageBuffer, &zaynMem->model1);
         DrawModel(imageBuffer, &zaynMem->model1);
     }
@@ -1370,7 +1395,7 @@ void EndFrame(ZaynMemory *zaynMem)
         zaynMem->vkFramebufferResized = false;
         RecreateSwapChain(zaynMem);
     }
-    if (result != VK_SUCCESS)
+    else if (result != VK_SUCCESS)
     {
         throw std::runtime_error("failed to present swap chain image!");
     }
@@ -1458,6 +1483,10 @@ void DrawFrame(ZaynMemory *zaynMem)
 
 
 
+
+
+
+
 void InitRender_Learn(ZaynMemory *zaynMem)
 {
 
@@ -1467,22 +1496,24 @@ void InitRender_Learn(ZaynMemory *zaynMem)
 
     CreatePipelineLayout(zaynMem);
 
-    std::vector<Vertex> vertices = {
-        {{0.0f, -0.5f}, {0.4f, 0.6f, 0.2f}},
-        {{
-             0.5f,
-             0.5f,
-         },
-         {0.1f, 0.1f, 0.1f}},
-        {{-0.1f, 0.5f}, {0.9f, 0.3f, 0.9f}}};
-
+    // std::vector<Vertex> vertices = {
+    //     {{0.0f, -0.5f}, {0.4f, 0.6f, 0.2f}},
+    //     {{
+    //          0.5f,
+    //          0.5f,
+    //      },
+    //      {0.1f, 0.1f, 0.1f}},
+    //     {{-0.1f, 0.5f}, {0.9f, 0.3f, 0.9f}}};
+    
+    std::vector<Vertex> vertices = CreateCubeModel();
+    std::cout << "vertex count: " << vertices.size()<< std::endl;
     // std::vector<Vertex> vertices = {};
     // sierpinski(vertices, 3, {-1.0f, 1.0f}, {1.0f, 1.0f}, {0.0f, -1.0f});
     ModelInit(&zaynMem->vkDevice, vertices, &zaynMem->model1, zaynMem);
 
     CreatePipeline(zaynMem);
     // RecreateSwapChain(zaynMem);
-    CreateGraphicsPipeline(zaynMem, "/Users/socki/dev/zayn/src/renderer/shaders/vkShader_03_vert.spv", "/Users/socki/dev/zayn/src/renderer/shaders/vkShader_03_frag.spv", &zaynMem->MyPipelineConfigInfo);
+    CreateGraphicsPipeline(zaynMem, "/Users/socki/dev/zayn/src/renderer/shaders/vkShader_03D_vert.spv", "/Users/socki/dev/zayn/src/renderer/shaders/vkShader_03D_frag.spv", &zaynMem->MyPipelineConfigInfo);
 
     CreateCommandBuffers(zaynMem);
 
@@ -1507,8 +1538,9 @@ void UpdateRender_Learn(ZaynMemory *zaynMem)
         BeginSwapChainRenderPass(zaynMem, zaynMem->vkCommandBuffers[zaynMem->vkCurrentFrame]);
 
         Monkey *testMonkey = GetEntity(&Casette->em, Monkey, zaynMem->monkeyHandle1);
-        testMonkey->transform2d.rotation += 0.009f;
-        RenderEntity(zaynMem, zaynMem->vkCommandBuffers[zaynMem->vkCurrentFrame], testMonkey);
+        testMonkey->transform3d.angleRotation += 0.009f;
+
+        RenderEntity_3D(zaynMem, zaynMem->vkCommandBuffers[zaynMem->vkCurrentFrame], testMonkey);
 
         EndSwapChainRenderPass(zaynMem, zaynMem->vkCommandBuffers[zaynMem->vkCurrentFrame]);
         EndFrame(zaynMem);

@@ -4,6 +4,12 @@
 #endif
 
 #if VULKAN
-#include "render_vulkan.cpp"
+#if ENGINE_2D
+#include "render_vulkan_2d.cpp"
+#elif ENGINE_3D
+#include "render_vulkan_3d.cpp"
 
+
+
+#endif
 #endif

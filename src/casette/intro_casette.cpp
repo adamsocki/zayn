@@ -48,10 +48,15 @@ void InitCasette(ZaynMemory *zaynMem)
     Monkey* testMonkey = GetEntity(&Casette->em, Monkey, zaynMem->monkeyHandle1);
     testMonkey->model = &zaynMem->model1;
     testMonkey->color = V3(0.1f, 0.2f, 0.6f);
-    testMonkey->transform2d.translation = V2(-0.4f, 0.0f);
+    // testMonkey->transform2d.translation = V2(-0.4f, 0.0f);
     // mat2 sc = Scale2();
-    testMonkey->transform2d.scale = V2(3.4f, 0.12f);
+    // testMonkey->transform2d.scale = V2(3.4f, 0.12f);
+    testMonkey->transform3d.translation = V3(0.5f, 0.3f, 0.24f);
+    testMonkey->transform3d.scale = V3(0.125f, 0.125f, 0.125f);
+    testMonkey->transform3d.rotation = V3(0.0f, 2.0f, 1.0f);
+    testMonkey->transform3d.angleRotation = 230.0f;
 
+    
 
     InitRender_Learn(zaynMem);
 
@@ -85,8 +90,8 @@ void UpdateAndRenderCasette(ZaynMemory *zaynMem)
     
     for (int i = 0; i < Casette->em.entities[EntityType_Monkey].array.count; i++)
     {
-        std::cout << "hi" << std::endl;
-        std::cout << i << std::endl;
+        // std::cout << "hi" << std::endl;
+        // std::cout << i << std::endl;
     }
 
 
