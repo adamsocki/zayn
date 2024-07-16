@@ -1,6 +1,11 @@
 
 
+#include <mach/mach_time.h>
+#include "time.cpp"
+
 #include "zayn.h"
+
+#include "camera.cpp"
 
 #include "entity.cpp"
 
@@ -27,6 +32,10 @@ void ZaynInit(ZaynMemory *zaynMem)
     Zayn = zaynMem;
     Input = &zaynMem->inputManager;
 
+
+    uint64_t startTime = mach_absolute_time();
+
+    // AllocateMemoryArena
 
     // AllocateMemoryArena(&Zayn->permanentMemArena, Megabytes(16));
     // AllocateMemoryArena(&Zayn->frameMemArena, Megabytes(16));
@@ -70,7 +79,6 @@ void ZaynUpdateAndRender(ZaynMemory *zaynMem)
 
     // // DrawMesh(zaynMem, &triangleMesh, pos, rotation, scale, color, false);
     // DrawMesh(zaynMem, &zaynMem->quadMesh, pos, rotation, scale, color, false);
-
     UpdateAndRenderCasette(zaynMem);
 
 }

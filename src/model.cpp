@@ -25,11 +25,11 @@ std::vector<Vertex> CreateCubeModel()
 {
     return {
         // Left Face (White)
-        {{-0.5f, -0.5f, -0.5f}, {0.9f, 0.9f, 0.9f}},
-        {{-0.5f,  0.5f,  0.5f}, {0.9f, 0.9f, 0.9f}},
-        {{-0.5f, -0.5f,  0.5f}, {0.9f, 0.9f, 0.9f}},
-        {{-0.5f, -0.5f, -0.5f}, {0.9f, 0.9f, 0.9f}},
-        {{-0.5f,  0.5f, -0.5f}, {0.9f, 0.9f, 0.9f}},
+        {{-0.5f, -0.5f, -0.5f}, {0.9f, 0.9f, 0.09f}},
+        {{-0.5f,  0.5f,  0.5f}, {0.9f, 0.9f, 0.09f}},
+        {{-0.5f, -0.5f,  0.5f}, {0.9f, 0.9f, 0.09f}},
+        {{-0.5f, -0.5f, -0.5f}, {0.9f, 0.9f, 0.09f}},
+        {{-0.5f,  0.5f, -0.5f}, {0.9f, 0.9f, 0.09f}},
         {{-0.5f,  0.5f,  0.5f}, {0.9f, 0.9f, 0.9f}},
 
         // Right Face (Yellow)
@@ -58,12 +58,12 @@ std::vector<Vertex> CreateCubeModel()
       {{.5f, .5f, .5f}, {.8f, .1f, .1f}},
  
       // nose face (blue)
-      {{-.5f, -.5f, 0.5f}, {.1f, .1f, .8f}},
-      {{.5f, .5f, 0.5f}, {.1f, .1f, .8f}},
-      {{-.5f, .5f, 0.5f}, {.1f, .1f, .8f}},
-      {{-.5f, -.5f, 0.5f}, {.1f, .1f, .8f}},
-      {{.5f, -.5f, 0.5f}, {.1f, .1f, .8f}},
-      {{.5f, .5f, 0.5f}, {.1f, .1f, .8f}},
+      {{-.5f, -.5f, 0.5f}, {.1f, .1f, .98f}},
+      {{.5f, .5f, 0.5f}, {.1f, .1f, .98f}},
+      {{-.5f, .5f, 0.5f}, {.1f, .1f, .98f}},
+      {{-.5f, -.5f, 0.5f}, {.1f, .1f, .98f}},
+      {{.5f, -.5f, 0.5f}, {.1f, .1f, .98f}},
+      {{.5f, .5f, 0.5f}, {.1f, .1f, .98f}},
  
       // tail face (green)
       {{-.5f, -.5f, -0.5f}, {.1f, .8f, .1f}},
@@ -93,7 +93,39 @@ uint32_t findMemoryType(uint32_t typeFilter, VkMemoryPropertyFlags properties, Z
     throw std::runtime_error("failed to find suitable memory type!");
 }
 
+void CopyBuffer(VkBuffer srcBuffer, VkBuffer dstBuffer, VkDeviceSize size, ZaynMemory *zaynMem)
+{
+    VkCommandBufferAllocateInfo allocInfo{};
+    allocInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_ALLOCATE_INFO;
+    allocInfo.level = VK_COMMAND_BUFFER_LEVEL_PRIMARY;
+    allocInfo.commandPool = zaynMem->vkCommandPool;
+    allocInfo.commandBufferCount = 1;
 
+    VkCommandBuffer commandBuffer;
+    vkAllocateCommandBuffers(zaynMem->vkDevice, &allocInfo, &commandBuffer);
+
+    VkCommandBufferBeginInfo beginInfo{};
+    beginInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO;
+    beginInfo.flags = VK_COMMAND_BUFFER_USAGE_ONE_TIME_SUBMIT_BIT;
+
+    vkBeginCommandBuffer(commandBuffer, &beginInfo);
+
+    VkBufferCopy copyRegion{};
+    copyRegion.size = size;
+    vkCmdCopyBuffer(commandBuffer, srcBuffer, dstBuffer, 1, &copyRegion);
+
+    vkEndCommandBuffer(commandBuffer);
+
+    VkSubmitInfo submitInfo{};
+    submitInfo.sType = VK_STRUCTURE_TYPE_SUBMIT_INFO;
+    submitInfo.commandBufferCount = 1;
+    submitInfo.pCommandBuffers = &commandBuffer;
+
+    vkQueueSubmit(zaynMem->vkGraphicsQueue, 1, &submitInfo, VK_NULL_HANDLE);
+    vkQueueWaitIdle(zaynMem->vkGraphicsQueue);
+
+    vkFreeCommandBuffers(zaynMem->vkDevice, zaynMem->vkCommandPool, 1, &commandBuffer);
+}
 
 void CreateBuffer(
     VkDeviceSize size,
@@ -132,7 +164,7 @@ void CreateBuffer(
 
 
 void CreateVertexBuffers(const std::vector<Vertex>& vertices, Model* model, ZaynMemory* zaynMem)
-{
+{   // todo: update to match index buffer method below
     model->vertexCount = static_cast<uint32_t>(vertices.size());
 
     assert(model->vertexCount >= 3 && "Vertex Count must be atleast 3.");
@@ -149,9 +181,57 @@ void CreateVertexBuffers(const std::vector<Vertex>& vertices, Model* model, Zayn
 
 }
 
+void CreateIndexBuffer(const std::vector<uint32_t> &indices, Model* model, ZaynMemory* zaynMem)
+{
+    model->indexCount = static_cast<uint32_t>(indices.size());
+    model->hasIndexBuffer = model->indexCount > 0;
+
+    if (!model->hasIndexBuffer)
+    {
+        return;
+    }
+
+    VkDeviceSize bufferSize = sizeof(indices[0]) * model->indexCount;
+
+    VkBuffer stagingBuffer;
+    VkDeviceMemory stagingBufferMemory;
+    CreateBuffer(
+        bufferSize,
+        VK_BUFFER_USAGE_TRANSFER_SRC_BIT,
+        VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT,
+        stagingBuffer,
+        stagingBufferMemory,
+        zaynMem);
+
+    void *data;
+    vkMapMemory(zaynMem->vkDevice, stagingBufferMemory, 0, bufferSize, 0, &data);
+    memcpy(data, indices.data(), static_cast<size_t>(bufferSize));
+    vkUnmapMemory(zaynMem->vkDevice, stagingBufferMemory);
+
+    CreateBuffer(
+        bufferSize,
+        VK_BUFFER_USAGE_INDEX_BUFFER_BIT | VK_BUFFER_USAGE_TRANSFER_DST_BIT,
+        VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT,
+        model->indexBuffer,
+        model->indexBufferMemory,
+        zaynMem);
+
+    CopyBuffer(stagingBuffer, model->indexBuffer, bufferSize, zaynMem);
+
+    vkDestroyBuffer(zaynMem->vkDevice, stagingBuffer, nullptr);
+    vkFreeMemory(zaynMem->vkDevice, stagingBufferMemory, nullptr);
+}
+
 void DrawModel(VkCommandBuffer commandBuffer, Model* model)
 {
-    vkCmdDraw(commandBuffer, model->vertexCount, 1, 0, 0);
+    if (model->hasIndexBuffer) 
+    {
+        vkCmdDrawIndexed(commandBuffer, model->indexCount, 1, 0, 0, 0);
+    }
+    else
+    {
+        vkCmdDraw(commandBuffer, model->vertexCount, 1, 0, 0);
+    }
 }
 
 void BindModel(VkCommandBuffer commandBuffer, Model* model)
@@ -159,6 +239,10 @@ void BindModel(VkCommandBuffer commandBuffer, Model* model)
     VkBuffer buffers[] = {model->vertexBuffer};
     VkDeviceSize offsets[] = {0};
     vkCmdBindVertexBuffers(commandBuffer, 0, 1, buffers, offsets);
+    if (model->hasIndexBuffer) 
+    {
+        vkCmdBindIndexBuffer(commandBuffer, model->indexCount, 0, VK_INDEX_TYPE_UINT32);
+    }
 }
 
 void ModelInit(VkDevice *device, const std::vector<Vertex>& vertices, Model *model, ZaynMemory* zaynMem)

@@ -73,6 +73,8 @@ struct Player : public Entity {
 struct Monkey : Entity 
 {
     bool testingBool;
+    real32 rad;
+    real32 posTest;
 
     // float patrolRange;  // Enemy-specific data
 };

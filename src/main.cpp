@@ -12,6 +12,8 @@
 
 #include <vulkan/vulkan.h>
 #include <vulkan/vulkan_beta.h>
+#include <unistd.h>
+
 
 
 #ifdef __APPLE__
@@ -86,8 +88,8 @@ int main(void)
     zaynMemory->keyboard = &inputManager->devices[0];
     AllocateInputDevice(zaynMemory->keyboard, InputDeviceType_Keyboard, Input_KeyboardDiscreteCount, 0);
 
-    // Keyboard =
-
+    Keyboard = zaynMemory->keyboard;
+    InitializeKeyMap();
 
     /* Initialize the library */
     if (!glfwInit())
@@ -107,12 +109,14 @@ int main(void)
 
 #ifdef __APPLE__
     // glfwWindowHint(GLFW_OPENGL_FORWARD_COMPAT, GL_TRUE);
+
+
 #endif
    /* Create a windowed mode window and its OpenGL context */
 
 
-    Zayn->windowSize.x = 2640;
-    Zayn->windowSize.y = 1640;
+    Zayn->windowSize.x = 1000;
+    Zayn->windowSize.y = 800;
 
     Zayn->window = glfwCreateWindow(Zayn->windowSize.x, Zayn->windowSize.y, "Hello World", NULL, NULL);
     if (!Zayn->window)
@@ -135,6 +139,21 @@ int main(void)
     }
 #endif
 
+    struct timespec spec;
+    clock_gettime(CLOCK_MONOTONIC, &spec);
+
+     // Milliseconds
+    double startTime = (spec.tv_sec * 1000.0) + (spec.tv_nsec / 1.0e6);
+    double gameTime = 0.0;
+    double systemTime = startTime;
+    double prevSystemTime = systemTime;
+    double deltaTime;
+
+    // seconds
+    double frameRate = 1.0 / 60.0; // Hertz
+    double timeSinceRender = 0.0;
+
+
     // GLenum err = glewInit();
     ZaynInit(zaynMemory);
 
@@ -147,6 +166,34 @@ int main(void)
     //     /* Render here */
     //     /* Swap front and back buffers */
 
+        //  *******************  //
+        //  TIME IMPLEMENTATION  //
+        //  *******************  //
+        clock_gettime(CLOCK_MONOTONIC, &spec);
+
+        prevSystemTime = systemTime;
+        systemTime = (spec.tv_sec * 1000.0) + (spec.tv_nsec / 1.0e6);
+
+        deltaTime = (systemTime - prevSystemTime) / 1000.0;
+
+        gameTime = (systemTime - startTime) / 1000.0;
+
+        // seconds
+        double dt = deltaTime;
+
+        timeSinceRender += dt;
+
+        Zayn->deltaTime = dt;
+        Zayn->time = gameTime;
+        Zayn->systemTime = systemTime;
+
+
+        if (timeSinceRender < frameRate) 
+        {
+            double timeUntilRender = frameRate - timeSinceRender;
+            usleep(timeUntilRender * 1.0e6);
+        }
+
         InputUpdate(Zayn, inputManager);
         ZaynUpdateAndRender(zaynMemory);
 
@@ -157,6 +204,9 @@ int main(void)
         ClearInputManager(inputManager);
 
         /* Poll for and process events */
+
+        timeSinceRender = 0.0;
+
     }
 
     RenderCleanup(Zayn);

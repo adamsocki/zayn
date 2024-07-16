@@ -112,10 +112,12 @@ struct ZaynMemory
 
     bool vkFramebufferResized = false;
 
+    bool vkHasIndexBuffer = false;
     VkBuffer vkVertexBuffer;
     VkDeviceMemory vkVertexBufferMemory;
     VkBuffer vkIndexBuffer;
     VkDeviceMemory vkIndexBufferMemory;
+    uint32 vkIndexCount;
 
     VkDescriptorSetLayout vkDescriptorSetLayout;
 
@@ -139,6 +141,18 @@ struct ZaynMemory
     VkCommandBuffer vkNextCommandBuffer;
 
 
+
+    Camera camera;
+
+    uint64 systemTime;
+    real32 time;
+    real32 deltaTime;
+    real32 startTime;
+        
+    uint32 frame;
+    real32 fps;
+
+
     void *myCasette;
 };
 
@@ -160,3 +174,5 @@ struct ZaynPlatform
 ZaynMemory *Zayn = NULL;
 
 InputManager *Input = NULL;
+
+InputDevice *Keyboard = NULL;

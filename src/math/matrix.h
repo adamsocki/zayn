@@ -722,9 +722,22 @@ inline mat4 Orthographic(real32 left, real32 right, real32 bottom, real32 top, r
 
 
 // Points down +Z, with right-handed coordinate system
-inline mat4 Perspective(real32 vFOV, real32 aspect, real32 nearPlane, real32 farPlane) {
+inline mat4 Perspective(real32 vFOV, real32 aspect, real32 near, real32 far) {
 
-    real32 top = nearPlane * tanf(vFOV * 0.5f);
+
+    // mat4 projectionMatrix;
+    // assert(glm::abs(aspect - std::numeric_limits<float>::epsilon()) > 0.0f);
+    // const float tanHalfFovy = tan(vFOV / 2.f);
+    // projectionMatrix = Identity4();
+    
+    // projectionMatrix.m00 = 1.f / (aspect * tanHalfFovy);
+    // projectionMatrix.m11 = 1.f / (tanHalfFovy);
+    // projectionMatrix.m22 = far / (far - near);
+    // projectionMatrix.m23 = 1.f;
+    // projectionMatrix.m32 = -(far * near) / (far - near);
+
+    // return projectionMatrix;
+    real32 top = near * tanf(vFOV * 0.5f);
     real32 bottom = -top;
 
     real32 left = -aspect * top;
@@ -732,10 +745,10 @@ inline mat4 Perspective(real32 vFOV, real32 aspect, real32 nearPlane, real32 far
 
     mat4 result;
 
-    result.columns[0] = V4(2 * nearPlane / (left - right), 0.0f, 0.0f, 0.0f); // (1, 0, 0)
-    result.columns[1] = V4(0.0f, 2 * nearPlane / (top - bottom), 0.0f, 0.0f); // (0, 1, 0)
-    result.columns[2] = -V4((left + right) / (left - right), (top + bottom) / (top - bottom), -(farPlane + nearPlane) / (farPlane - nearPlane), -1.0f);
-    result.columns[3] = V4(0.0f, 0.0f, -(2 * nearPlane * farPlane) / (farPlane - nearPlane), 0.0f);
+    result.columns[0] = V4(2 * near / (left - right), 0.0f, 0.0f, 0.0f); // (1, 0, 0)
+    result.columns[1] = V4(0.0f, 2 * near / (top - bottom), 0.0f, 0.0f); // (0, 1, 0)
+    result.columns[2] = -V4((left + right) / (left - right), (top + bottom) / (top - bottom), -(far + near) / (far - near), -1.0f);
+    result.columns[3] = V4(0.0f, 0.0f, -(2 * near * far) / (far - near), 0.0f);
 
     return result;
 }
@@ -966,6 +979,60 @@ inline mat4 invert(mat4 src) {
     //     return mat4 val = NULL;
 }
 
+mat4 SetViewDirection(vec3 position, vec3 direction, vec3 up)
+{
+    mat4 viewMatrix;
+    vec3 w = Normalize(direction);
+    vec3 u = Normalize(Cross(w, up));
+    vec3 v = Cross(w, u);
+
+    viewMatrix = Identity4();
+    viewMatrix.m00 = u.x;
+    viewMatrix.m10 = u.y;
+    viewMatrix.m20 = u.z;
+    viewMatrix.m01 = v.x;
+    viewMatrix.m11 = v.y;
+    viewMatrix.m21 = v.z;
+    viewMatrix.m02 = w.x;
+    viewMatrix.m12 = w.y;
+    viewMatrix.m22 = w.z;
+    viewMatrix.m30 = -Dot(u, position);
+    viewMatrix.m31 = -Dot(v, position);
+    viewMatrix.m32 = -Dot(w, position);
+
+    return viewMatrix;
+}
+
+mat4 SetViewTarget(vec3 position, vec3 target, vec3 up)
+{
+    return SetViewDirection(position, target - position, up);
+}
+
+// void SetViewYXZ(glm::vec3 position, glm::vec3 rotation)
+// {
+//     const float c3 = glm::cos(rotation.z);
+//     const float s3 = glm::sin(rotation.z);
+//     const float c2 = glm::cos(rotation.x);
+//     const float s2 = glm::sin(rotation.x);
+//     const float c1 = glm::cos(rotation.y);
+//     const float s1 = glm::sin(rotation.y);
+//     const glm::vec3 u{(c1 * c3 + s1 * s2 * s3), (c2 * s3), (c1 * s2 * s3 - c3 * s1)};
+//     const glm::vec3 v{(c3 * s1 * s2 - c1 * s3), (c2 * c3), (c1 * c3 * s2 + s1 * s3)};
+//     const glm::vec3 w{(c2 * s1), (-s2), (c1 * c2)};
+//     viewMatrix = glm::mat4{1.f};
+//     viewMatrix[0][0] = u.x;
+//     viewMatrix[1][0] = u.y;
+//     viewMatrix[2][0] = u.z;
+//     viewMatrix[0][1] = v.x;
+//     viewMatrix[1][1] = v.y;
+//     viewMatrix[2][1] = v.z;
+//     viewMatrix[0][2] = w.x;
+//     viewMatrix[1][2] = w.y;
+//     viewMatrix[2][2] = w.z;
+//     viewMatrix[3][0] = -glm::dot(u, position);
+//     viewMatrix[3][1] = -glm::dot(v, position);
+//     viewMatrix[3][2] = -glm::dot(w, position);
+// }
 
 
 inline vec4 transform(mat4 left, vec4 right) {
@@ -984,11 +1051,6 @@ inline vec4 transform(mat4 left, vec4 right) {
 
     return dest;
 }
-
-
-
-
-
 
 
 inline mat4 LookAt(vec3 camPos, vec3 pt, vec3 Y) {

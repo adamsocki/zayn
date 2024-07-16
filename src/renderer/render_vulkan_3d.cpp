@@ -136,6 +136,8 @@ void populateDebugMessengerCreateInfo(VkDebugUtilsMessengerCreateInfoEXT &create
     createInfo.pUserData = nullptr; // Optional
 }
 
+
+
 void SetupDebugMessenger(ZaynMemory *zaynMem)
 {
     if (!enableValidationLayers)
@@ -559,7 +561,7 @@ PipelineConfigInfo MakeMyDefaultPipelineConfig(ZaynMemory *zaynMem, uint32_t wid
     pipelineConfigInfo.depthStencilInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_DEPTH_STENCIL_STATE_CREATE_INFO;
     pipelineConfigInfo.depthStencilInfo.depthTestEnable = VK_TRUE;
     pipelineConfigInfo.depthStencilInfo.depthWriteEnable = VK_TRUE;
-    pipelineConfigInfo.depthStencilInfo.depthCompareOp = VK_COMPARE_OP_LESS;
+    pipelineConfigInfo.depthStencilInfo.depthCompareOp = VK_COMPARE_OP_LESS_OR_EQUAL;
     pipelineConfigInfo.depthStencilInfo.depthBoundsTestEnable = VK_FALSE;
     pipelineConfigInfo.depthStencilInfo.minDepthBounds = 0.0f; // Optional
     pipelineConfigInfo.depthStencilInfo.maxDepthBounds = 1.0f; // Optional
@@ -1136,6 +1138,10 @@ void CreateCommandBuffers(ZaynMemory *zaynMem)
     // }
 }
 
+void CompareSwapChains(ZaynMemory* zaynMem)
+{
+    
+}
 void RecreateSwapChain(ZaynMemory* zaynMem)
 {
     int width = 0, height = 0;
@@ -1149,20 +1155,34 @@ void RecreateSwapChain(ZaynMemory* zaynMem)
 
     vkDeviceWaitIdle(zaynMem->vkDevice);
 
-    // CreateSwapChain(zaynMem);
 
-    if (zaynMem->vkSwapChain != nullptr)
+    if (zaynMem->vkSwapChain == nullptr)
     {
-        if (zaynMem->vkSwapChainImages.size() != zaynMem->vkCommandBuffers.size()) 
-        {
-            FreeCommandBuffers(zaynMem);
-            CreateCommandBuffers(zaynMem);
-        }
+
+        
+         MySwapChainCreation(zaynMem);
+
+
+
+        // if (zaynMem->vkSwapChainImages.size() != zaynMem->vkCommandBuffers.size()) 
+        // {
+        //     FreeCommandBuffers(zaynMem);
+        //     CreateCommandBuffers(zaynMem);
+        // }
+    }
+    else
+    {
+        zaynMem->vkOldSwapChain = zaynMem->vkSwapChain;
+        MySwapChainCreation(zaynMem);
+//         if (zaynMem->vkSwapChain.swapChainDepthFormat == zaynMem->vkswapChainDepthFormat &&
+//            zaynMem->vkSwapChain.swapChainImageFormat == swapChainImageFormat)
+//   })
     }
    
-    // CreatePipeline(zaynMem);
 
 }
+
+
 
 
 void bindCommandBufferToPipeline(VkCommandBuffer commandBuffer)
@@ -1217,8 +1237,9 @@ void RenderEntity_3D(ZaynMemory *zaynMem, VkCommandBuffer imageBuffer,  Entity* 
     {
         PushConstantData3D pushData;
 
+        // mat4 cameraViewMatrix = zaynMem->camera.projection * zaynMem->camera.viewMatrix;
         mat4 model = TRS(entity->transform3d.translation, AxisAngle(entity->transform3d.rotation, entity->transform3d.angleRotation), entity->transform3d.scale);
-        pushData.transform = Identity4() * model;
+        pushData.transform = zaynMem->camera.viewProjection * model;
         // pushData.offset = entity->transform2d.translation;
         pushData.color = entity->color;
         // pushData.scale = entity->transform2d.scale;
@@ -1495,6 +1516,8 @@ void InitRender_Learn(ZaynMemory *zaynMem)
     MySwapChainCreation(zaynMem);
 
     CreatePipelineLayout(zaynMem);
+    
+
 
     // std::vector<Vertex> vertices = {
     //     {{0.0f, -0.5f}, {0.4f, 0.6f, 0.2f}},
@@ -1533,12 +1556,14 @@ void UpdateRender_Learn(ZaynMemory *zaynMem)
 {
     // DrawFrame(zaynMem);
 
-    if (BeginFrame(zaynMem) )
+   if (BeginFrame(zaynMem) )
     {
         BeginSwapChainRenderPass(zaynMem, zaynMem->vkCommandBuffers[zaynMem->vkCurrentFrame]);
 
+
+
         Monkey *testMonkey = GetEntity(&Casette->em, Monkey, zaynMem->monkeyHandle1);
-        testMonkey->transform3d.angleRotation += 0.009f;
+        // testMonkey->transform3d.angleRotation += 0.0009f;
 
         RenderEntity_3D(zaynMem, zaynMem->vkCommandBuffers[zaynMem->vkCurrentFrame], testMonkey);
 
@@ -1561,4 +1586,13 @@ void RenderCleanup(ZaynMemory *zaynMem)
     }
 
     vkDeviceWaitIdle(zaynMem->vkDevice);
+
+    vkDestroyBuffer(zaynMem->vkDevice, zaynMem->vkVertexBuffer, nullptr);
+    vkFreeMemory(zaynMem->vkDevice, zaynMem->vkVertexBufferMemory, nullptr);
+
+    if (zaynMem->vkHasIndexBuffer)
+    {
+        vkDestroyBuffer(zaynMem->vkDevice, zaynMem->vkIndexBuffer, nullptr);
+        vkFreeMemory(zaynMem->vkDevice, zaynMem->vkIndexBufferMemory, nullptr);
+    }
 }

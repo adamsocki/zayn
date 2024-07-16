@@ -69,6 +69,7 @@ union vec4i {
 };
 
 #define UP V3(0, 1, 0)
+#define UP_V V3(0, -1, 0)
 #define LEFT V3(1, 0, 0)
 #define FORWARD V3(0, 0, 1)
 
