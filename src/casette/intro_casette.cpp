@@ -47,13 +47,13 @@ void InitCasette(ZaynMemory *zaynMem)
     
 
     Monkey* testMonkey = GetEntity(&Casette->em, Monkey, zaynMem->monkeyHandle1);
-    testMonkey->model = &zaynMem->model1;
+    testMonkey->model = &zaynMem->model2;
     testMonkey->color = V3(0.1f, 0.2f, 0.6f);
     // testMonkey->transform2d.translation = V2(-0.4f, 0.0f);
     // mat2 sc = Scale2();
     // testMonkey->transform2d.scale = V2(3.4f, 0.12f);
     testMonkey->transform3d.translation = V3(0.0f, 0.0f, 0.53f);
-    testMonkey->transform3d.scale = V3(0.125f, 0.125f, 0.125f);
+    testMonkey->transform3d.scale = V3(1.0f, 1.0f, 1.0f);
     testMonkey->transform3d.rotation = V3(0.3f, 1.0f, 0.4f);
     testMonkey->transform3d.angleRotation = 5.0f;
 
@@ -102,6 +102,16 @@ void UpdateAndRenderCasette(ZaynMemory *zaynMem)
     }
 
 
+    if (InputHeld(Keyboard, Input_W))
+    {
+        zaynMem->camera.pos.z += 0.004f;
+    }
+
+    if (InputHeld(Keyboard, Input_S))
+    {
+        zaynMem->camera.pos.z -= 0.004f;
+    }
+
 
     Monkey* testMonkey = GetEntity(&Casette->em, Monkey, zaynMem->monkeyHandle1);
     // if(Inp)
@@ -111,18 +121,18 @@ void UpdateAndRenderCasette(ZaynMemory *zaynMem)
     testMonkey->transform3d.angleRotation += 0.009f;
     testMonkey->posTest -= 0.01;
 
-    zaynMem->camera.pos.z -= 0.008f;
+    // zaynMem->camera.pos.z -= 1.0f;
 
     zaynMem->camera.frameCount += 1;
 
     // Define a base speed and an acceleration factor
-    float baseSpeed = 0.000005f;
-    float acceleration = 0.00013f;
+    float baseSpeed = 0.0;
+    float acceleration = 0.00000f;
 
     // Calculate the new speed
     float currentSpeed = baseSpeed + (acceleration * zaynMem->camera.frameCount);
 
-    zaynMem->camera.pos.z -= currentSpeed;
+    // zaynMem->camera.pos.z -= currentSpeed;
 
     //    Camera *cam = &Game->camera;
     zaynMem->camera.type = CameraType_Perspective;

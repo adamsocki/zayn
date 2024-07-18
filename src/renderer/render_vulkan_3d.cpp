@@ -1250,8 +1250,8 @@ void RenderEntity_3D(ZaynMemory *zaynMem, VkCommandBuffer imageBuffer,  Entity* 
 
         // pushData.transform = rotMatrix * Scale2(entity->transform2d.scale);
         vkCmdPushConstants(imageBuffer, zaynMem->vkPipelineLayout, VK_SHADER_STAGE_VERTEX_BIT | VK_SHADER_STAGE_FRAGMENT_BIT, 0, sizeof(PushConstantData3D), &pushData);
-        BindModel(imageBuffer, &zaynMem->model1);
-        DrawModel(imageBuffer, &zaynMem->model1);
+        BindModel(imageBuffer, entity->model);
+        DrawModel(imageBuffer, entity->model);
     }
 }
 
@@ -1527,12 +1527,18 @@ void InitRender_Learn(ZaynMemory *zaynMem)
     //      },
     //      {0.1f, 0.1f, 0.1f}},
     //     {{-0.1f, 0.5f}, {0.9f, 0.3f, 0.9f}}};
+    Builder _modelBuilder = {};
+
     
-    std::vector<Vertex> vertices = CreateCubeModel();
-    std::cout << "vertex count: " << vertices.size()<< std::endl;
+    // _modelBuilder = CreateCubeModelBuilder();
+    // std::cout << "vertex count: " << _modelBuilder.vertices.size()<< std::endl;
     // std::vector<Vertex> vertices = {};
     // sierpinski(vertices, 3, {-1.0f, 1.0f}, {1.0f, 1.0f}, {0.0f, -1.0f});
-    ModelInit(&zaynMem->vkDevice, vertices, &zaynMem->model1, zaynMem);
+    // ModelInit(&zaynMem->vkDevice, _modelBuilder, &zaynMem->model1, zaynMem);
+
+
+    CreateModelFromFile(&zaynMem->vkDevice, "/Users/socki/dev/zayn/models/smooth_vase.obj", &zaynMem->model2, zaynMem);
+
 
     CreatePipeline(zaynMem);
     // RecreateSwapChain(zaynMem);

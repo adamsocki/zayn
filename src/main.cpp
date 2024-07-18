@@ -14,6 +14,9 @@
 #include <vulkan/vulkan_beta.h>
 #include <unistd.h>
 
+#define TINYOBJLOADER_IMPLEMENTATION
+#include "../include/tiny_obj_loader.h"
+
 
 
 #ifdef __APPLE__

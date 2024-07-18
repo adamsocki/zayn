@@ -48,6 +48,8 @@ struct ZaynMemory
     vec2 windowSize;
 
     Model model1;
+    Model model2;
+    
     Monkey monkey_1;
     EntityHandle monkeyHandle1;
 
