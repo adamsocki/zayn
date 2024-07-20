@@ -6,6 +6,13 @@ union vec2 {
     real32& operator [](const int index) {
         return data[index];
     }
+
+    // bool operator==(const vec2 &other) const
+    // {
+    //     return x == other.x && y == other.y;
+    // }
+
+    
 };
 
 union vec3 {
@@ -18,6 +25,7 @@ union vec3 {
     real32& operator [](const int index) {
         return data[index];
     }
+    
 };
 
 union vec4 {

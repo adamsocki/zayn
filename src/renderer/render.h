@@ -15,8 +15,9 @@ struct PushConstantData3D
 {
     // vec2 offset;
     mat4 transform;
+    mat4 modelMatrix;
 
-    alignas(16) vec3 color;
+    // alignas(16) vec3 color;
 };
 
 

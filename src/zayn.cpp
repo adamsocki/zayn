@@ -1,6 +1,7 @@
 
 
 #include <mach/mach_time.h>
+#include "hash.cpp"
 #include "time.cpp"
 
 #include "zayn.h"

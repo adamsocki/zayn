@@ -6,19 +6,21 @@
 
 struct Vertex
 {
-    vec3 position;
-    vec3 color;
-    vec3 normal;
-    vec2 uv;
+    glm::vec3 position;
+    glm::vec3 color;
+    glm::vec3 normal;
+    glm::vec2 uv;
 
 
     VkVertexInputBindingDescription* bindingDescriptions;
     VkVertexInputAttributeDescription* attributeDescriptions;
 
-    // bool operator==(const Vertex &other) const {
-    //   return position == other.position && color == other.color && normal == other.normal &&
-    //          uv == other.uv;
-    // }
+    bool operator==(const Vertex& other) const {
+        return position == other.position &&
+               color == other.color &&
+               normal == other.normal &&
+               uv == other.uv;
+    }
 };
 
 struct Index

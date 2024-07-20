@@ -1241,7 +1241,8 @@ void RenderEntity_3D(ZaynMemory *zaynMem, VkCommandBuffer imageBuffer,  Entity* 
         mat4 model = TRS(entity->transform3d.translation, AxisAngle(entity->transform3d.rotation, entity->transform3d.angleRotation), entity->transform3d.scale);
         pushData.transform = zaynMem->camera.viewProjection * model;
         // pushData.offset = entity->transform2d.translation;
-        pushData.color = entity->color;
+        // pushData.color = entity->color;
+        pushData.modelMatrix = model;
         // pushData.scale = entity->transform2d.scale;
         // real32 cos_ = sinf(entity->transform2d.rotation * i);
         // real32 sin_ = cosf(entity->transform2d.rotation * i);
@@ -1542,7 +1543,7 @@ void InitRender_Learn(ZaynMemory *zaynMem)
 
     CreatePipeline(zaynMem);
     // RecreateSwapChain(zaynMem);
-    CreateGraphicsPipeline(zaynMem, "/Users/socki/dev/zayn/src/renderer/shaders/vkShader_03D_vert.spv", "/Users/socki/dev/zayn/src/renderer/shaders/vkShader_03D_frag.spv", &zaynMem->MyPipelineConfigInfo);
+    CreateGraphicsPipeline(zaynMem, "/Users/socki/dev/zayn/src/renderer/shaders/vkShader_04_vert.spv", "/Users/socki/dev/zayn/src/renderer/shaders/vkShader_04_frag.spv", &zaynMem->MyPipelineConfigInfo);
 
     CreateCommandBuffers(zaynMem);
 

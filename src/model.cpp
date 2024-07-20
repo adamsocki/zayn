@@ -22,6 +22,22 @@
 #include <cstring>
 #include <unordered_map>
 
+#define GLM_ENABLE_EXPERIMENTAL
+#include <glm/gtx/hash.hpp>
+
+namespace std
+{
+    template <>
+    struct hash<Vertex>
+    {
+        size_t operator()(Vertex const &vertex) const
+        {
+            size_t seed = 0;
+            hashCombine(seed, vertex.position, vertex.color, vertex.normal, vertex.uv);
+            return seed;
+        }
+    };
+}
 
 Builder CreateCubeModelBuilder()
 {
@@ -334,7 +350,7 @@ std::vector<VkVertexInputBindingDescription> getBindingDescriptions()
 
 std::vector<VkVertexInputAttributeDescription> getAttributeDescriptions()
 {
-    std::vector<VkVertexInputAttributeDescription> attributeDescriptions(2);
+    std::vector<VkVertexInputAttributeDescription> attributeDescriptions(4);
     attributeDescriptions[0].binding = 0;
     attributeDescriptions[0].location = 0;
     attributeDescriptions[0].format = VK_FORMAT_R32G32B32_SFLOAT;
@@ -344,6 +360,16 @@ std::vector<VkVertexInputAttributeDescription> getAttributeDescriptions()
     attributeDescriptions[1].location = 1;
     attributeDescriptions[1].format = VK_FORMAT_R32G32B32_SFLOAT;
     attributeDescriptions[1].offset = offsetof(Vertex, color);
+
+    attributeDescriptions[2].binding = 0;
+    attributeDescriptions[2].location = 2;
+    attributeDescriptions[2].format = VK_FORMAT_R32G32B32_SFLOAT;
+    attributeDescriptions[2].offset = offsetof(Vertex, normal);
+
+    attributeDescriptions[3].binding = 0;
+    attributeDescriptions[3].location = 3;
+    attributeDescriptions[3].format = VK_FORMAT_R32G32_SFLOAT;
+    attributeDescriptions[3].offset = offsetof(Vertex, uv);
     return attributeDescriptions;
 }
 
@@ -363,7 +389,7 @@ void LoadModel(const std::string &filepath, Builder *modelBuilder, Model *model)
     modelBuilder->vertices.clear();
     modelBuilder->indices.clear();
 
-    // std::unordered_map<Vertex, uint32_t> uniqueVertices = {};
+    std::unordered_map<Vertex, uint32_t> uniqueVertices = {};
     for (const auto &shape : shapes)
     {
         for (const auto &index : shape.mesh.indices)
@@ -377,19 +403,11 @@ void LoadModel(const std::string &filepath, Builder *modelBuilder, Model *model)
                     attrib.vertices[3 * index.vertex_index + 2],
                 };
 
-                auto colorIndex = 3 * index.vertex_index + 2;
-                if (colorIndex < attrib.colors.size())
-                {
-                    vertex.color = {
-                        attrib.colors[colorIndex - 2],
-                        attrib.colors[colorIndex - 1],
-                        attrib.colors[colorIndex - 0],
-                    };
-                }
-                else
-                {
-                    vertex.color = {1.f, 1.f, 1.f}; // set default color
-                }
+                 vertex.color = {
+                    attrib.colors[3 * index.vertex_index + 0],
+                    attrib.colors[3 * index.vertex_index + 1],
+                    attrib.colors[3 * index.vertex_index + 2],
+                };
             }
 
             if (index.normal_index >= 0)
@@ -409,15 +427,17 @@ void LoadModel(const std::string &filepath, Builder *modelBuilder, Model *model)
                 };
             }
 
-            modelBuilder->vertices.push_back(vertex);
+            // modelBuilder->vertices.push_back(vertex);
 
-            // if (uniqueVertices.count(vertex) == 0)
-            // {
-            //     uniqueVertices[vertex] = static_cast<uint32_t>(modelBuilder->vertices.size());
-            //     modelBuilder->vertices.push_back(vertex);
-            // }
-            // modelBuilder->indices.push_back(uniqueVertices[vertex]);
+            if (uniqueVertices.count(vertex) == 0)
+            {
+                uniqueVertices[vertex] = static_cast<uint32_t>(modelBuilder->vertices.size());
+                modelBuilder->vertices.push_back(vertex);
+            }
+            modelBuilder->indices.push_back(uniqueVertices[vertex]);
+            
         }
+        std::cout << "Unique vertices:  " << uniqueVertices.size() << std::endl;
     }
 }
 
@@ -427,6 +447,8 @@ void CreateModelFromFile(VkDevice *device, const std::string &filepath, Model *m
     
     
     LoadModel(filepath, &modelBuilder, model); 
+    std::cout << "Vertex Size Count: " << modelBuilder.vertices.size() << std::endl;
+    std::cout << "Index Size Count: " << modelBuilder.indices.size() << std::endl;
     ModelInit(&zaynMem->vkDevice, modelBuilder, model, zaynMem);
 
 }
