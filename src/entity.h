@@ -2,6 +2,7 @@ enum EntityType
 {
     EntityType_Entity, 
     EntityType_Monkey,
+    EntityType_Casette_Entity,
 
     EntityType_Count 
 };
@@ -70,6 +71,11 @@ struct Player : public Entity {
     int32 level;
 };
 
+struct Casette_Entity : Entity
+{
+
+};
+
 struct Monkey : Entity 
 {
     bool testingBool;
@@ -84,13 +90,15 @@ int32 EntitySizeTable[] =
 {
     sizeof(Entity),
     sizeof(Monkey),
+    sizeof(Casette_Entity),
     0,
 };
 
 int32 entityTypeCounts[] = 
 {
     50, 
-    20
+    20,
+    100
 }; 
 
 

@@ -297,6 +297,32 @@ void CreateIndexBuffer(const std::vector<uint32_t> &indices, Model* model, ZaynM
     vkFreeMemory(zaynMem->vkDevice, stagingBufferMemory, nullptr);
 }
 
+void CreateUniformBuffers(ZaynMemory* zaynMem)
+{
+    VkDeviceSize bufferSize = sizeof(UniformBufferObject);
+
+    zaynMem->vkUniformBuffers.resize(zaynMem->VK_MAX_FRAMES_IN_FLIGHT);
+    zaynMem->vkUniformBuffersMemory.resize(zaynMem->VK_MAX_FRAMES_IN_FLIGHT);
+    zaynMem->vkUniformBuffersMapped.resize(zaynMem->VK_MAX_FRAMES_IN_FLIGHT);
+
+    for (size_t i = 0; i < zaynMem->VK_MAX_FRAMES_IN_FLIGHT; i++) 
+    {
+        CreateBuffer(bufferSize, 
+                    VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT, 
+                    VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT, 
+                    zaynMem->vkUniformBuffers[i], 
+                    zaynMem->vkUniformBuffersMemory[i],
+                    zaynMem);
+
+        vkMapMemory(zaynMem->vkDevice, 
+                    zaynMem->vkUniformBuffersMemory[i], 
+                    0, 
+                    bufferSize, 
+                    0, 
+                    &zaynMem->vkUniformBuffersMapped[i]);
+    }
+}
+
 void DrawModel(VkCommandBuffer commandBuffer, Model* model)
 {
     if (model->hasIndexBuffer) 
@@ -327,8 +353,11 @@ void ModelInit(VkDevice *device, Builder modelBuilder, Model *model, ZaynMemory*
 
     CreateVertexBuffers(modelBuilder.vertices, model, zaynMem);
     CreateIndexBuffer(modelBuilder.indices, model, zaynMem);
-
+    CreateUniformBuffers(zaynMem);
+   
+    
 }
+
 
 // void EntityInit(VkDevice *device, const std::vector<Vertex>& vertices, Enitty *model, ZaynMemory* zaynMem)
 // {
@@ -451,4 +480,57 @@ void CreateModelFromFile(VkDevice *device, const std::string &filepath, Model *m
     std::cout << "Index Size Count: " << modelBuilder.indices.size() << std::endl;
     ModelInit(&zaynMem->vkDevice, modelBuilder, model, zaynMem);
 
+}
+
+void CreateDescriptorPools(ZaynMemory *zaynMem)
+{
+    VkDescriptorPoolSize poolSize{};
+    poolSize.type = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
+    poolSize.descriptorCount = static_cast<uint32_t>(zaynMem->VK_MAX_FRAMES_IN_FLIGHT);
+
+    VkDescriptorPoolCreateInfo poolInfo{};
+    poolInfo.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_POOL_CREATE_INFO;
+    poolInfo.poolSizeCount = 1;
+    poolInfo.pPoolSizes = &poolSize;
+    poolInfo.maxSets = static_cast<uint32_t>(zaynMem->VK_MAX_FRAMES_IN_FLIGHT);
+
+    if (vkCreateDescriptorPool(zaynMem->vkDevice, &poolInfo, nullptr, &zaynMem->vkDescriptorPool) != VK_SUCCESS)
+    {
+        throw std::runtime_error("failed to create descriptor pool!");
+    }
+}
+
+void CreateDescriptorSets(ZaynMemory *zaynMem)
+{
+    std::vector<VkDescriptorSetLayout> layouts(zaynMem->VK_MAX_FRAMES_IN_FLIGHT, zaynMem->vkDescriptorSetLayout);
+    VkDescriptorSetAllocateInfo allocInfo{};
+    allocInfo.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_ALLOCATE_INFO;
+    allocInfo.descriptorPool = zaynMem->vkDescriptorPool;
+    allocInfo.descriptorSetCount = static_cast<uint32_t>(zaynMem->VK_MAX_FRAMES_IN_FLIGHT);
+    allocInfo.pSetLayouts = layouts.data();
+
+    zaynMem->vkDescriptorSets.resize(zaynMem->VK_MAX_FRAMES_IN_FLIGHT);
+    if (vkAllocateDescriptorSets(zaynMem->vkDevice, &allocInfo, zaynMem->vkDescriptorSets.data()) != VK_SUCCESS)
+    {
+        throw std::runtime_error("failed to allocate descriptor sets!");
+    }
+
+    for (size_t i = 0; i < zaynMem->VK_MAX_FRAMES_IN_FLIGHT; i++)
+    {
+        VkDescriptorBufferInfo bufferInfo{};
+        bufferInfo.buffer = zaynMem->vkUniformBuffers[i];
+        bufferInfo.offset = 0;
+        bufferInfo.range = sizeof(UniformBufferObject);
+
+        VkWriteDescriptorSet descriptorWrite{};
+        descriptorWrite.sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
+        descriptorWrite.dstSet = zaynMem->vkDescriptorSets[i];
+        descriptorWrite.dstBinding = 0;
+        descriptorWrite.dstArrayElement = 0;
+        descriptorWrite.descriptorType = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
+        descriptorWrite.descriptorCount = 1;
+        descriptorWrite.pBufferInfo = &bufferInfo;
+
+        vkUpdateDescriptorSets(zaynMem->vkDevice, 1, &descriptorWrite, 0, nullptr);
+    }
 }

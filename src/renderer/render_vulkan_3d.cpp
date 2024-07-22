@@ -15,7 +15,9 @@ const std::vector<const char *> deviceExtensions = {VK_KHR_SWAPCHAIN_EXTENSION_N
 const std::vector<const char *> deviceExtensions = {VK_KHR_SWAPCHAIN_EXTENSION_NAME, "VK_KHR_portability_subset"};
 #endif
 
-const int MAX_FRAMES_IN_FLIGHT = 2;
+// const int MAX_FRAMES_IN_FLIGHT = 2;
+
+
 
 struct SwapChainSupportDetails
 {
@@ -1036,9 +1038,9 @@ void CreateFrameBuffers(ZaynMemory *zaynMem)
 
 void CreateSyncObjects(ZaynMemory *zaynMem)
 {
-    zaynMem->vkImageAvailableSemaphores.resize(MAX_FRAMES_IN_FLIGHT);
-    zaynMem->vkRenderFinishedSemaphores.resize(MAX_FRAMES_IN_FLIGHT);
-    zaynMem->vkInFlightFences.resize(MAX_FRAMES_IN_FLIGHT);
+    zaynMem->vkImageAvailableSemaphores.resize(zaynMem->VK_MAX_FRAMES_IN_FLIGHT);
+    zaynMem->vkRenderFinishedSemaphores.resize(zaynMem->VK_MAX_FRAMES_IN_FLIGHT);
+    zaynMem->vkInFlightFences.resize(zaynMem->VK_MAX_FRAMES_IN_FLIGHT);
     zaynMem->vkImagesInFlight.resize(zaynMem->vkSwapChainImages.size(), VK_NULL_HANDLE);
 
     VkSemaphoreCreateInfo semaphoreInfo = {};
@@ -1048,7 +1050,7 @@ void CreateSyncObjects(ZaynMemory *zaynMem)
     fenceInfo.sType = VK_STRUCTURE_TYPE_FENCE_CREATE_INFO;
     fenceInfo.flags = VK_FENCE_CREATE_SIGNALED_BIT;
 
-    for (size_t i = 0; i < MAX_FRAMES_IN_FLIGHT; i++)
+    for (size_t i = 0; i < zaynMem->VK_MAX_FRAMES_IN_FLIGHT; i++)
     {
         if (vkCreateSemaphore(zaynMem->vkDevice, &semaphoreInfo, nullptr, &zaynMem->vkImageAvailableSemaphores[i]) !=
                 VK_SUCCESS ||
@@ -1092,8 +1094,8 @@ void CreatePipelineLayout(ZaynMemory *zaynMem)
 
     VkPipelineLayoutCreateInfo pipelineLayoutInfo = {};
     pipelineLayoutInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_LAYOUT_CREATE_INFO;
-    pipelineLayoutInfo.setLayoutCount = 0;
-    pipelineLayoutInfo.pSetLayouts = nullptr;
+    pipelineLayoutInfo.setLayoutCount = 1;
+    pipelineLayoutInfo.pSetLayouts = &zaynMem->vkDescriptorSetLayout;  
     pipelineLayoutInfo.pushConstantRangeCount = 1;
     pipelineLayoutInfo.pPushConstantRanges = &pushConstantRange;
     if (vkCreatePipelineLayout(zaynMem->vkDevice, &pipelineLayoutInfo, nullptr, &zaynMem->vkPipelineLayout) != VK_SUCCESS)
@@ -1233,6 +1235,9 @@ void RenderEntity_3D(ZaynMemory *zaynMem, VkCommandBuffer imageBuffer,  Entity* 
 {
     vkCmdBindPipeline(imageBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, zaynMem->vkGraphicsPipeline);
 
+    vkCmdBindDescriptorSets(imageBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, zaynMem->vkPipelineLayout, 0, 1, &zaynMem->vkDescriptorSets[zaynMem->vkCurrentFrame], 0, nullptr);
+
+
     for (int i = 0; i < 1; i++)
     {
         PushConstantData3D pushData;
@@ -1351,6 +1356,27 @@ bool BeginFrame(ZaynMemory *zaynMem)
     return true;
 }
 
+
+void UpdateUniformBuffer(uint32_t imageIndex, ZaynMemory* zaynMem)
+{
+    UniformBufferObject ubo{};
+
+    // ubo.model = glm::rotate(glm::mat4(1.0f), time * glm::radians(90.0f), glm::vec3(0.0f, 0.0f, 1.0f));
+    // ubo.view = glm::lookAt(glm::vec3(2.0f, 2.0f, 2.0f), glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(0.0f, 0.0f, 1.0f));
+    // ubo.proj = glm::perspective(glm::radians(45.0f), swapChainExtent.width / (float)swapChainExtent.height, 0.1f, 10.0f);
+    // ubo.proj[1][1] *= -1;
+    ubo.view = zaynMem->camera.viewProjection;
+//     layout(set = 0, binding = 0) uniform GlobalUbo {
+//   mat4 projectionViewMatrix;
+//   vec3 directionToLight;
+// } ubo;
+
+    memcpy(zaynMem->vkUniformBuffersMapped[imageIndex], &ubo, sizeof(ubo));
+}
+
+
+
+
 VkResult SubmitCommandBuffers(const VkCommandBuffer *buffers, uint32_t *imageIndex, ZaynMemory *zaynMem)
 {
     if (zaynMem->vkImagesInFlight[*imageIndex] != VK_NULL_HANDLE)
@@ -1395,7 +1421,7 @@ VkResult SubmitCommandBuffers(const VkCommandBuffer *buffers, uint32_t *imageInd
 
     auto result = vkQueuePresentKHR(zaynMem->vkPresentQueue, &presentInfo);
 
-    zaynMem->vkCurrentFrame = (zaynMem->vkCurrentFrame + 1) % MAX_FRAMES_IN_FLIGHT;
+    zaynMem->vkCurrentFrame = (zaynMem->vkCurrentFrame + 1) % zaynMem->VK_MAX_FRAMES_IN_FLIGHT;
 
     return result;
 }
@@ -1424,10 +1450,31 @@ void EndFrame(ZaynMemory *zaynMem)
 
     zaynMem->vkIsFrameStarted = false;
 
-    zaynMem->vkCurrentFrame = (zaynMem->vkCurrentFrame + 1) % MAX_FRAMES_IN_FLIGHT;
+    zaynMem->vkCurrentFrame = (zaynMem->vkCurrentFrame + 1) % zaynMem->VK_MAX_FRAMES_IN_FLIGHT;
 
 }
 
+
+void CreateDescriptorSetLayout(ZaynMemory* zaynMem)
+{
+    VkDescriptorSetLayoutBinding uboLayoutBinding{};
+    uboLayoutBinding.binding = 0;
+    uboLayoutBinding.descriptorType = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
+    uboLayoutBinding.descriptorCount = 1;
+    uboLayoutBinding.pImmutableSamplers = nullptr; // Optional
+
+    uboLayoutBinding.stageFlags = VK_SHADER_STAGE_VERTEX_BIT;
+
+    VkDescriptorSetLayoutCreateInfo layoutInfo{};
+    layoutInfo.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_LAYOUT_CREATE_INFO;
+    layoutInfo.bindingCount = 1;
+    layoutInfo.pBindings = &uboLayoutBinding;
+
+    if (vkCreateDescriptorSetLayout(zaynMem->vkDevice, &layoutInfo, nullptr, &zaynMem->vkDescriptorSetLayout) != VK_SUCCESS)
+    {
+        throw std::runtime_error("failed to create descriptor set layout!");
+    }
+}
 
 void BeginSwapChainRenderPass(ZaynMemory* zaynMem, VkCommandBuffer commandBuffer)
 {
@@ -1516,6 +1563,8 @@ void InitRender_Learn(ZaynMemory *zaynMem)
 
     MySwapChainCreation(zaynMem);
 
+    CreateDescriptorSetLayout(zaynMem);
+
     CreatePipelineLayout(zaynMem);
     
 
@@ -1539,10 +1588,16 @@ void InitRender_Learn(ZaynMemory *zaynMem)
 
 
     CreateModelFromFile(&zaynMem->vkDevice, "/Users/socki/dev/zayn/models/smooth_vase.obj", &zaynMem->model2, zaynMem);
+    CreateModelFromFile(&zaynMem->vkDevice, "/Users/socki/dev/zayn/models/casette_model_very_simple.obj", &zaynMem->casette_model, zaynMem);
+    
 
+
+    CreateDescriptorPools(zaynMem);
+    CreateDescriptorSets(zaynMem);
 
     CreatePipeline(zaynMem);
-    // RecreateSwapChain(zaynMem);
+    // RecreateSwapChain(zaynMem);'
+
     CreateGraphicsPipeline(zaynMem, "/Users/socki/dev/zayn/src/renderer/shaders/vkShader_04_vert.spv", "/Users/socki/dev/zayn/src/renderer/shaders/vkShader_04_frag.spv", &zaynMem->MyPipelineConfigInfo);
 
     CreateCommandBuffers(zaynMem);
@@ -1565,14 +1620,29 @@ void UpdateRender_Learn(ZaynMemory *zaynMem)
 
    if (BeginFrame(zaynMem) )
     {
+        Monkey *testMonkey = GetEntity(&Casette->em, Monkey, zaynMem->monkeyHandle1);
+        Casette_Entity *testCasette = GetEntity(&Casette->em, Casette_Entity, zaynMem->casette_handle_1);
+        
+        // UPDATE
+        UpdateUniformBuffer(zaynMem->vkCurrentFrame, zaynMem);
+        
+        
+
+        // RENDER
+
         BeginSwapChainRenderPass(zaynMem, zaynMem->vkCommandBuffers[zaynMem->vkCurrentFrame]);
 
 
 
-        Monkey *testMonkey = GetEntity(&Casette->em, Monkey, zaynMem->monkeyHandle1);
+        // Monkey *testMonkey = GetEntity(&Casette->em, Monkey, zaynMem->monkeyHandle1);
         // testMonkey->transform3d.angleRotation += 0.0009f;
 
+
+
+
+
         RenderEntity_3D(zaynMem, zaynMem->vkCommandBuffers[zaynMem->vkCurrentFrame], testMonkey);
+        RenderEntity_3D(zaynMem, zaynMem->vkCommandBuffers[zaynMem->vkCurrentFrame], testCasette);
 
         EndSwapChainRenderPass(zaynMem, zaynMem->vkCommandBuffers[zaynMem->vkCurrentFrame]);
         EndFrame(zaynMem);
@@ -1602,4 +1672,14 @@ void RenderCleanup(ZaynMemory *zaynMem)
         vkDestroyBuffer(zaynMem->vkDevice, zaynMem->vkIndexBuffer, nullptr);
         vkFreeMemory(zaynMem->vkDevice, zaynMem->vkIndexBufferMemory, nullptr);
     }
+
+    vkDestroyDescriptorSetLayout(zaynMem->vkDevice, zaynMem->vkDescriptorSetLayout, nullptr);
+
+    for (size_t i = 0; i < zaynMem->VK_MAX_FRAMES_IN_FLIGHT; i++) 
+    {
+        vkDestroyBuffer(zaynMem->vkDevice, zaynMem->vkUniformBuffers[i], nullptr);
+        vkFreeMemory(zaynMem->vkDevice, zaynMem->vkUniformBuffersMemory[i], nullptr);
+    }
+
+    vkDestroyDescriptorSetLayout(zaynMem->vkDevice, zaynMem->vkDescriptorSetLayout, nullptr);
 }

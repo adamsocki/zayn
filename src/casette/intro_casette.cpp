@@ -16,18 +16,16 @@ void InitCasette(ZaynMemory *zaynMem)
     memset(zaynMem->myCasette, 0, sizeof(MyCasette));
     Casette = (MyCasette*)zaynMem->myCasette;
 
-    // InitEntityManager();
-
-
-    // InitCoordinator(&Casette->coordinator);
-
-    // RegisterComponent_Coordinator(ComponentType_Transform);
-
-    
-    
-
-
     AllocateEntityManager(&Casette->em, &zaynMem->permanentMemArena, entityTypeCounts);
+    
+    // TODO GET ALL CASETTES AVAILABLE
+    for (int i = 0; i < 1; i++)
+    {
+           }
+
+    Casette_Entity casette = {};
+    zaynMem->casette_handle_1 = AddEntity(&Casette->em, Casette_Entity, &casette);
+ 
 
     Monkey firstMonkey = {};
     firstMonkey.testingBool = true;
@@ -43,6 +41,8 @@ void InitCasette(ZaynMemory *zaynMem)
     AddEntity(&Casette->em, Monkey, &thirdMonkey);
     AddEntity(&Casette->em, Monkey, &fourthMonkey);
     AddEntity(&Casette->em, Monkey, &fifthMonkey);
+
+
 
     
 
@@ -67,7 +67,13 @@ void InitCasette(ZaynMemory *zaynMem)
     // zaynMem->camera.viewMatrix = SetViewDirection(V3(0.0f, 0.0f, 0.0f), V3(0.5f, 0.0f, 1.0f), UP_V);
     // zaynMem->camera.viewMatrix = SetViewTarget(V3(0.0f, 0.0f, testMonkey->posTest), V3(0.0f, 0.0f, 0.53f), UP_V);
 
-
+    Casette_Entity* cas = GetEntity(&Casette->em, Casette_Entity, zaynMem->casette_handle_1);
+    cas->model = &zaynMem->casette_model;
+    
+    cas->transform3d.translation = V3(3.0f, 0.0f, 0.53f);
+    cas->transform3d.scale = V3(1.0f, 1.0f, 1.0f);
+    cas->transform3d.rotation = V3(0.3f, 1.0f, 0.4f);
+    cas->transform3d.angleRotation = 5.0f;
 
     
     
@@ -111,6 +117,16 @@ void UpdateAndRenderCasette(ZaynMemory *zaynMem)
     {
         zaynMem->camera.pos.z -= 0.004f;
     }
+    if (InputHeld(Keyboard, Input_A))
+    {
+        zaynMem->camera.pos.x += 0.004f;
+    }
+
+    if (InputHeld(Keyboard, Input_D))
+    {
+        zaynMem->camera.pos.x -= 0.004f;
+    }
+
 
 
     Monkey* testMonkey = GetEntity(&Casette->em, Monkey, zaynMem->monkeyHandle1);

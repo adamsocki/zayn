@@ -4,7 +4,7 @@
 
 #include "math/math.h"
 
-
+#include "buffer.h"
 #include "model.h"
 
 #include "renderer/mesh.h"
@@ -27,6 +27,11 @@
 #include "casette/casette.h"
 
 
+enum ZaynState
+{
+    ZAYN_BASE_STATE,
+    ZAYN_CARTRIDGE_STATE
+};
 
 struct MeshCollection
 {
@@ -45,13 +50,17 @@ struct ShaderCollection
 struct ZaynMemory
 {
     GLFWwindow* window;
+    ZaynState zaynState = ZAYN_BASE_STATE;
+
     vec2 windowSize;
 
     Model model1;
     Model model2;
-    
+    Model casette_model;
+
     Monkey monkey_1;
     EntityHandle monkeyHandle1;
+    EntityHandle casette_handle_1;
 
     InputManager inputManager;
     InputDevice* keyboard;
@@ -129,6 +138,9 @@ struct ZaynMemory
 
     VkDescriptorPool vkDescriptorPool;
     std::vector<VkDescriptorSet> vkDescriptorSets;
+
+    int32 VK_MAX_FRAMES_IN_FLIGHT = 2;
+
 
     vkMesh triangleMesh;
     // AllocateTriangle(&triangleMesh, vulkanMem);
