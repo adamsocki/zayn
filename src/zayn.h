@@ -139,7 +139,22 @@ struct ZaynMemory
     VkDescriptorPool vkDescriptorPool;
     std::vector<VkDescriptorSet> vkDescriptorSets;
 
+    uint32_t vkMipLevels;
+    VkImage vkTextureImage;
+    VkDeviceMemory vkTextureImageMemory;
+    VkImageView vkTextureImageView;
+    VkSampler vkTextureSampler;
+
+    VkImage vkDepthImage;
+    VkDeviceMemory vkDepthImageMemory;
+    VkImageView vkDepthImageView;
+
+    std::vector<Vertex_> vkVertices;
+    std::vector<uint32_t> vkIndices;
+
+    
     int32 VK_MAX_FRAMES_IN_FLIGHT = 2;
+
 
 
     vkMesh triangleMesh;

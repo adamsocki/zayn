@@ -25,16 +25,28 @@
 #define GLM_ENABLE_EXPERIMENTAL
 #include <glm/gtx/hash.hpp>
 
-namespace std
-{
-    template <>
-    struct hash<Vertex>
-    {
-        size_t operator()(Vertex const &vertex) const
-        {
-            size_t seed = 0;
-            hashCombine(seed, vertex.position, vertex.color, vertex.normal, vertex.uv);
-            return seed;
+#define STB_IMAGE_IMPLEMENTATION
+#include "../include/stb_image.h"
+
+
+// namespace std
+// {
+//     template <>
+//     struct hash<Vertex>
+//     {
+//         size_t operator()(Vertex const &vertex) const
+//         {
+//             size_t seed = 0;
+//             hashCombine(seed, vertex.position, vertex.color, vertex.normal, vertex.uv);
+//             return seed;
+//         }
+//     };
+// }
+
+namespace std {
+    template<> struct hash<Vertex_> {
+        size_t operator()(Vertex_ const& vertex) const {
+            return ((hash<glm::vec3>()(vertex.pos) ^ (hash<glm::vec3>()(vertex.color) << 1)) >> 1) ^ (hash<glm::vec2>()(vertex.texCoord) << 1);
         }
     };
 }
@@ -214,6 +226,16 @@ void CreateBuffer(
     vkBindBufferMemory(zaynMem->vkDevice, buffer, bufferMemory, 0);
 }
 
+// void CreateTextureImage(ZaynMemory* zaynMem)
+// {
+//     int texWidth, texHeight, texChannels;
+//     stbi_uc* pixels = stbi_load("/Users/socki/dev/zayn/models/textures/texture_test.jpg", &texWidth, &texHeight, &texChannels, STBI_rgb_alpha);
+//     VkDeviceSize imageSize = texWidth * texHeight * 4;
+
+//     if (!pixels) {
+//         throw std::runtime_error("failed to load texture image!");
+//     }
+// }
 
 void CreateVertexBuffers(const std::vector<Vertex>& vertices, Model* model, ZaynMemory* zaynMem)
 {   // todo: update to match index buffer method below
@@ -351,6 +373,7 @@ void ModelInit(VkDevice *device, Builder modelBuilder, Model *model, ZaynMemory*
     model->vkDevice = device;
     model->vertexCount = static_cast<int32_t>(modelBuilder.vertices.size());;
 
+    // CreateTextureImage(zaynMem);
     CreateVertexBuffers(modelBuilder.vertices, model, zaynMem);
     CreateIndexBuffer(modelBuilder.indices, model, zaynMem);
     CreateUniformBuffers(zaynMem);
@@ -402,85 +425,85 @@ std::vector<VkVertexInputAttributeDescription> getAttributeDescriptions()
     return attributeDescriptions;
 }
 
-void LoadModel(const std::string &filepath, Builder *modelBuilder, Model *model)
-{
-    tinyobj::attrib_t attrib;
-    std::vector<tinyobj::shape_t> shapes;
-    std::vector<tinyobj::material_t> materials;
-    std::string warn;
-    std::string error;
+// void LoadModel(const std::string &filepath, Builder *modelBuilder, Model *model)
+// {
+//     tinyobj::attrib_t attrib;
+//     std::vector<tinyobj::shape_t> shapes;
+//     std::vector<tinyobj::material_t> materials;
+//     std::string warn;
+//     std::string error;
 
-    if (!tinyobj::LoadObj(&attrib, &shapes, &materials, &warn, &error, filepath.c_str()))
-    {
-        throw std::runtime_error(warn + error);
-    }
+//     if (!tinyobj::LoadObj(&attrib, &shapes, &materials, &warn, &error, filepath.c_str()))
+//     {
+//         throw std::runtime_error(warn + error);
+//     }
 
-    modelBuilder->vertices.clear();
-    modelBuilder->indices.clear();
+//     modelBuilder->vertices.clear();
+//     modelBuilder->indices.clear();
 
-    std::unordered_map<Vertex, uint32_t> uniqueVertices = {};
-    for (const auto &shape : shapes)
-    {
-        for (const auto &index : shape.mesh.indices)
-        {
-            Vertex vertex = {};
-            if (index.vertex_index >= 0)
-            {
-                vertex.position = {
-                    attrib.vertices[3 * index.vertex_index + 0],
-                    attrib.vertices[3 * index.vertex_index + 1],
-                    attrib.vertices[3 * index.vertex_index + 2],
-                };
+//     std::unordered_map<Vertex, uint32_t> uniqueVertices = {};
+//     for (const auto &shape : shapes)
+//     {
+//         for (const auto &index : shape.mesh.indices)
+//         {
+//             Vertex vertex = {};
+//             if (index.vertex_index >= 0)
+//             {
+//                 vertex.position = {
+//                     attrib.vertices[3 * index.vertex_index + 0],
+//                     attrib.vertices[3 * index.vertex_index + 1],
+//                     attrib.vertices[3 * index.vertex_index + 2],
+//                 };
 
-                 vertex.color = {
-                    attrib.colors[3 * index.vertex_index + 0],
-                    attrib.colors[3 * index.vertex_index + 1],
-                    attrib.colors[3 * index.vertex_index + 2],
-                };
-            }
+//                  vertex.color = {
+//                     attrib.colors[3 * index.vertex_index + 0],
+//                     attrib.colors[3 * index.vertex_index + 1],
+//                     attrib.colors[3 * index.vertex_index + 2],
+//                 };
+//             }
 
-            if (index.normal_index >= 0)
-            {
-                vertex.normal = {
-                    attrib.normals[3 * index.normal_index + 0],
-                    attrib.normals[3 * index.normal_index + 1],
-                    attrib.normals[3 * index.normal_index + 2],
-                };
-            }
+//             if (index.normal_index >= 0)
+//             {
+//                 vertex.normal = {
+//                     attrib.normals[3 * index.normal_index + 0],
+//                     attrib.normals[3 * index.normal_index + 1],
+//                     attrib.normals[3 * index.normal_index + 2],
+//                 };
+//             }
 
-            if (index.texcoord_index >= 0)
-            {
-                vertex.uv = {
-                    attrib.texcoords[2 * index.texcoord_index + 0],
-                    attrib.texcoords[2 * index.texcoord_index + 1],
-                };
-            }
+//             if (index.texcoord_index >= 0)
+//             {
+//                 vertex.uv = {
+//                     attrib.texcoords[2 * index.texcoord_index + 0],
+//                     attrib.texcoords[2 * index.texcoord_index + 1],
+//                 };
+//             }
 
-            // modelBuilder->vertices.push_back(vertex);
+//             // modelBuilder->vertices.push_back(vertex);
 
-            if (uniqueVertices.count(vertex) == 0)
-            {
-                uniqueVertices[vertex] = static_cast<uint32_t>(modelBuilder->vertices.size());
-                modelBuilder->vertices.push_back(vertex);
-            }
-            modelBuilder->indices.push_back(uniqueVertices[vertex]);
+//             if (uniqueVertices.count(vertex) == 0)
+//             {
+//                 uniqueVertices[vertex] = static_cast<uint32_t>(modelBuilder->vertices.size());
+//                 modelBuilder->vertices.push_back(vertex);
+//             }
+//             modelBuilder->indices.push_back(uniqueVertices[vertex]);
             
-        }
-        std::cout << "Unique vertices:  " << uniqueVertices.size() << std::endl;
-    }
-}
+//         }
+//         std::cout << "Unique vertices:  " << uniqueVertices.size() << std::endl;
+//     }
+// }
 
-void CreateModelFromFile(VkDevice *device, const std::string &filepath, Model *model, ZaynMemory* zaynMem)
-{
-    Builder modelBuilder = {};
+// void CreateModelFromFile(VkDevice *device, const std::string &filepath, Model *model, ZaynMemory* zaynMem)
+// {
+//     Builder modelBuilder = {};
     
     
-    LoadModel(filepath, &modelBuilder, model); 
-    std::cout << "Vertex Size Count: " << modelBuilder.vertices.size() << std::endl;
-    std::cout << "Index Size Count: " << modelBuilder.indices.size() << std::endl;
-    ModelInit(&zaynMem->vkDevice, modelBuilder, model, zaynMem);
+//     LoadModel(filepath, &modelBuilder, model); 
+//     std::cout << "Vertex Size Count: " << modelBuilder.vertices.size() << std::endl;
+//     std::cout << "Index Size Count: " << modelBuilder.indices.size() << std::endl;
+//     ModelInit(&zaynMem->vkDevice, modelBuilder, model, zaynMem);
 
-}
+// }
 
 void CreateDescriptorPools(ZaynMemory *zaynMem)
 {

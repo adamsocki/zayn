@@ -16,7 +16,14 @@ struct Camera
 
     mat4 viewProjection;
 
-    vec3 pos;
+    real32 rotation;
+    vec3 forwardDir;
+    vec3 position;
+    vec3 upDirection = V3(0.0f, 1.0f, 0.0f);
+
+    glm::vec3 pos;
+    glm::vec3 front;
+    glm::vec3 up;
 
     int32 frameCount;
 
@@ -32,5 +39,18 @@ struct Camera
     real32 bottom;
     real32 near;
     real32 far;
+
+    real32 pitch;
+    real32 yaw;
+    real32 roll;
+
+
+
+    real32 targetRotY;
+    vec3 targetPos;
+    real32 currentSpeed;
+    real32 targetSpeed;
+    real32 targetTurnSpeed;
+    real32 currentTurnSpeed;
 
 };

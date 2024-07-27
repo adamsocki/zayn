@@ -23,6 +23,11 @@ void InitCasette(ZaynMemory *zaynMem)
     {
            }
 
+
+    InGameCameraInit();
+
+    
+
     Casette_Entity casette = {};
     zaynMem->casette_handle_1 = AddEntity(&Casette->em, Casette_Entity, &casette);
  
@@ -63,7 +68,7 @@ void InitCasette(ZaynMemory *zaynMem)
     InitRender_Learn(zaynMem);
 
     testMonkey->posTest = 0.0f; 
-    zaynMem->camera.pos = V3(0.0f,0.0f,0.0f);
+    // zaynMem->camera.pos = V3(0.0f,0.0f,0.0f);
     // zaynMem->camera.viewMatrix = SetViewDirection(V3(0.0f, 0.0f, 0.0f), V3(0.5f, 0.0f, 1.0f), UP_V);
     // zaynMem->camera.viewMatrix = SetViewTarget(V3(0.0f, 0.0f, testMonkey->posTest), V3(0.0f, 0.0f, 0.53f), UP_V);
 
@@ -97,36 +102,12 @@ void UpdateAndRenderCasette(ZaynMemory *zaynMem)
     // ********
 	// LOGIC
 	// ********
-    // glClear(GL_COLOR_BUFFER_BIT);
-
-    //ClearColor(V4(0.1f, 0.9f, 0.4f, 1.0f));
     
-    for (int i = 0; i < Casette->em.entities[EntityType_Monkey].array.count; i++)
-    {
-        // std::cout << "hi" << std::endl;
-        // std::cout << i << std::endl;
-    }
+    
+    // UpdateInput();
 
-
-    if (InputHeld(Keyboard, Input_W))
-    {
-        zaynMem->camera.pos.z += 0.004f;
-    }
-
-    if (InputHeld(Keyboard, Input_S))
-    {
-        zaynMem->camera.pos.z -= 0.004f;
-    }
-    if (InputHeld(Keyboard, Input_A))
-    {
-        zaynMem->camera.pos.x += 0.004f;
-    }
-
-    if (InputHeld(Keyboard, Input_D))
-    {
-        zaynMem->camera.pos.x -= 0.004f;
-    }
-
+    
+    // UpdateCamera();
 
 
     Monkey* testMonkey = GetEntity(&Casette->em, Monkey, zaynMem->monkeyHandle1);
@@ -151,16 +132,29 @@ void UpdateAndRenderCasette(ZaynMemory *zaynMem)
     // zaynMem->camera.pos.z -= currentSpeed;
 
     //    Camera *cam = &Game->camera;
-    zaynMem->camera.type = CameraType_Perspective;
-    zaynMem->camera.projection = Perspective(DegToRad(80.0f), 16.0f / 9.0f, 0.1f, 1000.0f);
+    // zaynMem->camera.type = CameraType_Perspective;
+    //   real32 aspect = zaynMem->vkSwapChainExtent.width / zaynMem->vkSwapChainExtent.height;
 
-    // vec3 cameraPosition = V3(0, 0, -10);
-    quaternion cameraRotation = IdentityQuaternion();
-
-    mat4 camWorld = TRS(zaynMem->camera.pos, cameraRotation, V3(1));
-    zaynMem->camera.view = OrthogonalInverse(camWorld);
+    // zaynMem->camera.projection = Perspective(DegToRad(60.0f), aspect, 0.1f, 20000.0f);
+    // // zaynMem->camera.projection.m11 *= -1;
+    // // vec3 cameraPosition = V3(0, 0, -10);
+    // quaternion cameraRotation = IdentityQuaternion();
+    // Camera* cam = &zaynMem->camera;
+    // cam->yaw = -90 - RadToDeg(cam->targetRotY);
     
-    zaynMem->camera.viewProjection = zaynMem->camera.projection * zaynMem->camera.view;
+    // cam->front.x = cosf(DegToRad(cam->yaw)) * cosf(DegToRad(cam->pitch));
+    // cam->front.y = sinf(DegToRad(cam->pitch));
+    // cam->front.z = sinf(DegToRad(cam->yaw)) * cosf(DegToRad(cam->pitch));
+    // cam->front = Normalize(cam->front);
+
+
+    // mat4 camWorld = TRS(zaynMem->camera.pos, cameraRotation, V3(1));
+    // zaynMem->camera.view = OrthogonalInverse(camWorld);
+    
+    // zaynMem->camera.viewProjection = zaynMem->camera.projection * zaynMem->camera.view;
+
+
+    // UpdateCameraInGame();
 
     // zaynMem->camera.viewMatrix = SetViewTarget(V3(0.0f, 0.0f, testMonkey->posTest), V3(0.0f, 0.0f, 0.53f), UP_V);
 
@@ -168,18 +162,26 @@ void UpdateAndRenderCasette(ZaynMemory *zaynMem)
     // zaynMem->camera.projectionMatrix = Orthographic(-aspect, aspect, -1, 1, -1, 1);
     // zaynMem->camera.projectionMatrix = (Perspective(glm::radians(60.0f), aspect, 0.1f,13.0f));
     // zaynMem->camera.projectionMatrix = glm::perspective(glm::radians(45.0f), zaynMem->vkSwapChainExtent.width /  zaynMem->vkSwapChainExtent.height, 0.1f, 10.0f);
-   
-    if (InputHeld(Keyboard, Input_A))
+    Camera* cam = &Zayn->camera;
+
+    if (InputHeld(Keyboard, Input_W))
     {
-        std::cout << "A HELD" << std::endl;
+        cam->pos += cam->front * 0.05f;
+    }
+    if (InputHeld(Keyboard, Input_S))
+    {
+        cam->pos -= cam->front * 0.05f;
     }
 
-   UpdateRender_Learn(zaynMem);
-
-
+    UpdateRender_Learn(zaynMem);
 
     // ********
 	// RENDER
 	// ********
     // std::cout << "hi" << std::endl;
+
+
+
+
+    
 }

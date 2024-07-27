@@ -737,21 +737,48 @@ inline mat4 Perspective(real32 vFOV, real32 aspect, real32 near, real32 far) {
     // projectionMatrix.m32 = -(far * near) / (far - near);
 
     // return projectionMatrix;
-    real32 top = near * tanf(vFOV * 0.5f);
-    real32 bottom = -top;
+    // assert(abs(aspect - std::numeric_limits<real32>::epsilon()) > (0.0f));
 
-    real32 left = -aspect * top;
-    real32 right = -left;
+    // real32 tanHalfFovy = tan(vFOV / 2);
 
-    mat4 result;
+    // mat4 result = Identity4();
+    // // mat<4, 4, T, defaultp> Result(static_cast<T>(0));
+    // result.m00 = 1.0f / (aspect * tanHalfFovy);
+    // result.m11 = 1.0f / (tanHalfFovy);
+    // result.m22 = -(far + near) / (far - near);
+    // result.m23 = -1.0f;
+    // result.m32 = -(2.0f * far * near) / (far - near);
+    // return result;
+    // real32 top = near * tanf(vFOV * 0.5f);
+    // real32 bottom = -top;
 
-    result.columns[0] = V4(2 * near / (left - right), 0.0f, 0.0f, 0.0f); // (1, 0, 0)
-    result.columns[1] = V4(0.0f, 2 * near / (top - bottom), 0.0f, 0.0f); // (0, 1, 0)
-    result.columns[2] = -V4((left + right) / (left - right), (top + bottom) / (top - bottom), -(far + near) / (far - near), -1.0f);
-    result.columns[3] = V4(0.0f, 0.0f, -(2 * near * far) / (far - near), 0.0f);
+    // real32 left = -aspect * top;
+    // real32 right = -left;
+
+    // mat4 result;
+
+    // result.columns[0] = V4(2 * near / (left - right), 0.0f, 0.0f, 0.0f); // (1, 0, 0)
+    // result.columns[1] = V4(0.0f, 2 * near / (top - bottom), 0.0f, 0.0f); // (0, 1, 0)
+    // result.columns[2] = -V4((left + right) / (left - right), (top + bottom) / (top - bottom), -(far + near) / (far - near), -1.0f);
+    // result.columns[3] = V4(0.0f, 0.0f, -(2 * near * far) / (far - near), 0.0f);
+    // // result.columns[2] = V4((left + right) / (left - right), (top + bottom) / (top - bottom), (far + near) / (far - near), 1.0f);
+
+    // return result;
+    real32 tanHalfFov = tan(vFOV / 2.0f);
+
+    mat4 result = {};
+
+    result.m00 = 1.0f / (aspect * tanHalfFov);
+    result.m11 = 1.0f / tanHalfFov;
+    result.m22 = far / (far - near);
+    result.m23 = 1.0f;
+    result.m32 = -(far * near) / (far - near);
+    result.m33 = 0.0f;
 
     return result;
 }
+
+
 
 inline mat4 TranslateToMat4(vec3 vec, mat4 src)
 {

@@ -26,6 +26,7 @@
 
 
 
+#include "camera_manager.cpp"
 
 #include "casette/casette.cpp"
 
@@ -44,6 +45,8 @@ void ZaynInit(ZaynMemory *zaynMem)
 
 void ZaynUpdateAndRender(ZaynMemory *zaynMem)
 {
+
+
 
    UpdateAndRenderCasette(zaynMem);
 
