@@ -1263,63 +1263,10 @@ void RenderEntity_3D(ZaynMemory *zaynMem, VkCommandBuffer imageBuffer,  Entity* 
 
 void RecordCommandBuffer(int32 ImageIndex, ZaynMemory* zaynMem)
 {
-    // VkCommandBufferBeginInfo beginInfo{};
-    // beginInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO;
-
-    // if (vkBeginCommandBuffer(zaynMem->vkCommandBuffers[ImageIndex], &beginInfo) != VK_SUCCESS)
-    // {
-    //     throw std::runtime_error("failed to begin recording command buffer!");
-    // }
-
-    // VkRenderPassBeginInfo renderPassInfo{};
-    // renderPassInfo.sType = VK_STRUCTURE_TYPE_RENDER_PASS_BEGIN_INFO;
-    // renderPassInfo.renderPass = zaynMem->vkRenderPass;
-    // renderPassInfo.framebuffer = zaynMem->vkSwapChainFramebuffers[ImageIndex];
-
-    // renderPassInfo.renderArea.offset = {0, 0};
-    // renderPassInfo.renderArea.extent = zaynMem->vkSwapChainExtent;
-
-    // std::array<VkClearValue, 2> clearValues{};
-    // clearValues[0].color = {0.03f, 0.03f, 0.03f, 1.0f};
-    // clearValues[1].depthStencil = {1.0f, 0};
-    // renderPassInfo.clearValueCount = static_cast<uint32_t>(clearValues.size());
-    // renderPassInfo.pClearValues = clearValues.data();
-
-    // vkCmdBeginRenderPass(zaynMem->vkCommandBuffers[ImageIndex], &renderPassInfo, VK_SUBPASS_CONTENTS_INLINE);
-
-    // VkViewport viewport{};
-    // viewport.x = 0.0f;
-    // viewport.y = 0.0f;
-    // viewport.width = static_cast<float>(zaynMem->vkSwapChainExtent.width);
-    // viewport.height = static_cast<float>(zaynMem->vkSwapChainExtent.height);
-    // viewport.minDepth = 0.0f;
-    // viewport.maxDepth = 1.0f;
-    // VkRect2D scissor{{0, 0}, zaynMem->vkSwapChainExtent};
-    // vkCmdSetViewport(zaynMem->vkCommandBuffers[ImageIndex], 0, 1, &viewport);
-    // vkCmdSetScissor(zaynMem->vkCommandBuffers[ImageIndex], 0, 1, &scissor);
-
+   
     vkCmdBindPipeline(zaynMem->vkCommandBuffers[ImageIndex], VK_PIPELINE_BIND_POINT_GRAPHICS, zaynMem->vkGraphicsPipeline);
     BindModel(zaynMem->vkCommandBuffers[ImageIndex], &zaynMem->model1);
 
-    // for (int i = 0; i < 4; i++)
-    // {
-    //     PushConstantData pushData;
-    //     pushData.offset = {-0.3f + i * 0.1f, -0.7f + i * 0.2f};
-    //     pushData.color = {0.03f + i * 0.1f, 0.4f + i * 0.2f, 0.8f - i * 0.2f};
-    //     vkCmdPushConstants(zaynMem->vkCommandBuffers[ImageIndex], zaynMem->vkPipelineLayout, VK_SHADER_STAGE_VERTEX_BIT | VK_SHADER_STAGE_FRAGMENT_BIT, 0, sizeof(PushConstantData), &pushData);
-    //     DrawModel(zaynMem->vkCommandBuffers[ImageIndex], &zaynMem->model1);
-    // }
-
-    // Monkey* testMonkey = GetEntity(&Casette->em, Monkey, zaynMem->monkeyHandle1);
-    // testMonkey->transform2d.rotation += 0.009f;
-    // RenderEntity(zaynMem, zaynMem->vkCommandBuffers[ImageIndex], testMonkey);
-
-
-
-    // if (vkEndCommandBuffer(zaynMem->vkCommandBuffers[ImageIndex]) != VK_SUCCESS)
-    // {
-    //     throw std::runtime_error("failed to record command buffer!");
-    // }
 }
 
 bool BeginFrame(ZaynMemory *zaynMem)
@@ -1361,15 +1308,7 @@ void UpdateUniformBuffer(uint32_t imageIndex, ZaynMemory* zaynMem)
 {
     UniformBufferObject ubo{};
 
-    // ubo.model = glm::rotate(glm::mat4(1.0f), time * glm::radians(90.0f), glm::vec3(0.0f, 0.0f, 1.0f));
-    // ubo.view = glm::lookAt(glm::vec3(2.0f, 2.0f, 2.0f), glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(0.0f, 0.0f, 1.0f));
-    // ubo.proj = glm::perspective(glm::radians(45.0f), swapChainExtent.width / (float)swapChainExtent.height, 0.1f, 10.0f);
-    // ubo.proj[1][1] *= -1;
-    ubo.view = zaynMem->camera.viewProjection;
-//     layout(set = 0, binding = 0) uniform GlobalUbo {
-//   mat4 projectionViewMatrix;
-//   vec3 directionToLight;
-// } ubo;
+     ubo.view = zaynMem->camera.viewProjection;
 
     memcpy(zaynMem->vkUniformBuffersMapped[imageIndex], &ubo, sizeof(ubo));
 }
@@ -1485,7 +1424,6 @@ void BeginSwapChainRenderPass(ZaynMemory* zaynMem, VkCommandBuffer commandBuffer
     renderPassInfo.sType = VK_STRUCTURE_TYPE_RENDER_PASS_BEGIN_INFO;
     renderPassInfo.renderPass = zaynMem->vkRenderPass;
     renderPassInfo.framebuffer = zaynMem->vkSwapChainFramebuffers[zaynMem->vkCurrentImageIndex];
-
     renderPassInfo.renderArea.offset = {0, 0};
     renderPassInfo.renderArea.extent = zaynMem->vkSwapChainExtent;
 
@@ -1519,37 +1457,6 @@ void EndSwapChainRenderPass(ZaynMemory* zaynMem, VkCommandBuffer commandBuffer)
 }
 
 
-void DrawFrame(ZaynMemory *zaynMem)
-{
-    // uint32_t imageIndex;
-    // auto result = AcquireNextImage(&imageIndex, zaynMem);
-
-    // if (result == VK_ERROR_OUT_OF_DATE_KHR)
-    // {
-    //     RecreateSwapChain(zaynMem);
-    // }
-
-    // if (result != VK_SUCCESS && result != VK_SUBOPTIMAL_KHR)
-    // {
-    //     throw std::runtime_error("failed to acquire swap chain image!");
-    // }
-
-    // RecordCommandBuffer(imageIndex, zaynMem);
-
-    // result = SubmitCommandBuffers(&zaynMem->vkCommandBuffers[imageIndex], &imageIndex, zaynMem);
-
-    // if (result == VK_ERROR_OUT_OF_DATE_KHR || result == VK_SUBOPTIMAL_KHR || zaynMem->vkFramebufferResized)
-    // {
-    //     zaynMem->vkFramebufferResized = false;
-    //     RecreateSwapChain(zaynMem);
-    //     return;
-    // }
-    // if (result != VK_SUCCESS)
-    // {
-    //     throw std::runtime_error("failed to present swap chain image!");
-    // }
-}
-
 
 
 
@@ -1569,22 +1476,7 @@ void InitRender_Learn(ZaynMemory *zaynMem)
     
 
 
-    // std::vector<Vertex> vertices = {
-    //     {{0.0f, -0.5f}, {0.4f, 0.6f, 0.2f}},
-    //     {{
-    //          0.5f,
-    //          0.5f,
-    //      },
-    //      {0.1f, 0.1f, 0.1f}},
-    //     {{-0.1f, 0.5f}, {0.9f, 0.3f, 0.9f}}};
     Builder _modelBuilder = {};
-
-    
-    // _modelBuilder = CreateCubeModelBuilder();
-    // std::cout << "vertex count: " << _modelBuilder.vertices.size()<< std::endl;
-    // std::vector<Vertex> vertices = {};
-    // sierpinski(vertices, 3, {-1.0f, 1.0f}, {1.0f, 1.0f}, {0.0f, -1.0f});
-    // ModelInit(&zaynMem->vkDevice, _modelBuilder, &zaynMem->model1, zaynMem);
 
 
     CreateModelFromFile(&zaynMem->vkDevice, "/Users/socki/dev/zayn/models/smooth_vase.obj", &zaynMem->model2, zaynMem);
@@ -1596,7 +1488,6 @@ void InitRender_Learn(ZaynMemory *zaynMem)
     CreateDescriptorSets(zaynMem);
 
     CreatePipeline(zaynMem);
-    // RecreateSwapChain(zaynMem);'
 
     CreateGraphicsPipeline(zaynMem, "/Users/socki/dev/zayn/src/renderer/shaders/vkShader_04_vert.spv", "/Users/socki/dev/zayn/src/renderer/shaders/vkShader_04_frag.spv", &zaynMem->MyPipelineConfigInfo);
 
@@ -1611,13 +1502,8 @@ void InitRender_Learn(ZaynMemory *zaynMem)
               << std::endl; // Model model;
 }
 
-
-
-
 void UpdateRender_Learn(ZaynMemory *zaynMem)
 {
-    // DrawFrame(zaynMem);
-
    if (BeginFrame(zaynMem) )
     {
         Monkey *testMonkey = GetEntity(&Casette->em, Monkey, zaynMem->monkeyHandle1);
@@ -1626,19 +1512,9 @@ void UpdateRender_Learn(ZaynMemory *zaynMem)
         // UPDATE
         UpdateUniformBuffer(zaynMem->vkCurrentFrame, zaynMem);
         
-        
-
         // RENDER
 
         BeginSwapChainRenderPass(zaynMem, zaynMem->vkCommandBuffers[zaynMem->vkCurrentFrame]);
-
-
-
-        // Monkey *testMonkey = GetEntity(&Casette->em, Monkey, zaynMem->monkeyHandle1);
-        // testMonkey->transform3d.angleRotation += 0.0009f;
-
-
-
 
 
         RenderEntity_3D(zaynMem, zaynMem->vkCommandBuffers[zaynMem->vkCurrentFrame], testMonkey);

@@ -4,7 +4,6 @@
 #include <fstream>
 
 
-
 #ifdef NDEBUG
 const bool enableValidationLayers = false;
 #else
@@ -31,86 +30,6 @@ struct UniformBufferObject_x
     alignas(16) mat4 viewProj;
 };
 
-
-
-
-
-// const std::vector<Vertex_> vertices =
-//     {
-//         {{-0.5f, -0.5f}, {1.0f, 0.0f, 0.0f}},
-//         {{0.5f, -0.5f}, {0.0f, 1.0f, 0.0f}},
-//         {{0.5f, 0.5f}, {0.0f, 0.0f, 1.0f}},
-//         {{-0.5f, 0.5f}, {1.0f, 1.0f, 1.0f}}
-//     };
-
-// const std::vector<Vertex_> vertices = {
-//     {{-0.5f, -0.5f}, {1.0f, 0.0f, 0.0f}, {1.0f, 0.0f}},
-//     {{0.5f, -0.5f}, {0.0f, 1.0f, 0.0f}, {0.0f, 0.0f}},
-//     {{0.5f, 0.5f}, {0.0f, 0.0f, 1.0f}, {0.0f, 1.0f}},
-//     {{-0.5f, 0.5f}, {1.0f, 1.0f, 1.0f}, {1.0f, 1.0f}}
-// };
-
-// const std::vector<Vertex_> vertices = {
-//     {{-0.5f, -0.5f, 0.0f}, {1.0f, 0.0f, 0.0f}, {0.0f, 0.0f}},
-//     {{0.5f, -0.5f, 0.0f}, {0.0f, 1.0f, 0.0f}, {1.0f, 0.0f}},
-//     {{0.5f, 0.5f, 0.0f}, {0.0f, 0.0f, 1.0f}, {1.0f, 1.0f}},
-//     {{-0.5f, 0.5f, 0.0f}, {1.0f, 1.0f, 1.0f}, {0.0f, 1.0f}},
-
-//     {{-0.5f, -0.5f, -0.5f}, {1.0f, 0.0f, 0.0f}, {0.0f, 0.0f}},
-//     {{0.5f, -0.5f, -0.5f}, {0.0f, 1.0f, 0.0f}, {1.0f, 0.0f}},
-//     {{0.5f, 0.5f, -0.5f}, {0.0f, 0.0f, 1.0f}, {1.0f, 1.0f}},
-//     {{-0.5f, 0.5f, -0.5f}, {1.0f, 1.0f, 1.0f}, {0.0f, 1.0f}}
-// };
-
-// const std::vector<uint16_t> indices = {
-//     0, 1, 2, 2, 3, 0,
-//     4, 5, 6, 6, 7, 4
-// };
-
-// struct UniformBufferObject
-// {
-//   alignas(16) glm::mat4 model;
-//   alignas(16) glm::mat4 view;
-//   alignas(16) glm::mat4 proj;
-//   alignas(16) bool boolHello;
-
-// };
-
-// struct UniformBufferObject2
-// {
-//   alignas(16) glm::mat4 model;
-//   alignas(16) glm::mat4 view;
-//   alignas(16) glm::mat4 proj;
-// };
-
-// const std::vector<uint16_t> indices =
-//     {
-//         0, 1, 2, 2, 3, 0};
-
-// VkVertexInputBindingDescription getBindingDescription()
-// {
-//     VkVertexInputBindingDescription bindingDescription{};
-//     bindingDescription.binding = 0;
-//     bindingDescription.stride = sizeof(Vertex);
-//     bindingDescription.inputRate = VK_VERTEX_INPUT_RATE_VERTEX;
-//     return bindingDescription;
-// }
-
-// std::array<VkVertexInputAttributeDescription, 2> getAttributeDescriptions()
-// {
-//     std::array<VkVertexInputAttributeDescription, 2> attributeDescriptions{};
-//     attributeDescriptions[0].binding = 0;
-//     attributeDescriptions[0].location = 0;
-//     attributeDescriptions[0].format = VK_FORMAT_R32G32_SFLOAT;
-//     attributeDescriptions[0].offset = offsetof(Vertex, position);
-
-//     attributeDescriptions[1].binding = 0;
-//     attributeDescriptions[1].location = 1;
-//     attributeDescriptions[1].format = VK_FORMAT_R32G32B32_SFLOAT;
-//     attributeDescriptions[1].offset = offsetof(Vertex, color);
-
-//     return attributeDescriptions;
-// }
 
 struct SwapChainSupportDetails
 {
@@ -148,7 +67,6 @@ bool checkValidationLayerSupport()
     uint32_t layerCount;
     vkEnumerateInstanceLayerProperties(&layerCount, nullptr);
 
-    // std::vector<VkLayerProperties> availableLayers(layerCount);
     VkLayerProperties *availableLayers = (VkLayerProperties*)malloc(layerCount * sizeof(VkLayerProperties));
 
     vkEnumerateInstanceLayerProperties(&layerCount, availableLayers);
@@ -157,7 +75,6 @@ bool checkValidationLayerSupport()
     {
         bool layerFound = false;
 
-        // for (const auto &layerProperties : availableLayers)
         for (int j = 0; j < layerCount; j++)
         {
             if (strcmp(layerName, availableLayers[j].layerName) == 0)
@@ -231,7 +148,7 @@ void populateDebugMessengerCreateInfo(VkDebugUtilsMessengerCreateInfoEXT &create
     createInfo.pUserData = nullptr;  // Optional
 }
 
-void SetupDebugMessenger(ZaynMemory *zaynMem)
+void SetupDebugMessenger()
 {
     if (!enableValidationLayers)
     {
@@ -243,7 +160,7 @@ void SetupDebugMessenger(ZaynMemory *zaynMem)
 
     VkAllocationCallbacks pAllocator = {};
 
-    if (CreateDebugUtilsMessengerEXT(zaynMem->vkInstance, &createInfo, &pAllocator, &zaynMem->vkDebugMessenger) != VK_SUCCESS)
+    if (CreateDebugUtilsMessengerEXT(Zayn->vkInstance, &createInfo, &pAllocator, &Zayn->vkDebugMessenger) != VK_SUCCESS)
     {
         throw std::runtime_error("failed to set up debug messenger!");
     }
@@ -502,7 +419,7 @@ void CreateVKInstance(ZaynMemory *zaynMem)
     createInfo.enabledExtensionCount = static_cast<uint32_t>(extensions.size());
     createInfo.ppEnabledExtensionNames = extensions.data();
 
-    VkDebugUtilsMessengerCreateInfoEXT debugCreateInfo{};
+    VkDebugUtilsMessengerCreateInfoEXT debugCreateInfo = {};
     if (enableValidationLayers)
     {
         createInfo.enabledLayerCount = static_cast<uint32_t>(validationLayers.size());
@@ -1027,64 +944,59 @@ void CreateCommandPool(ZaynMemory *zaynMem)
     }
 }
 
-void recordCommandBuffer(ZaynMemory *zaynMem, VkCommandBuffer commandBuffer, uint32_t imageIndex)
+void RecordCommandBuffer(ZaynMemory *zaynMem, VkCommandBuffer commandBuffer, uint32_t imageIndex)
 {
-    VkCommandBufferBeginInfo beginInfo{};
-    beginInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO;
+   
+    // VkRenderPassBeginInfo renderPassInfo{};
+    // renderPassInfo.sType = VK_STRUCTURE_TYPE_RENDER_PASS_BEGIN_INFO;
+    // renderPassInfo.renderPass = zaynMem->vkRenderPass;
+    // renderPassInfo.framebuffer = zaynMem->vkSwapChainFramebuffers[imageIndex];
+    // renderPassInfo.renderArea.offset = {0, 0};
+    // renderPassInfo.renderArea.extent = zaynMem->vkSwapChainExtent;
 
-    if (vkBeginCommandBuffer(commandBuffer, &beginInfo) != VK_SUCCESS)
-    {
-        throw std::runtime_error("failed to begin recording command buffer!");
-    }
+    // std::array<VkClearValue, 2> clearValues{};
+    // clearValues[0].color = {{0.0f, 0.0f, 0.0f, 1.0f}};
+    // clearValues[1].depthStencil = {1.0f, 0};
 
-    VkRenderPassBeginInfo renderPassInfo{};
-    renderPassInfo.sType = VK_STRUCTURE_TYPE_RENDER_PASS_BEGIN_INFO;
-    renderPassInfo.renderPass = zaynMem->vkRenderPass;
-    renderPassInfo.framebuffer = zaynMem->vkSwapChainFramebuffers[imageIndex];
-    renderPassInfo.renderArea.offset = {0, 0};
-    renderPassInfo.renderArea.extent = zaynMem->vkSwapChainExtent;
+    // renderPassInfo.clearValueCount = static_cast<uint32_t>(clearValues.size());
+    // renderPassInfo.pClearValues = clearValues.data();
 
-    std::array<VkClearValue, 2> clearValues{};
-    clearValues[0].color = {{0.0f, 0.0f, 0.0f, 1.0f}};
-    clearValues[1].depthStencil = {1.0f, 0};
+    // vkCmdBeginRenderPass(commandBuffer, &renderPassInfo, VK_SUBPASS_CONTENTS_INLINE);
 
-    renderPassInfo.clearValueCount = static_cast<uint32_t>(clearValues.size());
-    renderPassInfo.pClearValues = clearValues.data();
+// CHECK CHECK NOT ADDED
+    //vkCmdBindPipeline(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, zaynMem->vkGraphicsPipeline);
 
-    vkCmdBeginRenderPass(commandBuffer, &renderPassInfo, VK_SUBPASS_CONTENTS_INLINE);
+    // VkViewport viewport{};
+    // viewport.x = 0.0f;
+    // viewport.y = 0.0f;
+    // viewport.width = (float)zaynMem->vkSwapChainExtent.width;
+    // viewport.height = (float)zaynMem->vkSwapChainExtent.height;
+    // viewport.minDepth = 0.0f;
+    // viewport.maxDepth = 1.0f;
+    // vkCmdSetViewport(commandBuffer, 0, 1, &viewport);
 
-    vkCmdBindPipeline(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, zaynMem->vkGraphicsPipeline);
+    // VkRect2D scissor{};
+    // scissor.offset = {0, 0};
+    // scissor.extent = zaynMem->vkSwapChainExtent;
+    // vkCmdSetScissor(commandBuffer, 0, 1, &scissor);
 
-    VkViewport viewport{};
-    viewport.x = 0.0f;
-    viewport.y = 0.0f;
-    viewport.width = (float)zaynMem->vkSwapChainExtent.width;
-    viewport.height = (float)zaynMem->vkSwapChainExtent.height;
-    viewport.minDepth = 0.0f;
-    viewport.maxDepth = 1.0f;
-    vkCmdSetViewport(commandBuffer, 0, 1, &viewport);
-
-    VkRect2D scissor{};
-    scissor.offset = {0, 0};
-    scissor.extent = zaynMem->vkSwapChainExtent;
-    vkCmdSetScissor(commandBuffer, 0, 1, &scissor);
-
-    VkBuffer vertexBuffers[] = {zaynMem->vkVertexBuffer};
-    VkDeviceSize offsets[] = {0};
-    vkCmdBindVertexBuffers(commandBuffer, 0, 1, vertexBuffers, offsets);
+    // VkBuffer vertexBuffers[] = {zaynMem->vkVertexBuffer};
+    // VkDeviceSize offsets[] = {0};
+    // vkCmdBindVertexBuffers(commandBuffer, 0, 1, vertexBuffers, offsets);
     
-    vkCmdBindIndexBuffer(commandBuffer, zaynMem->vkIndexBuffer, 0, VK_INDEX_TYPE_UINT32);
+    // vkCmdBindIndexBuffer(commandBuffer, zaynMem->vkIndexBuffer, 0, VK_INDEX_TYPE_UINT32);
 
-    vkCmdBindDescriptorSets(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, zaynMem->vkPipelineLayout, 0, 1, &zaynMem->vkDescriptorSets[zaynMem->vkCurrentFrame], 0, nullptr);
+    // vkCmdBindDescriptorSets(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, zaynMem->vkPipelineLayout, 0, 1, &zaynMem->vkDescriptorSets[zaynMem->vkCurrentFrame], 0, nullptr);
 
-    vkCmdDrawIndexed(commandBuffer, static_cast<uint32_t>(zaynMem->vkIndices.size()), 1, 0, 0, 0);
+    // vkCmdDrawIndexed(commandBuffer, static_cast<uint32_t>(zaynMem->vkIndices.size()), 1, 0, 0, 0);
 
-    vkCmdEndRenderPass(commandBuffer);
 
-    if (vkEndCommandBuffer(commandBuffer) != VK_SUCCESS)
-    {
-        throw std::runtime_error("failed to record command buffer!");
-    }
+    // vkCmdEndRenderPass(commandBuffer);
+
+    // if (vkEndCommandBuffer(commandBuffer) != VK_SUCCESS)
+    // {
+    //     throw std::runtime_error("failed to record command buffer!");
+    // }
 }
 
 VkCommandBuffer BeginSingleTimeCommands(ZaynMemory *zaynMem)
@@ -1249,49 +1161,6 @@ void TransitionImageLayout(VkImage image, VkFormat format, VkImageLayout oldLayo
         throw std::invalid_argument("unsupported layout transition!");
     }
 
-    // if (newLayout == VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL)
-    // {
-    //     barrier.subresourceRange.aspectMask = VK_IMAGE_ASPECT_DEPTH_BIT;
-
-    //     if (HasStencilComponent(format))
-    //     {
-    //         barrier.subresourceRange.aspectMask |= VK_IMAGE_ASPECT_STENCIL_BIT;
-    //     }
-    // }
-    // else
-    // {
-    //     barrier.subresourceRange.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
-    // }
-
-    // if (oldLayout == VK_IMAGE_LAYOUT_UNDEFINED && newLayout == VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL)
-    // {
-    //     barrier.srcAccessMask = 0;
-    //     barrier.dstAccessMask = VK_ACCESS_TRANSFER_WRITE_BIT;
-
-    //     sourceStage = VK_PIPELINE_STAGE_TOP_OF_PIPE_BIT;
-    //     destinationStage = VK_PIPELINE_STAGE_TRANSFER_BIT;
-    // }
-    // else if (oldLayout == VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL && newLayout == VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL)
-    // {
-    //     barrier.srcAccessMask = VK_ACCESS_TRANSFER_WRITE_BIT;
-    //     barrier.dstAccessMask = VK_ACCESS_SHADER_READ_BIT;
-
-    //     sourceStage = VK_PIPELINE_STAGE_TRANSFER_BIT;
-    //     destinationStage = VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT;
-    // }
-    // else if (oldLayout == VK_IMAGE_LAYOUT_UNDEFINED && newLayout == VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL)
-    // {
-    //     barrier.srcAccessMask = 0;
-    //     barrier.dstAccessMask = VK_ACCESS_DEPTH_STENCIL_ATTACHMENT_READ_BIT | VK_ACCESS_DEPTH_STENCIL_ATTACHMENT_WRITE_BIT;
-
-    //     sourceStage = VK_PIPELINE_STAGE_TOP_OF_PIPE_BIT;
-    //     destinationStage = VK_PIPELINE_STAGE_EARLY_FRAGMENT_TESTS_BIT;
-    // }
-    // else
-    // {
-    //     throw std::invalid_argument("unsupported layout transition!");
-    // }
-
     vkCmdPipelineBarrier(
         commandBuffer,
         sourceStage, destinationStage,
@@ -1336,41 +1205,13 @@ void CopyBufferToImage(VkBuffer buffer, VkImage image, uint32_t width, uint32_t 
 
 void copyBuffer(VkBuffer srcBuffer, VkBuffer dstBuffer, VkDeviceSize size, ZaynMemory *zaynMem)
 {
-    // VkCommandBufferAllocateInfo allocInfo{};
-    // allocInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_ALLOCATE_INFO;
-    // allocInfo.level = VK_COMMAND_BUFFER_LEVEL_PRIMARY;
-    // allocInfo.commandPool = zaynMem->vkCommandPool;
-    // allocInfo.commandBufferCount = 1;
-
-    // VkCommandBuffer commandBuffer;
-    // vkAllocateCommandBuffers(zaynMem->vkDevice, &allocInfo, &commandBuffer);
-
-    // VkCommandBufferBeginInfo beginInfo{};
-    // beginInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO;
-    // beginInfo.flags = VK_COMMAND_BUFFER_USAGE_ONE_TIME_SUBMIT_BIT;
-
-    // vkBeginCommandBuffer(commandBuffer, &beginInfo);
     VkCommandBuffer commandBuffer = BeginSingleTimeCommands(zaynMem);
-
 
     VkBufferCopy copyRegion{};
     copyRegion.size = size;
     vkCmdCopyBuffer(commandBuffer, srcBuffer, dstBuffer, 1, &copyRegion);
 
-
     EndSingleTimeCommands(commandBuffer, zaynMem);
-
-    // vkEndCommandBuffer(commandBuffer);
-
-    // VkSubmitInfo submitInfo{};
-    // submitInfo.sType = VK_STRUCTURE_TYPE_SUBMIT_INFO;
-    // submitInfo.commandBufferCount = 1;
-    // submitInfo.pCommandBuffers = &commandBuffer;
-
-    // vkQueueSubmit(zaynMem->vkGraphicsQueue, 1, &submitInfo, VK_NULL_HANDLE);
-    // vkQueueWaitIdle(zaynMem->vkGraphicsQueue);
-
-    // vkFreeCommandBuffers(zaynMem->vkDevice, zaynMem->vkCommandPool, 1, &commandBuffer);
 }
 
 void CreateImage(uint32_t width, 
@@ -1417,7 +1258,6 @@ void CreateImage(uint32_t width,
 
     vkBindImageMemory(zaynMem->vkDevice, image, imageMemory, 0);
 
-
 }
 
 void CreateDepthResources(ZaynMemory* zaynMem)
@@ -1426,8 +1266,6 @@ void CreateDepthResources(ZaynMemory* zaynMem)
 
     CreateImage(zaynMem->vkSwapChainExtent.width, zaynMem->vkSwapChainExtent.height, 1, depthFormat, VK_IMAGE_TILING_OPTIMAL, VK_IMAGE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT, zaynMem->vkDepthImage, zaynMem->vkDepthImageMemory, zaynMem);
     zaynMem->vkDepthImageView = CreateImageView(zaynMem->vkDepthImage, depthFormat, VK_IMAGE_ASPECT_DEPTH_BIT, 1, zaynMem);
-
-    // TransitionImageLayout(zaynMem->vkDepthImage, depthFormat, VK_IMAGE_LAYOUT_UNDEFINED, VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL, zaynMem->vkMipLevels, zaynMem);
 }
 
 void GenerateMipmaps(VkImage image,VkFormat imageFormat, int32_t texWidth, int32_t texHeight, uint32_t mipLevels, ZaynMemory* zaynMem) 
@@ -1561,22 +1399,6 @@ void CreateTextureImage(ZaynMemory* zaynMem)
 
 void CreateTextureImageView(ZaynMemory *zaynMem)
 {
-    // VkImageViewCreateInfo viewInfo = {};
-    // viewInfo.sType = VK_STRUCTURE_TYPE_IMAGE_VIEW_CREATE_INFO;
-    // viewInfo.image = textureImage;
-    // viewInfo.viewType = VK_IMAGE_VIEW_TYPE_2D;
-    // viewInfo.format = VK_FORMAT_R8G8B8A8_SRGB;
-    // viewInfo.subresourceRange.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
-    // viewInfo.subresourceRange.baseMipLevel = 0;
-    // viewInfo.subresourceRange.levelCount = 1;
-    // viewInfo.subresourceRange.baseArrayLayer = 0;
-    // viewInfo.subresourceRange.layerCount = 1;
-
-    // if (vkCreateImageView(zaynMem->vkDdevice, &viewInfo, nullptr, &zaynMem->vkTextureImageView) != VK_SUCCESS)
-    // {
-    //     throw std::runtime_error("failed to create texture image view!");
-    // }
-
     zaynMem->vkTextureImageView = CreateImageView(zaynMem->vkTextureImage, VK_FORMAT_R8G8B8A8_SRGB, VK_IMAGE_ASPECT_COLOR_BIT, zaynMem->vkMipLevels, zaynMem);
 }
 
@@ -1609,7 +1431,7 @@ void CreateTextureSampler(ZaynMemory* zaynMem)
     }
 }
 
-void LoadModel(ZaynMemory* zaynMem)
+void LoadModel()
 {
     tinyobj::attrib_t attrib;
     std::vector<tinyobj::shape_t> shapes;
@@ -1640,11 +1462,11 @@ void LoadModel(ZaynMemory* zaynMem)
 
             if (uniqueVertices.count(vertex) == 0)
             {
-                uniqueVertices[vertex] = static_cast<uint32_t>(zaynMem->vkVertices.size());
-                zaynMem->vkVertices.push_back(vertex);
+                uniqueVertices[vertex] = static_cast<uint32_t>(Zayn->vkVertices.size());
+                Zayn->vkVertices.push_back(vertex);
             }
 
-            zaynMem->vkIndices.push_back(uniqueVertices[vertex]);
+            Zayn->vkIndices.push_back(uniqueVertices[vertex]);
         }
     }
 }
@@ -1822,8 +1644,8 @@ void CreateDescriptorSets_x(ZaynMemory *zaynMem)
 
 void VulkanInitCode(ZaynMemory* zaynMem)
 {
-    CreateVKInstance(zaynMem);          // is same
-    SetupDebugMessenger(zaynMem);       // is SAME
+    CreateVKInstance(zaynMem);     
+    SetupDebugMessenger();    
 }
 
 void InitRender_Learn(ZaynMemory *zaynMem)
@@ -1839,8 +1661,6 @@ void InitRender_Learn(ZaynMemory *zaynMem)
     CreateImageViews(zaynMem);
     CreateRenderPass(zaynMem);
     CreateDescriptorSetLayout(zaynMem);
-    // CreateGraphicsPipeline(zaynMem, "../src/renderer/shaders/vkShader_uniform_01_vert.spv", "../src/renderer/shaders/vkShader_uniform_01_frag.spv");
-    // CreateGraphicsPipeline(zaynMem, "/Users/socki/dev/zayn/src/renderer/shaders/vkShader_uniform_01_vert.spv", "/Users/socki/dev/zayn/src/renderer/shaders/vkShader_01_frag.spv");
     CreateGraphicsPipeline(zaynMem, "/Users/socki/dev/zayn/src/renderer/shaders/vkShader_3d_INIT_vert.spv", "/Users/socki/dev/zayn/src/renderer/shaders/vkShader_3d_INIT_frag.spv");
 
     CreateCommandPool(zaynMem);
@@ -1850,7 +1670,7 @@ void InitRender_Learn(ZaynMemory *zaynMem)
     CreateTextureImage(zaynMem);
     CreateTextureImageView(zaynMem);
     CreateTextureSampler(zaynMem);
-    LoadModel(zaynMem);
+    LoadModel();
     CreateVertexBuffer(zaynMem);
     CreateIndexBuffer(zaynMem);
     CreateUniformBuffers_x(zaynMem);
@@ -1883,14 +1703,10 @@ void CleanUpSwapChain(ZaynMemory *zaynMem)
 
 void RecreateSwapChain(ZaynMemory *zaynMem)
 {
-
-    // std::cout << "RecreateSwapChain" << std::endl;
-
     int width = 0, height = 0;
     glfwGetFramebufferSize(zaynMem->window, &width, &height);
     while (width == 0 || height == 0)
     {
-        // std::cout << "MIN" << std::endl;
         glfwGetFramebufferSize(zaynMem->window, &width, &height);
         glfwWaitEvents();
     }
@@ -1898,7 +1714,6 @@ void RecreateSwapChain(ZaynMemory *zaynMem)
     vkDeviceWaitIdle(zaynMem->vkDevice);
 
     CleanUpSwapChain(zaynMem);
-
     CreateSwapChain(zaynMem);
     CreateImageViews(zaynMem);
     CreateDepthResources(zaynMem);
@@ -1914,33 +1729,10 @@ void UpdateUniformBuffer(uint32_t currentImage, ZaynMemory *zaynMem)
 
     Camera* cam = &Zayn->camera;
 
-    // if (Inputh)
-    // cam->front.x = cosf(DegToRad(cam->yaw)) * cosf(DegToRad(cam->pitch));
-    // cam->front.y = sinf(DegToRad(cam->pitch));
-    // cam->front.z = sinf(DegToRad(cam->yaw)) * cosf(DegToRad(cam->pitch));
-    // cam->front = Normalize(cam->front);
-    // glm::vec3 cameraPos = glm::vec3(2, cam->pos.y, 2);
-    // glm::vec3 cameraFront = glm::vec3(0, 0, -1);
-    // glm::vec3 cameraUp = glm::vec3(0, 1, 0);
-
     UniformBufferObject_x ubo{};
-    // ubo.model = glm::rotate(glm::mat4(1.0f), time / 10.0f * glm::radians(60.0f), glm::vec3(0.0f, 0.0f, 1.0f));
-    // ubo.model = glm::translate(glm::mat4(1.0f), glm::vec3(0.0f, 0.0f, 0.0f)) *
-            // glm::rotate(glm::mat4(1.0f), time / 10.0f * glm::radians(60.0f), glm::vec3(0.0f, 0.0f, 1.0f));
     ubo.model = TRS(V3(0.0f, 0.0f, 0.0f), AxisAngle(V3(0.0f, 1.0f, 0.0f), time * DegToRad(0.0f)), V3(1.0f, 1.0f, 1.0f));
-    // ubo.view = glm::lookAt(glm::vec3(zaynMem->camera.pos.x, 2.0f, 2.0f), glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(0.0f, 0.0f, 1.0f));
-    // glm::vec3 camDir = glm::vec3(zaynMem->camera.pos.x, zaynMem->camera.pos.y, zaynMem->camera.pos.z) + glm::vec3(zaynMem->camera.front.x, zaynMem->camera.front.y, zaynMem->camera.front.z);
-    
     
     ubo.view = glm::lookAt(cam->pos, cam->pos + cam->front, cam->up );
-    // ubo.view = glm::lookAt(glm::vec3(2.0f, cam->position.y, 2.0f), camDir, glm::vec3(0.0f, 0.0f, 1.0f));
-    // ubo.vew = LookAt(V3(2.0f, 2.0f, 2.0f), V3(0), V3(0.0f, 0.0f, ))
-    // mat4 camWorld = TRS(V3(2.0f, 0.0f, zaynMem->camera.pos.z), AxisAngle(V3(0.0f, 1.0f, 0.0f), DegToRad(zaynMem->camera.pos.x * 4.0f)), V3(1.0f, 1.0f, 1.0f));
-    // ubo.view = OrthogonalInverse(camWorld);
-    // ubo.view = zaynMem->camera.viewProjection;
-    // ubo.view = zaynMem->camera.view;
-    // ubo.proj = zaynMem->camera.projection;
-
     
     ubo.proj = glm::perspective(glm::radians(60.0f), zaynMem->vkSwapChainExtent.width / (float)zaynMem->vkSwapChainExtent.height, 0.1f, 10.0f);
     ubo.proj[1][1] *= -1;
@@ -1949,93 +1741,258 @@ void UpdateUniformBuffer(uint32_t currentImage, ZaynMemory *zaynMem)
     memcpy(zaynMem->vkUniformBuffersMapped[currentImage], &ubo, sizeof(ubo));
 }
 
-void UpdateRender_Learn(ZaynMemory *zaynMem)
+VkResult AcquireNextImage(uint32_t *imageIndex)
 {
-    // BEGIN FRAME()
-    // assert(!zaynMem->vkIsFrameStarted && "cannot call begin frame when frame buffer is already in progress");
+    vkWaitForFences(Zayn->vkDevice, 1, &Zayn->vkInFlightFences[Zayn->vkCurrentFrame], VK_TRUE, UINT64_MAX);
 
-        // Start -> AcquireNextImage()
-    vkWaitForFences(zaynMem->vkDevice, 1, &zaynMem->vkInFlightFences[zaynMem->vkCurrentFrame], VK_TRUE, UINT64_MAX);
+    VkResult result = vkAcquireNextImageKHR(
+        Zayn->vkDevice,
+        Zayn->vkSwapChain,
+        UINT64_MAX,
+        Zayn->vkImageAvailableSemaphores[Zayn->vkCurrentFrame], // must be a not signaled semaphore
+        VK_NULL_HANDLE,
+        imageIndex);
 
-    uint32_t imageIndex;
-    VkResult result = vkAcquireNextImageKHR(zaynMem->vkDevice, zaynMem->vkSwapChain, UINT64_MAX, zaynMem->vkImageAvailableSemaphores[zaynMem->vkCurrentFrame], VK_NULL_HANDLE, &imageIndex);
-        // End -> AcquireNextImage()
+    return result;
+}
+
+bool BeginFrame()
+{
+    assert(!Zayn->vkIsFrameStarted && "cannot call begin frame when frame buffer is already in progress");
+    auto result = AcquireNextImage(&Zayn->vkCurrentImageIndex);
 
     if (result == VK_ERROR_OUT_OF_DATE_KHR)
     {
-        RecreateSwapChain(zaynMem);
-        return;
+        RecreateSwapChain(Zayn);
+        return false;
     }
     else if (result != VK_SUCCESS && result != VK_SUBOPTIMAL_KHR)
     {
         throw std::runtime_error("failed to acquire swap chain image!");
     }
 
-//    zaynMem->vkIsFrameStarted = true;
+    Zayn->vkIsFrameStarted = true;
 
-    UpdateUniformBuffer(zaynMem->vkCurrentFrame, zaynMem);
+    vkResetFences(Zayn->vkDevice, 1, &Zayn->vkInFlightFences[Zayn->vkCurrentFrame]);
 
-    // IS THIS WHERE ALL UPDATES CAN GO?
+    vkResetCommandBuffer(Zayn->vkCommandBuffers[Zayn->vkCurrentFrame], /*VkCommandBufferResetFlagBits*/ 0);
+   
+    VkCommandBufferBeginInfo beginInfo{};
+    beginInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO;
+    if (vkBeginCommandBuffer(Zayn->vkCommandBuffers[Zayn->vkCurrentFrame], &beginInfo) != VK_SUCCESS)
+    {
+        throw std::runtime_error("failed to begin recording command buffer!");
+        return false;
+    }
 
-    // END NEW
+    return true;
+}
 
-    vkResetFences(zaynMem->vkDevice, 1, &zaynMem->vkInFlightFences[zaynMem->vkCurrentFrame]);
+void BeginSwapChainRenderPass(VkCommandBuffer commandBuffer)
+{
+    assert(Zayn->vkIsFrameStarted && "Can't call beginSwapChainRenderPass if frame is not in progress");
+    assert(commandBuffer == Zayn->vkCommandBuffers[Zayn->vkCurrentFrame] && "Can't begin render pass on command buffer from a different frame");
 
-    vkResetCommandBuffer(zaynMem->vkCommandBuffers[zaynMem->vkCurrentFrame], /*VkCommandBufferResetFlagBits*/ 0);
+    VkRenderPassBeginInfo renderPassInfo{};
+    renderPassInfo.sType = VK_STRUCTURE_TYPE_RENDER_PASS_BEGIN_INFO;
+    renderPassInfo.renderPass = Zayn->vkRenderPass;
+    renderPassInfo.framebuffer = Zayn->vkSwapChainFramebuffers[Zayn->vkCurrentImageIndex];
+    renderPassInfo.renderArea.offset = {0, 0};
+    renderPassInfo.renderArea.extent = Zayn->vkSwapChainExtent;
+
+    std::array<VkClearValue, 2> clearValues{};
+    clearValues[0].color = {{0.0f, 0.0f, 0.0f, 1.0f}};
+    clearValues[1].depthStencil = {1.0f, 0};
+    renderPassInfo.clearValueCount = static_cast<uint32_t>(clearValues.size());
+    renderPassInfo.pClearValues = clearValues.data();
+
+    vkCmdBeginRenderPass(commandBuffer, &renderPassInfo, VK_SUBPASS_CONTENTS_INLINE);
+
+    VkViewport viewport{};
+    viewport.x = 0.0f;
+    viewport.y = 0.0f;
+    viewport.width = static_cast<float>(Zayn->vkSwapChainExtent.width);
+    viewport.height = static_cast<float>(Zayn->vkSwapChainExtent.height);
+    viewport.minDepth = 0.0f;
+    viewport.maxDepth = 1.0f;
+    VkRect2D scissor{{0, 0}, Zayn->vkSwapChainExtent};
+    vkCmdSetViewport(commandBuffer, 0, 1, &viewport);
+    vkCmdSetScissor(commandBuffer, 0, 1, &scissor);
+}
+
+void RenderEntity_notYetEntity(VkCommandBuffer imageBuffer)
+{
+    vkCmdBindPipeline(imageBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, Zayn->vkGraphicsPipeline);
+    vkCmdBindDescriptorSets(imageBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, Zayn->vkPipelineLayout, 0, 1, &Zayn->vkDescriptorSets[Zayn->vkCurrentFrame], 0, nullptr);
+
+    // Replace Below with BindModel() and DrawModel()
+    VkBuffer vertexBuffers[] = {Zayn->vkVertexBuffer};
+    VkDeviceSize offsets[] = {0};
+    vkCmdBindVertexBuffers(imageBuffer, 0, 1, vertexBuffers, offsets);
     
-    // this calls the draw
-    recordCommandBuffer(zaynMem, zaynMem->vkCommandBuffers[zaynMem->vkCurrentFrame], imageIndex);
+    vkCmdBindIndexBuffer(imageBuffer, Zayn->vkIndexBuffer, 0, VK_INDEX_TYPE_UINT32);
 
-    VkSubmitInfo submitInfo{};
+    vkCmdDrawIndexed(imageBuffer, static_cast<uint32_t>(Zayn->vkIndices.size()), 1, 0, 0, 0);
+
+
+    
+}
+
+void EndSwapChainRenderPass(VkCommandBuffer commandBuffer)
+{
+    assert(Zayn->vkIsFrameStarted && "Can't call beginSwapChainRenderPass if frame is not in progress");
+    assert(commandBuffer == Zayn->vkCommandBuffers[Zayn->vkCurrentFrame] && "Can't begin render pass on command buffer from a different frame");
+
+    vkCmdEndRenderPass(commandBuffer);
+    
+}
+
+VkResult SubmitCommandBuffers(const VkCommandBuffer *buffers, uint32_t *imageIndex, ZaynMemory *zaynMem)
+{
+    // if (zaynMem->vkImagesInFlight[*imageIndex] != VK_NULL_HANDLE)
+    // {
+    //     vkWaitForFences(zaynMem->vkDevice, 1, &zaynMem->vkImagesInFlight[*imageIndex], VK_TRUE, UINT64_MAX);
+    // }
+    // zaynMem->vkImagesInFlight[*imageIndex] = zaynMem->vkImagesInFlight[zaynMem->vkCurrentFrame];
+
+    VkSubmitInfo submitInfo = {};
     submitInfo.sType = VK_STRUCTURE_TYPE_SUBMIT_INFO;
 
-    VkSemaphore waitSemaphores[] = {zaynMem->vkImageAvailableSemaphores[zaynMem->vkCurrentFrame]};
+    VkSemaphore waitSemaphores[] = {Zayn->vkImageAvailableSemaphores[Zayn->vkCurrentFrame]};
     VkPipelineStageFlags waitStages[] = {VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT};
     submitInfo.waitSemaphoreCount = 1;
     submitInfo.pWaitSemaphores = waitSemaphores;
     submitInfo.pWaitDstStageMask = waitStages;
 
     submitInfo.commandBufferCount = 1;
-    submitInfo.pCommandBuffers = &zaynMem->vkCommandBuffers[zaynMem->vkCurrentFrame];
+    submitInfo.pCommandBuffers = &Zayn->vkCommandBuffers[Zayn->vkCurrentFrame];;
 
-    VkSemaphore signalSemaphores[] = {zaynMem->vkRenderFinishedSemaphores[zaynMem->vkCurrentFrame]};
+    VkSemaphore signalSemaphores[] = {Zayn->vkRenderFinishedSemaphores[Zayn->vkCurrentFrame]};
     submitInfo.signalSemaphoreCount = 1;
     submitInfo.pSignalSemaphores = signalSemaphores;
 
-    if (vkQueueSubmit(zaynMem->vkGraphicsQueue, 1, &submitInfo, zaynMem->vkInFlightFences[zaynMem->vkCurrentFrame]) != VK_SUCCESS)
+    vkResetFences(Zayn->vkDevice, 1, &Zayn->vkInFlightFences[zaynMem->vkCurrentFrame]);
+    if (vkQueueSubmit(Zayn->vkGraphicsQueue, 1, &submitInfo, Zayn->vkInFlightFences[Zayn->vkCurrentFrame]) != VK_SUCCESS)
     {
         throw std::runtime_error("failed to submit draw command buffer!");
     }
 
-    VkPresentInfoKHR presentInfo{};
+    VkPresentInfoKHR presentInfo = {};
     presentInfo.sType = VK_STRUCTURE_TYPE_PRESENT_INFO_KHR;
 
     presentInfo.waitSemaphoreCount = 1;
     presentInfo.pWaitSemaphores = signalSemaphores;
 
-    VkSwapchainKHR swapChains[] = {zaynMem->vkSwapChain};
+    VkSwapchainKHR swapChains[] = {Zayn->vkSwapChain};
     presentInfo.swapchainCount = 1;
     presentInfo.pSwapchains = swapChains;
 
-    presentInfo.pImageIndices = &imageIndex;
+    presentInfo.pImageIndices = &Zayn->vkCurrentImageIndex;
 
-    // vkQueuePresentKHR(zaynMem->vkPresentQueue, &presentInfo);
+    auto result = vkQueuePresentKHR(Zayn->vkPresentQueue, &presentInfo);
 
-    result = vkQueuePresentKHR(zaynMem->vkPresentQueue, &presentInfo);
+    zaynMem->vkCurrentFrame = (zaynMem->vkCurrentFrame + 1) % zaynMem->VK_MAX_FRAMES_IN_FLIGHT;
 
-    if (result == VK_ERROR_OUT_OF_DATE_KHR || result == VK_SUBOPTIMAL_KHR || zaynMem->vkFramebufferResized)
+    return result;
+}
+
+
+void EndFrame()
+{
+    assert(Zayn->vkIsFrameStarted && "Can't call endFrame while frame is not in progress");
+    auto _commandBuffer = Zayn->vkCommandBuffers[Zayn->vkCurrentFrame];
+
+    if (vkEndCommandBuffer(_commandBuffer) != VK_SUCCESS)
     {
-        zaynMem->vkFramebufferResized = false;
+        throw std::runtime_error("failed to record command buffer!");
+    }
+    
+    auto result = SubmitCommandBuffers(&_commandBuffer, &Zayn->vkCurrentImageIndex, Zayn);
 
-        RecreateSwapChain(zaynMem);
+    if (result == VK_ERROR_OUT_OF_DATE_KHR || result == VK_SUBOPTIMAL_KHR || Zayn->vkFramebufferResized)
+    {
+        Zayn->vkFramebufferResized = false;
+        RecreateSwapChain(Zayn);
     }
     else if (result != VK_SUCCESS)
     {
         throw std::runtime_error("failed to present swap chain image!");
     }
 
-    zaynMem->vkCurrentFrame = (zaynMem->vkCurrentFrame + 1) % MAX_FRAMES_IN_FLIGHT;
+    Zayn->vkIsFrameStarted = false;
+
+    Zayn->vkCurrentFrame = (Zayn->vkCurrentFrame + 1) % Zayn->VK_MAX_FRAMES_IN_FLIGHT;
+
 }
+
+void UpdateRender_Learn(ZaynMemory *zaynMem)
+{
+    if (BeginFrame())
+    {
+        UpdateUniformBuffer(zaynMem->vkCurrentFrame, zaynMem);
+
+        BeginSwapChainRenderPass(zaynMem->vkCommandBuffers[zaynMem->vkCurrentFrame]);
+        RenderEntity_notYetEntity(zaynMem->vkCommandBuffers[zaynMem->vkCurrentFrame]);
+        EndSwapChainRenderPass(zaynMem->vkCommandBuffers[zaynMem->vkCurrentFrame]);
+        EndFrame();
+    }
+}
+
+    //RecordCommandBuffer(zaynMem, zaynMem->vkCommandBuffers[zaynMem->vkCurrentFrame], Zayn->vkCurrentImageIndex);
+
+    // VkSubmitInfo submitInfo{};
+    // submitInfo.sType = VK_STRUCTURE_TYPE_SUBMIT_INFO;
+
+    // VkSemaphore waitSemaphores[] = {zaynMem->vkImageAvailableSemaphores[zaynMem->vkCurrentFrame]};
+    // VkPipelineStageFlags waitStages[] = {VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT};
+    // submitInfo.waitSemaphoreCount = 1;
+    // submitInfo.pWaitSemaphores = waitSemaphores;
+    // submitInfo.pWaitDstStageMask = waitStages;
+
+    // submitInfo.commandBufferCount = 1;
+    // submitInfo.pCommandBuffers = &Zayn->vkCommandBuffers[zaynMem->vkCurrentFrame];
+
+    // VkSemaphore signalSemaphores[] = {zaynMem->vkRenderFinishedSemaphores[zaynMem->vkCurrentFrame]};
+    // submitInfo.signalSemaphoreCount = 1;
+    // submitInfo.pSignalSemaphores = signalSemaphores;
+
+    // if (vkQueueSubmit(zaynMem->vkGraphicsQueue, 1, &submitInfo, zaynMem->vkInFlightFences[zaynMem->vkCurrentFrame]) != VK_SUCCESS)
+    // {
+    //     throw std::runtime_error("failed to submit draw command buffer!");
+    // }
+
+    // VkPresentInfoKHR presentInfo{};
+    // presentInfo.sType = VK_STRUCTURE_TYPE_PRESENT_INFO_KHR;
+
+    // presentInfo.waitSemaphoreCount = 1;
+    // presentInfo.pWaitSemaphores = signalSemaphores;
+
+    // VkSwapchainKHR swapChains[] = {zaynMem->vkSwapChain};
+    // presentInfo.swapchainCount = 1;
+    // presentInfo.pSwapchains = swapChains;
+
+    // presentInfo.pImageIndices = &Zayn->vkCurrentImageIndex;
+
+    // // vkQueuePresentKHR(zaynMem->vkPresentQueue, &presentInfo);
+
+    // auto result = vkQueuePresentKHR(zaynMem->vkPresentQueue, &presentInfo);
+
+    // if (result == VK_ERROR_OUT_OF_DATE_KHR || result == VK_SUBOPTIMAL_KHR || zaynMem->vkFramebufferResized)
+    // {
+    //     zaynMem->vkFramebufferResized = false;
+
+    //     RecreateSwapChain(zaynMem);
+    // }
+    // else if (result != VK_SUCCESS)
+    // {
+    //     throw std::runtime_error("failed to present swap chain image!");
+    // }
+    // Zayn->vkIsFrameStarted = false;
+
+
+    // zaynMem->vkCurrentFrame = (zaynMem->vkCurrentFrame + 1) % MAX_FRAMES_IN_FLIGHT;
+    // }
+   
 
 void RenderCleanup(ZaynMemory *zaynMem)
 {

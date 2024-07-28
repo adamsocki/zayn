@@ -26,15 +26,13 @@ void InGameCameraInit()
     cam->targetSpeed = 20.0f;
     cam->targetTurnSpeed = 160.0f;
 
-    cam->pos = glm::vec3(0, 0, 0.5f);
+    cam->pos = glm::vec3(0, 0, 0.5);
     cam->front = glm::vec3(-1, 0, 0);
     cam->up = glm::vec3(0, 0, 1);
 }
 
 void FirstPersonCameraController()
 {
-    //
-
     // Camera *cam = &Zayn->camera;
 
     // if (InputHeld(Keyboard, Input_W))

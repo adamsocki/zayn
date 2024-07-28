@@ -166,7 +166,7 @@ struct ZaynMemory
 
 
     uint32 vkCurrentImageIndex;
-    bool vkIsFrameStarted;
+    bool vkIsFrameStarted = false;
     VkCommandBuffer vkNextCommandBuffer;
 
 
