@@ -1306,11 +1306,11 @@ bool BeginFrame(ZaynMemory *zaynMem)
 
 void UpdateUniformBuffer(uint32_t imageIndex, ZaynMemory* zaynMem)
 {
-    UniformBufferObject ubo{};
+    //UniformBufferObject ubo{};
 
-     ubo.view = zaynMem->camera.viewProjection;
+    // ubo.view = zaynMem->camera.viewProjection;
 
-    memcpy(zaynMem->vkUniformBuffersMapped[imageIndex], &ubo, sizeof(ubo));
+  //  memcpy(zaynMem->vkUniformBuffersMapped[imageIndex], &ubo, sizeof(ubo));
 }
 
 

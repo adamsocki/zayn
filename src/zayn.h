@@ -136,6 +136,10 @@ struct ZaynMemory
     std::vector<VkDeviceMemory> vkUniformBuffersMemory;
     std::vector<void*> vkUniformBuffersMapped;
 
+    std::vector<VkBuffer> vkUniformBuffers2;
+    std::vector<VkDeviceMemory> vkUniformBuffers2Memory;
+    std::vector<void*> vkUniformBuffers2Mapped;
+
     VkDescriptorPool vkDescriptorPool;
     std::vector<VkDescriptorSet> vkDescriptorSets;
 
