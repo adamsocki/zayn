@@ -45,7 +45,12 @@ struct ShaderCollection
 
 };
 
-
+struct Pipelines
+{
+    VkPipeline instancedRocks = VK_NULL_HANDLE;
+    VkPipeline planet = VK_NULL_HANDLE;
+    VkPipeline starfield = VK_NULL_HANDLE;
+};
 
 struct ZaynMemory
 {
@@ -129,6 +134,10 @@ struct ZaynMemory
     VkBuffer vkIndexBuffer;
     VkDeviceMemory vkIndexBufferMemory;
     uint32 vkIndexCount;
+    
+
+    VkBuffer vkInstanceBuffer;
+    VkDeviceMemory vkInstanceBufferMemory;
 
     VkDescriptorSetLayout vkDescriptorSetLayout;
 
@@ -173,6 +182,8 @@ struct ZaynMemory
     bool vkIsFrameStarted = false;
     VkCommandBuffer vkNextCommandBuffer;
 
+
+    Pipelines vkPipelines;
 
 
     Camera camera;

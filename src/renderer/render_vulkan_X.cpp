@@ -21,6 +21,12 @@ const int MAX_FRAMES_IN_FLIGHT = 2;
 const std::string MODEL_PATH = "/Users/socki/dev/zayn/models/viking_room.obj";
 const std::string TEXTURE_PATH = "/Users/socki/dev/zayn/models/textures/viking_room.png";
 
+struct InstanceData {
+    mat4 modelMatrix;
+};
+
+uint32_t instanceCount = 100;
+
 
 struct UniformBufferObject_x
  {
@@ -781,13 +787,34 @@ void CreateRenderPass(ZaynMemory *zaynMem)
 
 }
 
-void CreateGraphicsPipeline(ZaynMemory *zaynMem, const std::string &vertShaderFilePath, const std::string &fragShaderFilePath)
+void CreateGraphicsPipelineLayout()
+{
+
+    VkPushConstantRange pushConstantRange = {};
+    pushConstantRange.stageFlags = VK_SHADER_STAGE_VERTEX_BIT | VK_SHADER_STAGE_FRAGMENT_BIT;
+    pushConstantRange.offset = 0;
+    pushConstantRange.size = sizeof(PushConstantData3D);
+
+    VkPipelineLayoutCreateInfo pipelineLayoutInfo = {};
+    pipelineLayoutInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_LAYOUT_CREATE_INFO;
+    pipelineLayoutInfo.setLayoutCount = 1;
+    pipelineLayoutInfo.pSetLayouts = &Zayn->vkDescriptorSetLayout;
+    pipelineLayoutInfo.pushConstantRangeCount = 1;
+    pipelineLayoutInfo.pPushConstantRanges = &pushConstantRange;
+
+    if (vkCreatePipelineLayout(Zayn->vkDevice, &pipelineLayoutInfo, nullptr, &Zayn->vkPipelineLayout) != VK_SUCCESS)
+    {
+        throw std::runtime_error("failed to create pipeline layout!");
+    }
+}
+
+void CreateGraphicsPipeline(const std::string &vertShaderFilePath, const std::string &fragShaderFilePath, VkPipeline* pipeline)
 {
     auto vertShaderCode = readFile(vertShaderFilePath);
     auto fragShaderCode = readFile(fragShaderFilePath);
 
-    VkShaderModule vertShaderModule = createShaderModule(vertShaderCode, zaynMem);
-    VkShaderModule fragShaderModule = createShaderModule(fragShaderCode, zaynMem);
+    VkShaderModule vertShaderModule = createShaderModule(vertShaderCode, Zayn);
+    VkShaderModule fragShaderModule = createShaderModule(fragShaderCode, Zayn);
 
     VkPipelineShaderStageCreateInfo vertShaderStageInfo{};
     vertShaderStageInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_SHADER_STAGE_CREATE_INFO;
@@ -806,13 +833,55 @@ void CreateGraphicsPipeline(ZaynMemory *zaynMem, const std::string &vertShaderFi
     VkPipelineVertexInputStateCreateInfo vertexInputInfo{};
     vertexInputInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_VERTEX_INPUT_STATE_CREATE_INFO;
 
-    auto bindingDescription = Vertex_::getBindingDescription();
-    auto attributeDescriptions = Vertex_::getAttributeDescriptions();
+    // auto bindingDescription = Vertex_::getBindingDescription();
+    // auto attributeDescriptions = Vertex_::getAttributeDescriptions();
 
-    vertexInputInfo.vertexBindingDescriptionCount = 1;
-    vertexInputInfo.vertexAttributeDescriptionCount = static_cast<uint32_t>(attributeDescriptions.size());
-    vertexInputInfo.pVertexBindingDescriptions = &bindingDescription;
-    vertexInputInfo.pVertexAttributeDescriptions = attributeDescriptions.data();
+    VkVertexInputBindingDescription bindingDescriptions[2] = {};
+    bindingDescriptions[0].binding = 0;
+    bindingDescriptions[0].stride = sizeof(Vertex_);
+    bindingDescriptions[0].inputRate = VK_VERTEX_INPUT_RATE_VERTEX;
+    bindingDescriptions[1].binding = 1;
+    bindingDescriptions[1].stride = sizeof(InstanceData);
+    bindingDescriptions[1].inputRate = VK_VERTEX_INPUT_RATE_INSTANCE;
+
+    VkVertexInputAttributeDescription attributeDescriptions[7] = {};
+    attributeDescriptions[0].binding = 0;
+    attributeDescriptions[0].location = 0;
+    attributeDescriptions[0].format = VK_FORMAT_R32G32B32_SFLOAT;
+    attributeDescriptions[0].offset = offsetof(Vertex_, pos);
+    attributeDescriptions[1].binding = 0;
+    attributeDescriptions[1].location = 1;
+    attributeDescriptions[1].format = VK_FORMAT_R32G32B32_SFLOAT;
+    attributeDescriptions[1].offset = offsetof(Vertex_, color);
+    attributeDescriptions[2].binding = 0;
+    attributeDescriptions[2].location = 2;
+    attributeDescriptions[2].format = VK_FORMAT_R32G32_SFLOAT;
+    attributeDescriptions[2].offset = offsetof(Vertex_, texCoord);
+
+    attributeDescriptions[3].binding = 1; // Assuming binding 1 for instance data
+    attributeDescriptions[3].location = 3;
+    attributeDescriptions[3].format = VK_FORMAT_R32G32B32A32_SFLOAT;
+    attributeDescriptions[3].offset = offsetof(InstanceData, modelMatrix) + sizeof(glm::vec4) * 0;
+
+    attributeDescriptions[4].binding = 1; // Assuming binding 1 for instance data
+    attributeDescriptions[4].location = 4;
+    attributeDescriptions[4].format = VK_FORMAT_R32G32B32A32_SFLOAT;
+    attributeDescriptions[4].offset = offsetof(InstanceData, modelMatrix) + sizeof(glm::vec4) * 1;
+
+    attributeDescriptions[5].binding = 1; // Assuming binding 1 for instance data
+    attributeDescriptions[5].location = 5;
+    attributeDescriptions[5].format = VK_FORMAT_R32G32B32A32_SFLOAT;
+    attributeDescriptions[5].offset = offsetof(InstanceData, modelMatrix) + sizeof(glm::vec4) * 2;
+
+    attributeDescriptions[6].binding = 1; // Assuming binding 1 for instance data
+    attributeDescriptions[6].location = 6;
+    attributeDescriptions[6].format = VK_FORMAT_R32G32B32A32_SFLOAT;
+    attributeDescriptions[6].offset = offsetof(InstanceData, modelMatrix) + sizeof(glm::vec4) * 3;
+
+    vertexInputInfo.vertexBindingDescriptionCount = 2;
+    vertexInputInfo.vertexAttributeDescriptionCount = 7;
+    vertexInputInfo.pVertexBindingDescriptions = bindingDescriptions;
+    vertexInputInfo.pVertexAttributeDescriptions = attributeDescriptions;
 
     VkPipelineInputAssemblyStateCreateInfo inputAssembly{};
     inputAssembly.sType = VK_STRUCTURE_TYPE_PIPELINE_INPUT_ASSEMBLY_STATE_CREATE_INFO;
@@ -834,10 +903,19 @@ void CreateGraphicsPipeline(ZaynMemory *zaynMem, const std::string &vertShaderFi
     rasterizer.frontFace = VK_FRONT_FACE_COUNTER_CLOCKWISE;
     rasterizer.depthBiasEnable = VK_FALSE;
 
-    VkPipelineMultisampleStateCreateInfo multisampling{};
+    VkPipelineMultisampleStateCreateInfo multisampling = {};
     multisampling.sType = VK_STRUCTURE_TYPE_PIPELINE_MULTISAMPLE_STATE_CREATE_INFO;
     multisampling.sampleShadingEnable = VK_FALSE;
     multisampling.rasterizationSamples = VK_SAMPLE_COUNT_1_BIT;
+
+    VkPipelineColorBlendAttachmentState colorBlendAttachment = {};
+    colorBlendAttachment.colorWriteMask = VK_COLOR_COMPONENT_R_BIT | VK_COLOR_COMPONENT_G_BIT | VK_COLOR_COMPONENT_B_BIT | VK_COLOR_COMPONENT_A_BIT;
+    colorBlendAttachment.blendEnable = VK_FALSE;
+
+    std::vector<VkDynamicState> dynamicStates = {
+        VK_DYNAMIC_STATE_VIEWPORT,
+        VK_DYNAMIC_STATE_SCISSOR
+    };
 
     VkPipelineDepthStencilStateCreateInfo depthStencil{};
     depthStencil.sType = VK_STRUCTURE_TYPE_PIPELINE_DEPTH_STENCIL_STATE_CREATE_INFO;
@@ -852,9 +930,10 @@ void CreateGraphicsPipeline(ZaynMemory *zaynMem, const std::string &vertShaderFi
     depthStencil.front = {}; // Optional
     depthStencil.back = {}; // Optional
 
-    VkPipelineColorBlendAttachmentState colorBlendAttachment{};
-    colorBlendAttachment.colorWriteMask = VK_COLOR_COMPONENT_R_BIT | VK_COLOR_COMPONENT_G_BIT | VK_COLOR_COMPONENT_B_BIT | VK_COLOR_COMPONENT_A_BIT;
-    colorBlendAttachment.blendEnable = VK_FALSE;
+    VkPipelineDynamicStateCreateInfo dynamicState{};
+    dynamicState.sType = VK_STRUCTURE_TYPE_PIPELINE_DYNAMIC_STATE_CREATE_INFO;
+    dynamicState.dynamicStateCount = static_cast<uint32_t>(dynamicStates.size());
+    dynamicState.pDynamicStates = dynamicStates.data();
 
     VkPipelineColorBlendStateCreateInfo colorBlending{};
     colorBlending.sType = VK_STRUCTURE_TYPE_PIPELINE_COLOR_BLEND_STATE_CREATE_INFO;
@@ -866,33 +945,6 @@ void CreateGraphicsPipeline(ZaynMemory *zaynMem, const std::string &vertShaderFi
     colorBlending.blendConstants[1] = 0.0f;
     colorBlending.blendConstants[2] = 0.0f;
     colorBlending.blendConstants[3] = 0.0f;
-
-    std::vector<VkDynamicState> dynamicStates = {
-        VK_DYNAMIC_STATE_VIEWPORT,
-        VK_DYNAMIC_STATE_SCISSOR};
-
-    VkPipelineDynamicStateCreateInfo dynamicState{};
-    dynamicState.sType = VK_STRUCTURE_TYPE_PIPELINE_DYNAMIC_STATE_CREATE_INFO;
-    dynamicState.dynamicStateCount = static_cast<uint32_t>(dynamicStates.size());
-    dynamicState.pDynamicStates = dynamicStates.data();
-
-    VkPushConstantRange pushConstantRange = {};
-    pushConstantRange.stageFlags = VK_SHADER_STAGE_VERTEX_BIT | VK_SHADER_STAGE_FRAGMENT_BIT;
-    pushConstantRange.offset = 0;
-    pushConstantRange.size = sizeof(PushConstantData3D);
-
-
-    VkPipelineLayoutCreateInfo pipelineLayoutInfo{};
-    pipelineLayoutInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_LAYOUT_CREATE_INFO;
-    pipelineLayoutInfo.setLayoutCount = 1;
-    pipelineLayoutInfo.pSetLayouts = &zaynMem->vkDescriptorSetLayout;
-    pipelineLayoutInfo.pushConstantRangeCount = 1;
-    pipelineLayoutInfo.pPushConstantRanges = &pushConstantRange;
-
-    if (vkCreatePipelineLayout(zaynMem->vkDevice, &pipelineLayoutInfo, nullptr, &zaynMem->vkPipelineLayout) != VK_SUCCESS)
-    {
-        throw std::runtime_error("failed to create pipeline layout!");
-    }
 
     VkGraphicsPipelineCreateInfo pipelineInfo{};
     pipelineInfo.sType = VK_STRUCTURE_TYPE_GRAPHICS_PIPELINE_CREATE_INFO;
@@ -906,18 +958,18 @@ void CreateGraphicsPipeline(ZaynMemory *zaynMem, const std::string &vertShaderFi
     pipelineInfo.pDepthStencilState = &depthStencil;
     pipelineInfo.pColorBlendState = &colorBlending;
     pipelineInfo.pDynamicState = &dynamicState;
-    pipelineInfo.layout = zaynMem->vkPipelineLayout;
-    pipelineInfo.renderPass = zaynMem->vkRenderPass;
+    pipelineInfo.layout = Zayn->vkPipelineLayout;
+    pipelineInfo.renderPass = Zayn->vkRenderPass;
     pipelineInfo.subpass = 0;
     pipelineInfo.basePipelineHandle = VK_NULL_HANDLE;
 
-    if (vkCreateGraphicsPipelines(zaynMem->vkDevice, VK_NULL_HANDLE, 1, &pipelineInfo, nullptr, &zaynMem->vkGraphicsPipeline) != VK_SUCCESS)
+    if (vkCreateGraphicsPipelines(Zayn->vkDevice, VK_NULL_HANDLE, 1, &pipelineInfo, nullptr, &Zayn->vkGraphicsPipeline) != VK_SUCCESS)
     {
         throw std::runtime_error("failed to create graphics pipeline!");
     }
 
-    vkDestroyShaderModule(zaynMem->vkDevice, fragShaderModule, nullptr);
-    vkDestroyShaderModule(zaynMem->vkDevice, vertShaderModule, nullptr);
+    vkDestroyShaderModule(Zayn->vkDevice, fragShaderModule, nullptr);
+    vkDestroyShaderModule(Zayn->vkDevice, vertShaderModule, nullptr);
 }
 
 void CreateFrameBuffers(ZaynMemory *zaynMem)
@@ -945,6 +997,11 @@ void CreateFrameBuffers(ZaynMemory *zaynMem)
         }
     }
 }
+
+void LoadAssets()
+{
+
+} 
 
 void CreateCommandPool(ZaynMemory *zaynMem)
 {
@@ -1482,6 +1539,36 @@ void CreateIndexBuffer(ZaynMemory *zaynMem)
     vkFreeMemory(zaynMem->vkDevice, stagingBufferMemory, nullptr);
 }
 
+void CreateInstanceBuffer()
+{
+    VkDeviceSize instanceDataSize = instanceCount * sizeof(InstanceData);
+
+    VkBuffer stagingBuffer;
+    VkDeviceMemory stagingBufferMemory;
+    createBuffer(instanceDataSize, VK_BUFFER_USAGE_TRANSFER_SRC_BIT, VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT, stagingBuffer, stagingBufferMemory, Zayn);
+
+    std::vector<InstanceData> instanceData(instanceCount);
+
+    // Fill the instance data buffer with data
+    for (uint32_t i = 0; i < instanceCount; i++)
+    {
+        real32 posx = i * 1.0f;
+        instanceData[i].modelMatrix = TRS(V3(0.0f, 0.0f, posx), AxisAngle(V3(0.0f, 1.0f, 0.0f), DegToRad(0.0f)), V3(1.0f, 1.0f, 1.0f));
+    }
+
+    void* data;
+    vkMapMemory(Zayn->vkDevice, stagingBufferMemory, 0, instanceDataSize, 0, &data);
+    memcpy(data, instanceData.data(), instanceDataSize);
+    vkUnmapMemory(Zayn->vkDevice, stagingBufferMemory);
+
+    createBuffer(instanceDataSize, VK_BUFFER_USAGE_TRANSFER_DST_BIT | VK_BUFFER_USAGE_VERTEX_BUFFER_BIT, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT, Zayn->vkInstanceBuffer, Zayn->vkInstanceBufferMemory, Zayn);
+
+    copyBuffer(stagingBuffer, Zayn->vkInstanceBuffer, instanceDataSize, Zayn);
+
+    vkDestroyBuffer(Zayn->vkDevice, stagingBuffer, nullptr);
+    vkFreeMemory(Zayn->vkDevice, stagingBufferMemory, nullptr);
+}
+
 void CreateDescriptorSetLayout(ZaynMemory *zaynMem)
 {
     VkDescriptorSetLayoutBinding uboLayoutBinding{};
@@ -1645,11 +1732,14 @@ void InitRender_Learn(ZaynMemory *zaynMem)
     CreateImageViews(zaynMem);
     CreateRenderPass(zaynMem);
     CreateDescriptorSetLayout(zaynMem);
-    CreateGraphicsPipeline(zaynMem, "/Users/socki/dev/zayn/src/renderer/shaders/vkShader_3d_INIT_pvert.spv", "/Users/socki/dev/zayn/src/renderer/shaders/vkShader_3d_INIT_pfrag.spv");
+    CreateGraphicsPipelineLayout();
+    CreateGraphicsPipeline("/Users/socki/dev/zayn/src/renderer/shaders/vkShader_3d_INIT_pvert.spv", "/Users/socki/dev/zayn/src/renderer/shaders/vkShader_3d_INIT_pfrag.spv", &Zayn->vkGraphicsPipeline);
 
     CreateCommandPool(zaynMem);
     CreateDepthResources(zaynMem);
     CreateFrameBuffers(zaynMem);
+
+    LoadAssets();
 
     CreateTextureImage(zaynMem);
     CreateTextureImageView(zaynMem);
@@ -1657,6 +1747,7 @@ void InitRender_Learn(ZaynMemory *zaynMem)
     LoadModel();
     CreateVertexBuffer(zaynMem);
     CreateIndexBuffer(zaynMem);
+    CreateInstanceBuffer();
     CreateUniformBuffers_x(zaynMem);
     CreateDescriptorPool(zaynMem);
     CreateDescriptorSets_x(zaynMem);
@@ -1813,30 +1904,32 @@ void RenderEntity_notYetEntity(VkCommandBuffer imageBuffer, vec3 pos)
     VkBuffer vertexBuffers[] = {Zayn->vkVertexBuffer};
     VkDeviceSize offsets[] = {0};
     vkCmdBindVertexBuffers(imageBuffer, 0, 1, vertexBuffers, offsets);
+    VkBuffer instanceBuffers[] = {Zayn->vkInstanceBuffer};
+    vkCmdBindVertexBuffers(imageBuffer, 1, 1, instanceBuffers, offsets);
+    // VkBuffer vertexBuffers[] = {Zayn->vkVertexBuffer, Zayn->vkInstanceBuffer};
+    // VkDeviceSize offsets[] = {0};
+//     // vkCmdBindVertexBuffers(imageBuffer, 0, 2, vertexBuffers, offsets);
+// VkBuffer vertexBuffers[] = {Zayn->vkVertexBuffer, Zayn->vkInstanceBuffer};
+// VkDeviceSize offsets[] = {0, sizeof(Vertex_) * Zayn->vkVertices.size()};
+// vkCmdBindVertexBuffers(imageBuffer, 0, 2, vertexBuffers, offsets);
 
+//     VkBuffer vertexBuffers[] = {Zayn->vkVertexBuffer};
+//     VkBuffer instanceBuffers[] = {Zayn->vkInstanceBuffer};
+// // 
+			
+//     vkCmdBindVertexBuffers(imageBuffer, 0, 1, &vertexBuffers, offsets);
+// 			// Binding point 1 : Instance data buffer
+// 			vkCmdBindVertexBuffers(imageBuffer, 1, 1, &instanceBuffers, offsets);
     PushConstantData3D pushData;
 
-        // mat4 cameraViewMatrix = zaynMem->camera.projection * zaynMem->camera.viewMatrix;
-        mat4 model = TRS(pos, AxisAngle(V3(0.0f, 1.0f, 0.0f), DegToRad(0.0f)), V3(1.0f, 1.0f, 1.0f));
-        pushData.transform = Zayn->camera.viewProjection * model;
-        // pushData.offset = entity->transform2d.translation;
-        // pushData.color = entity->color;
-        pushData.modelMatrix = model;
-        // pushData.scale = entity->transform2d.scale;
-        // real32 cos_ = sinf(entity->transform2d.rotation * i);
-        // real32 sin_ = cosf(entity->transform2d.rotation * i);
+    mat4 model = TRS(pos, AxisAngle(V3(0.0f, 1.0f, 0.0f), DegToRad(0.0f)), V3(1.0f, 1.0f, 1.0f));
+    pushData.modelMatrix = model;
+    vkCmdPushConstants(imageBuffer, Zayn->vkPipelineLayout, VK_SHADER_STAGE_VERTEX_BIT | VK_SHADER_STAGE_FRAGMENT_BIT, 0, sizeof(PushConstantData3D), &pushData);
 
-        // mat2 rotMatrix =   {cos_, sin_,-sin_, cos_};
-
-        // pushData.transform = rotMatrix * Scale2(entity->transform2d.scale);
-        vkCmdPushConstants(imageBuffer, Zayn->vkPipelineLayout, VK_SHADER_STAGE_VERTEX_BIT | VK_SHADER_STAGE_FRAGMENT_BIT, 0, sizeof(PushConstantData3D), &pushData);
-       
     vkCmdBindIndexBuffer(imageBuffer, Zayn->vkIndexBuffer, 0, VK_INDEX_TYPE_UINT32);
 
-    vkCmdDrawIndexed(imageBuffer, static_cast<uint32_t>(Zayn->vkIndices.size()), 1, 0, 0, 0);
-
-
-    
+    // vkCmdDrawIndexed(imageBuffer, static_cast<uint32_t>(Zayn->vkIndices.size()), 1, 0, 0, 0);
+    vkCmdDrawIndexed(imageBuffer, static_cast<uint32_t>(Zayn->vkIndices.size()), instanceCount, 0, 0, 0);
 }
 
 void EndSwapChainRenderPass(VkCommandBuffer commandBuffer)
@@ -1934,7 +2027,7 @@ void UpdateRender_Learn(ZaynMemory *zaynMem)
 
         BeginSwapChainRenderPass(zaynMem->vkCommandBuffers[zaynMem->vkCurrentFrame]);
         RenderEntity_notYetEntity(zaynMem->vkCommandBuffers[zaynMem->vkCurrentFrame], V3(0.0f, 0.0f, 0.0f));
-        RenderEntity_notYetEntity(zaynMem->vkCommandBuffers[zaynMem->vkCurrentFrame], V3(0.0f, 0.0f, 1.0f));
+        // RenderEntity_notYetEntity(zaynMem->vkCommandBuffers[zaynMem->vkCurrentFrame], V3(0.0f, 0.0f, 1.0f));
         // RenderEntity_notYetEntity(zaynMem->vkCommandBuffers[zaynMem->vkCurrentFrame], V3(3.0f, 3.0f, 0.0f));
         EndSwapChainRenderPass(zaynMem->vkCommandBuffers[zaynMem->vkCurrentFrame]);
         EndFrame();

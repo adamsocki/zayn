@@ -1244,7 +1244,6 @@ void RenderEntity_3D(ZaynMemory *zaynMem, VkCommandBuffer imageBuffer,  Entity* 
 
         // mat4 cameraViewMatrix = zaynMem->camera.projection * zaynMem->camera.viewMatrix;
         mat4 model = TRS(entity->transform3d.translation, AxisAngle(entity->transform3d.rotation, entity->transform3d.angleRotation), entity->transform3d.scale);
-        pushData.transform = zaynMem->camera.viewProjection * model;
         // pushData.offset = entity->transform2d.translation;
         // pushData.color = entity->color;
         pushData.modelMatrix = model;
