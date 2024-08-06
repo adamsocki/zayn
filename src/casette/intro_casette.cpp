@@ -65,7 +65,7 @@ void InitCasette(ZaynMemory *zaynMem)
     testMonkey->rad = 0.0f;
     
 
-    InitRender_Learn(zaynMem);
+    InitRender_Learn();
 
     testMonkey->posTest = 0.0f; 
     // zaynMem->camera.pos = V3(0.0f,0.0f,0.0f);
@@ -173,7 +173,7 @@ void UpdateAndRenderCasette(ZaynMemory *zaynMem)
         cam->pos -= cam->front * 0.05f;
     }
 
-    UpdateRender_Learn(zaynMem);
+    UpdateRender_Learn();
 
     // ********
 	// RENDER

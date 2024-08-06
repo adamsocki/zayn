@@ -7,12 +7,15 @@
 #include "buffer.h"
 #include "model.h"
 
-#include "renderer/mesh.h"
-#include "renderer/render.h"
 
 #include "memory.h"
 
 #include "dynamic_array.h"
+
+#include "renderer/mesh.h"
+#include "renderer/render.h"
+#include "renderer/render_vulkan.h"
+
 
 #include "entity.h"
 
@@ -25,6 +28,7 @@
 
 
 #include "casette/casette.h"
+
 
 
 enum ZaynState
@@ -83,6 +87,8 @@ struct ZaynMemory
     PipelineConfigInfo MyPipelineConfigInfo = {};
 
     VkPipeline vkGraphicsPipeline;
+    VkPipeline vkGraphicsPipeline2;
+    
     VkShaderModule vkVertShaderModule;
     VkShaderModule vkFragShaderModule;
 
@@ -125,6 +131,7 @@ struct ZaynMemory
     std::vector<VkFence> vkImagesInFlight;
 
     uint32_t vkCurrentFrame = 0;
+    
 
     bool vkFramebufferResized = false;
 
@@ -149,8 +156,13 @@ struct ZaynMemory
     std::vector<VkDeviceMemory> vkUniformBuffers2Memory;
     std::vector<void*> vkUniformBuffers2Mapped;
 
+    std::vector<VkBuffer> vkUniformBuffersDynamic;
+    std::vector<VkDeviceMemory> vkUniformBuffersDynamicMemory;
+    std::vector<void*> vkUniformBuffersDynamicMapped;
+
     VkDescriptorPool vkDescriptorPool;
     std::vector<VkDescriptorSet> vkDescriptorSets;
+
 
     uint32_t vkMipLevels;
     VkImage vkTextureImage;
@@ -168,6 +180,12 @@ struct ZaynMemory
     
     int32 VK_MAX_FRAMES_IN_FLIGHT = 2;
 
+    // VKHgraphicsPipeline vkGraphicsPipeline_NEW;
+    // VKHinstance vkInstance_NEW;
+    DrawState* drawState;
+    GameCamera gameCamera;
+    real32 accumTime = 0.0f;
+	uint32 accumFrames = 0;
 
 
     vkMesh triangleMesh;

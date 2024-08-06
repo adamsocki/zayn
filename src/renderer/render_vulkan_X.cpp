@@ -26,6 +26,13 @@ struct InstanceData {
 };
 
 uint32_t instanceCount = 100;
+size_t dynamicAlignment{ 0 }; // for dynamic ubo
+
+#define OBJECT_INSTANCES 125
+
+
+
+
 
 
 struct UniformBufferObject_x
@@ -45,6 +52,11 @@ struct UniformBufferObject_x2
     alignas(16) mat4 viewProj;
 };
 
+struct UniformBufferObjectDynamic
+ {
+    alignas(16) vec3* modelPos;
+   
+}  uboDynamic;
 
 struct SwapChainSupportDetails
 {
@@ -52,6 +64,19 @@ struct SwapChainSupportDetails
     std::vector<VkSurfaceFormatKHR> formats;
     std::vector<VkPresentModeKHR> presentModes;
 };
+
+void* alignedAlloc(size_t size, size_t alignment)
+{
+	void *data = nullptr;
+#if defined(_MSC_VER) || defined(__MINGW32__)
+	data = _aligned_malloc(size, alignment);
+#else
+	int res = posix_memalign(&data, alignment, size);
+	if (res != 0)
+		data = nullptr;
+#endif
+	return data;
+}
 
 VkResult CreateDebugUtilsMessengerEXT(VkInstance instance, const VkDebugUtilsMessengerCreateInfoEXT *pCreateInfo, const VkAllocationCallbacks *pAllocator, VkDebugUtilsMessengerEXT *pDebugMessenger)
 {
@@ -380,7 +405,6 @@ void printDeviceExtensions(VkPhysicalDevice device)
 
 void PickPhysicalDevice(ZaynMemory *zaynMem)
 {
-
     uint32_t deviceCount = 0;
     vkEnumeratePhysicalDevices(zaynMem->vkInstance, &deviceCount, nullptr);
 
@@ -546,28 +570,7 @@ VkPresentModeKHR chooseSwapPresentMode(const std::vector<VkPresentModeKHR> &avai
     std::cout << "Present mode: V-Sync" << std::endl;
     return VK_PRESENT_MODE_FIFO_KHR;
 }
-VkExtent2D chooseSwapExtent(const VkSurfaceCapabilitiesKHR &capabilities, ZaynMemory *zaynMem)
-{
-    if (capabilities.currentExtent.width != std::numeric_limits<uint32_t>::max())
-    {
-        return capabilities.currentExtent;
-    }
-    else
-    {
-        int width, height;
-        glfwGetFramebufferSize(zaynMem->window, &width, &height);
 
-        VkExtent2D actualExtent =
-            {
-                static_cast<uint32_t>(width),
-                static_cast<uint32_t>(height)};
-
-        actualExtent.width = std::clamp(actualExtent.width, capabilities.minImageExtent.width, capabilities.maxImageExtent.width);
-        actualExtent.height = std::clamp(actualExtent.height, capabilities.minImageExtent.height, capabilities.maxImageExtent.height);
-
-        return actualExtent;
-    }
-}
 
 void CreateSwapChain(ZaynMemory *zaynMem)
 {
@@ -833,9 +836,6 @@ void CreateGraphicsPipeline(const std::string &vertShaderFilePath, const std::st
     VkPipelineVertexInputStateCreateInfo vertexInputInfo{};
     vertexInputInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_VERTEX_INPUT_STATE_CREATE_INFO;
 
-    // auto bindingDescription = Vertex_::getBindingDescription();
-    // auto attributeDescriptions = Vertex_::getAttributeDescriptions();
-
     VkVertexInputBindingDescription bindingDescriptions[2] = {};
     bindingDescriptions[0].binding = 0;
     bindingDescriptions[0].stride = sizeof(Vertex_);
@@ -877,6 +877,9 @@ void CreateGraphicsPipeline(const std::string &vertShaderFilePath, const std::st
     attributeDescriptions[6].location = 6;
     attributeDescriptions[6].format = VK_FORMAT_R32G32B32A32_SFLOAT;
     attributeDescriptions[6].offset = offsetof(InstanceData, modelMatrix) + sizeof(glm::vec4) * 3;
+
+
+
 
     vertexInputInfo.vertexBindingDescriptionCount = 2;
     vertexInputInfo.vertexAttributeDescriptionCount = 7;
@@ -1495,6 +1498,71 @@ void LoadModel()
     }
 }
 
+void CreateUniformBuffers_x(ZaynMemory *zaynMem)
+{
+    VkDeviceSize bufferSize = sizeof(UniformBufferObject_x);
+    VkDeviceSize bufferSize2 = sizeof(UniformBufferObject_x2);
+
+    zaynMem->vkUniformBuffers.resize(MAX_FRAMES_IN_FLIGHT);
+    zaynMem->vkUniformBuffersMemory.resize(MAX_FRAMES_IN_FLIGHT);
+    zaynMem->vkUniformBuffersMapped.resize(MAX_FRAMES_IN_FLIGHT);
+
+    zaynMem->vkUniformBuffers2.resize(MAX_FRAMES_IN_FLIGHT);
+    zaynMem->vkUniformBuffers2Memory.resize(MAX_FRAMES_IN_FLIGHT);
+    zaynMem->vkUniformBuffers2Mapped.resize(MAX_FRAMES_IN_FLIGHT);
+
+
+
+    for (size_t i = 0; i < MAX_FRAMES_IN_FLIGHT; i++)
+    {
+        createBuffer(bufferSize, VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT, VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT, zaynMem->vkUniformBuffers[i], zaynMem->vkUniformBuffersMemory[i], zaynMem);
+        vkMapMemory(zaynMem->vkDevice, zaynMem->vkUniformBuffersMemory[i], 0, bufferSize, 0, &zaynMem->vkUniformBuffersMapped[i]);
+
+        createBuffer(bufferSize2, VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT, VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT, zaynMem->vkUniformBuffers2[i], zaynMem->vkUniformBuffers2Memory[i], zaynMem);
+        vkMapMemory(zaynMem->vkDevice, zaynMem->vkUniformBuffers2Memory[i], 0, bufferSize2, 0, &zaynMem->vkUniformBuffers2Mapped[i]);
+    }
+}
+
+void CreateDynamicUniformBuffers()
+{
+    VkPhysicalDeviceProperties deviceProperties;
+    vkGetPhysicalDeviceProperties(Zayn->vkPhysicalDevice, &deviceProperties);
+
+    size_t minUboAlignment = deviceProperties.limits.minUniformBufferOffsetAlignment;
+    dynamicAlignment = sizeof(glm::mat4);
+
+     std::cout << "dynamicAlignment pre: " << dynamicAlignment << std::endl;
+
+    if (minUboAlignment > 0)
+    {
+        dynamicAlignment = (dynamicAlignment + minUboAlignment - 1) & ~(minUboAlignment - 1);
+    }
+
+    std::cout << "minUboAlignment: " << minUboAlignment << std::endl;
+    std::cout << "dynamicAlignment post: " << dynamicAlignment << std::endl;
+
+    Zayn->vkUniformBuffersDynamic.resize(MAX_FRAMES_IN_FLIGHT);
+    Zayn->vkUniformBuffersDynamicMemory.resize(MAX_FRAMES_IN_FLIGHT);
+    Zayn->vkUniformBuffersDynamicMapped.resize(MAX_FRAMES_IN_FLIGHT);
+
+    size_t dynamicBufferSize = OBJECT_INSTANCES * dynamicAlignment;
+    
+
+    uboDynamic.modelPos = (vec3*)alignedAlloc(dynamicBufferSize, dynamicAlignment);
+    assert(uboDynamic.modelPos);
+
+     for (size_t i = 0; i < MAX_FRAMES_IN_FLIGHT; i++)
+    {
+        // Create uniform buffer for dynamic UBO
+        createBuffer(dynamicBufferSize, VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT, VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT, 
+                     Zayn->vkUniformBuffersDynamic[i], Zayn->vkUniformBuffersDynamicMemory[i], Zayn);
+
+        // Map the buffer memory
+        vkMapMemory(Zayn->vkDevice, Zayn->vkUniformBuffersDynamicMemory[i], 0, dynamicBufferSize, 0, &Zayn->vkUniformBuffersDynamicMapped[i]);
+    }
+    
+}
+
 void CreateVertexBuffer(ZaynMemory *zaynMem)
 {
     VkDeviceSize bufferSize = sizeof(zaynMem->vkVertices[0]) * zaynMem->vkVertices.size();
@@ -1569,6 +1637,9 @@ void CreateInstanceBuffer()
     vkFreeMemory(Zayn->vkDevice, stagingBufferMemory, nullptr);
 }
 
+
+
+
 void CreateDescriptorSetLayout(ZaynMemory *zaynMem)
 {
     VkDescriptorSetLayoutBinding uboLayoutBinding{};
@@ -1583,6 +1654,7 @@ void CreateDescriptorSetLayout(ZaynMemory *zaynMem)
     ubo2LayoutBinding.descriptorCount = 1;
     ubo2LayoutBinding.stageFlags = VK_SHADER_STAGE_VERTEX_BIT;
 
+
     VkDescriptorSetLayoutBinding samplerLayoutBinding{};
     samplerLayoutBinding.binding = 1;
     samplerLayoutBinding.descriptorCount = 1;
@@ -1590,7 +1662,15 @@ void CreateDescriptorSetLayout(ZaynMemory *zaynMem)
     samplerLayoutBinding.pImmutableSamplers = nullptr;
     samplerLayoutBinding.stageFlags = VK_SHADER_STAGE_FRAGMENT_BIT;
 
-    std::array<VkDescriptorSetLayoutBinding, 3> bindings = {uboLayoutBinding, ubo2LayoutBinding, samplerLayoutBinding};
+    //TESTING NOW
+    VkDescriptorSetLayoutBinding uboDynamicLayoutBinding{};
+    uboDynamicLayoutBinding.binding = 3;
+    uboDynamicLayoutBinding.descriptorCount = 1;
+    uboDynamicLayoutBinding.descriptorType = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER_DYNAMIC;
+    uboDynamicLayoutBinding.stageFlags = VK_SHADER_STAGE_VERTEX_BIT;
+
+
+    std::array<VkDescriptorSetLayoutBinding, 4> bindings = {uboLayoutBinding, ubo2LayoutBinding, samplerLayoutBinding, uboDynamicLayoutBinding};
     VkDescriptorSetLayoutCreateInfo layoutInfo{};
     layoutInfo.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_LAYOUT_CREATE_INFO;
     layoutInfo.bindingCount = static_cast<uint32_t>(bindings.size());
@@ -1602,39 +1682,18 @@ void CreateDescriptorSetLayout(ZaynMemory *zaynMem)
     }
 }
 
-void CreateUniformBuffers_x(ZaynMemory *zaynMem)
-{
-    VkDeviceSize bufferSize = sizeof(UniformBufferObject_x);
-    VkDeviceSize bufferSize2 = sizeof(UniformBufferObject_x2);
-
-    zaynMem->vkUniformBuffers.resize(MAX_FRAMES_IN_FLIGHT);
-    zaynMem->vkUniformBuffersMemory.resize(MAX_FRAMES_IN_FLIGHT);
-    zaynMem->vkUniformBuffersMapped.resize(MAX_FRAMES_IN_FLIGHT);
-
-    zaynMem->vkUniformBuffers2.resize(MAX_FRAMES_IN_FLIGHT);
-    zaynMem->vkUniformBuffers2Memory.resize(MAX_FRAMES_IN_FLIGHT);
-    zaynMem->vkUniformBuffers2Mapped.resize(MAX_FRAMES_IN_FLIGHT);
-
-
-    for (size_t i = 0; i < MAX_FRAMES_IN_FLIGHT; i++)
-    {
-        createBuffer(bufferSize, VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT, VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT, zaynMem->vkUniformBuffers[i], zaynMem->vkUniformBuffersMemory[i], zaynMem);
-        vkMapMemory(zaynMem->vkDevice, zaynMem->vkUniformBuffersMemory[i], 0, bufferSize, 0, &zaynMem->vkUniformBuffersMapped[i]);
-
-        createBuffer(bufferSize2, VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT, VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT, zaynMem->vkUniformBuffers2[i], zaynMem->vkUniformBuffers2Memory[i], zaynMem);
-        vkMapMemory(zaynMem->vkDevice, zaynMem->vkUniformBuffers2Memory[i], 0, bufferSize2, 0, &zaynMem->vkUniformBuffers2Mapped[i]);
-    }
-}
 
 void CreateDescriptorPool(ZaynMemory *zaynMem)
 {
-    std::array<VkDescriptorPoolSize, 3> poolSizes{};
+    std::array<VkDescriptorPoolSize, 4> poolSizes{};
     poolSizes[0].type = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
     poolSizes[0].descriptorCount = static_cast<uint32_t>(MAX_FRAMES_IN_FLIGHT);
     poolSizes[1].type = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
     poolSizes[1].descriptorCount = static_cast<uint32_t>(MAX_FRAMES_IN_FLIGHT);
     poolSizes[2].type = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
     poolSizes[2].descriptorCount = static_cast<uint32_t>(MAX_FRAMES_IN_FLIGHT);
+    poolSizes[3].type = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER_DYNAMIC;
+    poolSizes[3].descriptorCount = static_cast<uint32_t>(MAX_FRAMES_IN_FLIGHT);
 
     VkDescriptorPoolCreateInfo poolInfo{};
     poolInfo.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_POOL_CREATE_INFO;
@@ -1675,13 +1734,18 @@ void CreateDescriptorSets_x(ZaynMemory *zaynMem)
         bufferInfo2.offset = 0;
         bufferInfo2.range = sizeof(UniformBufferObject_x2);
 
+        VkDescriptorBufferInfo bufferInfoDynamic = {};
+
+        bufferInfoDynamic.buffer = zaynMem->vkUniformBuffersDynamic[i];
+        bufferInfoDynamic.offset = 0;
+        bufferInfoDynamic.range = dynamicAlignment;
 
         VkDescriptorImageInfo imageInfo{};
         imageInfo.imageLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
         imageInfo.imageView = zaynMem->vkTextureImageView;
         imageInfo.sampler = zaynMem->vkTextureSampler;
 
-        std::array<VkWriteDescriptorSet, 3> descriptorWrites{};
+        std::array<VkWriteDescriptorSet, 4> descriptorWrites{};
 
         descriptorWrites[0].sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
         descriptorWrites[0].dstSet = zaynMem->vkDescriptorSets[i];
@@ -1707,6 +1771,14 @@ void CreateDescriptorSets_x(ZaynMemory *zaynMem)
         descriptorWrites[2].descriptorCount = 1;
         descriptorWrites[2].pImageInfo = &imageInfo;
 
+        descriptorWrites[3].sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
+        descriptorWrites[3].dstSet = zaynMem->vkDescriptorSets[i];
+        descriptorWrites[3].dstBinding = 3;
+        descriptorWrites[3].dstArrayElement = 0;
+        descriptorWrites[3].descriptorType = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER_DYNAMIC;
+        descriptorWrites[3].descriptorCount = 1;
+        descriptorWrites[3].pBufferInfo = &bufferInfoDynamic;
+
         
 
         vkUpdateDescriptorSets(zaynMem->vkDevice, static_cast<uint32_t>(descriptorWrites.size()), descriptorWrites.data(), 0, nullptr);
@@ -1731,9 +1803,11 @@ void InitRender_Learn(ZaynMemory *zaynMem)
     CreateSwapChain(zaynMem);
     CreateImageViews(zaynMem);
     CreateRenderPass(zaynMem);
+    
     CreateDescriptorSetLayout(zaynMem);
     CreateGraphicsPipelineLayout();
     CreateGraphicsPipeline("/Users/socki/dev/zayn/src/renderer/shaders/vkShader_3d_INIT_pvert.spv", "/Users/socki/dev/zayn/src/renderer/shaders/vkShader_3d_INIT_pfrag.spv", &Zayn->vkGraphicsPipeline);
+    // CreateGraphicsPipeline("/Users/socki/dev/zayn/src/renderer/shaders/vkShader_4d_INIT_pvert.spv", "/Users/socki/dev/zayn/src/renderer/shaders/vkShader_4d_INIT_pfrag.spv", &Zayn->vkGraphicsPipeline2);
 
     CreateCommandPool(zaynMem);
     CreateDepthResources(zaynMem);
@@ -1749,6 +1823,7 @@ void InitRender_Learn(ZaynMemory *zaynMem)
     CreateIndexBuffer(zaynMem);
     CreateInstanceBuffer();
     CreateUniformBuffers_x(zaynMem);
+    CreateDynamicUniformBuffers();
     CreateDescriptorPool(zaynMem);
     CreateDescriptorSets_x(zaynMem);
 
@@ -1795,6 +1870,30 @@ void RecreateSwapChain(ZaynMemory *zaynMem)
     CreateFrameBuffers(zaynMem);
 }
 
+
+void UpdateDynamicUniformBuffer(uint32_t currentImage)
+{
+    static auto startTime = std::chrono::high_resolution_clock::now();
+
+    auto currentTime = std::chrono::high_resolution_clock::now();
+    float time = std::chrono::duration<float, std::chrono::seconds::period>(currentTime - startTime).count();
+
+    void* data;
+    // vkMapMemory(Zayn->vkDevice, Zayn->vkUniformBuffersDynamicMemory[Zayn->vkCurrentFrame], 0, dynamicAlignment * OBJECT_INSTANCES, 0, &data);
+    // vec3* uboD = {};
+    for (int i = 0; i < OBJECT_INSTANCES; i++)
+    {
+        // vec3
+        vec3* modelPos = (vec3*)((uint64_t)uboDynamic.modelPos + (i * dynamicAlignment));
+        real32 pos = sinf(time * (i + 1)) * 2.0f;  // Back-and-forth motion
+        // *model = TRS(V3(pos, 0.0f, 0.0f), AxisAngle(V3(0.0f, 1.0f, 0.0f), time * DegToRad(45.0f)), V3(1.0f, 1.0f, 1.0f));
+        *modelPos = V3(pos, 0.0f, 0.0f);
+    }
+    
+    memcpy(Zayn->vkUniformBuffersDynamicMapped[currentImage], &uboDynamic.modelPos, sizeof(uboDynamic.modelPos));
+
+    // vkUnmapMemory(Zayn->vkDevice, Zayn->vkUniformBuffersDynamicMemory[Zayn->vkCurrentFrame]);
+}
 void UpdateUniformBuffer(uint32_t currentImage, ZaynMemory *zaynMem)
 {
     static auto startTime = std::chrono::high_resolution_clock::now();
@@ -1932,6 +2031,40 @@ void RenderEntity_notYetEntity(VkCommandBuffer imageBuffer, vec3 pos)
     vkCmdDrawIndexed(imageBuffer, static_cast<uint32_t>(Zayn->vkIndices.size()), instanceCount, 0, 0, 0);
 }
 
+void RenderDynamicUniform(VkCommandBuffer imageBuffer)
+{
+    vkCmdBindPipeline(imageBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, Zayn->vkGraphicsPipeline);
+    // vkCmdBindDescriptorSets(imageBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, Zayn->vkPipelineLayout, 0, 1, &Zayn->vkDescriptorSets[Zayn->vkCurrentFrame], 0, nullptr);
+
+    // Replace Below with BindModel() and DrawModel()
+    VkBuffer vertexBuffers[] = {Zayn->vkVertexBuffer};
+    VkDeviceSize offsets[] = {0};
+    vkCmdBindVertexBuffers(imageBuffer, 0, 1, vertexBuffers, offsets);
+
+    vkCmdBindIndexBuffer(imageBuffer, Zayn->vkIndexBuffer, 0, VK_INDEX_TYPE_UINT32);
+
+    VkBuffer instanceBuffers[] = {Zayn->vkInstanceBuffer};
+    VkDeviceSize instanceOffsets[] = {0};
+
+
+    for (uint32_t j = 0; j < OBJECT_INSTANCES; j++)
+    {
+        // One dynamic offset per dynamic descriptor to offset into the ubo containing all model matrices
+        uint32_t dynamicOffset = j * static_cast<uint32_t>(dynamicAlignment);
+        // Bind the descriptor set for rendering a mesh using the dynamic offset
+        vkCmdBindDescriptorSets(imageBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, Zayn->vkPipelineLayout, 0, 1, &Zayn->vkDescriptorSets[Zayn->vkCurrentFrame], 1, &dynamicOffset);
+
+
+         instanceOffsets[0] = j * sizeof(InstanceData);
+        vkCmdBindVertexBuffers(imageBuffer, 1, 1, instanceBuffers, instanceOffsets);
+
+        vkCmdDrawIndexed(imageBuffer, static_cast<uint32_t>(Zayn->vkIndices.size()), j, 0, 0, 0);
+    }
+    size_t dynamicBufferSize = OBJECT_INSTANCES * dynamicAlignment;
+    uboDynamic.modelPos = {};
+    uboDynamic.modelPos = (vec3*)alignedAlloc(dynamicBufferSize, dynamicAlignment);
+}
+
 void EndSwapChainRenderPass(VkCommandBuffer commandBuffer)
 {
     assert(Zayn->vkIsFrameStarted && "Can't call beginSwapChainRenderPass if frame is not in progress");
@@ -2024,11 +2157,13 @@ void UpdateRender_Learn(ZaynMemory *zaynMem)
     if (BeginFrame())
     {
         UpdateUniformBuffer(zaynMem->vkCurrentFrame, zaynMem);
+        UpdateDynamicUniformBuffer(zaynMem->vkCurrentFrame);
 
         BeginSwapChainRenderPass(zaynMem->vkCommandBuffers[zaynMem->vkCurrentFrame]);
         RenderEntity_notYetEntity(zaynMem->vkCommandBuffers[zaynMem->vkCurrentFrame], V3(0.0f, 0.0f, 0.0f));
         // RenderEntity_notYetEntity(zaynMem->vkCommandBuffers[zaynMem->vkCurrentFrame], V3(0.0f, 0.0f, 1.0f));
         // RenderEntity_notYetEntity(zaynMem->vkCommandBuffers[zaynMem->vkCurrentFrame], V3(3.0f, 3.0f, 0.0f));
+        RenderDynamicUniform(zaynMem->vkCommandBuffers[zaynMem->vkCurrentFrame]);
         EndSwapChainRenderPass(zaynMem->vkCommandBuffers[zaynMem->vkCurrentFrame]);
         EndFrame();
     }

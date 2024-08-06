@@ -18,6 +18,10 @@ layout(binding = 0) uniform UniformBufferObject {
     mat4 proj;
 } ubo;
 
+layout (binding = 1) uniform UboInstance {
+	mat4 model; 
+} uboInstance;
+
 
 const vec3 DIRECTION_TO_LIGHT = normalize(vec3(1.0, -3.0, -1.0));
 const float AMBIENT = 0.3;

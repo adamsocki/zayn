@@ -1006,6 +1006,109 @@ inline mat4 invert(mat4 src) {
     //     return mat4 val = NULL;
 }
 
+// ADDED FROM GALAXY
+
+inline mat4 rotate(const vec3& axis, float angle)
+{
+	mat4 result = Identity4();
+
+	vec3 normalized = Normalize(axis);
+
+	float radians = DegToRad(angle);
+	float sine    = sinf(radians);
+	float cosine  = cosf(radians);
+	float cosine2 = 1.0f - cosine;
+
+	result.m00 = normalized.x * normalized.x * cosine2 + cosine;
+	result.m01 = normalized.x * normalized.y * cosine2 + normalized.z * sine;
+	result.m02 = normalized.x * normalized.z * cosine2 - normalized.y * sine;
+	result.m10 = normalized.y * normalized.x * cosine2 - normalized.z * sine;
+	result.m11 = normalized.y * normalized.y * cosine2 + cosine;
+	result.m12 = normalized.y * normalized.z * cosine2 + normalized.x * sine;
+	result.m20 = normalized.z * normalized.x * cosine2 + normalized.y * sine;
+	result.m21 = normalized.z * normalized.y * cosine2 - normalized.x * sine;
+	result.m22 = normalized.z * normalized.z * cosine2 + cosine;
+
+	return result;
+}
+
+inline mat4 scale(const vec3& s)
+{
+	mat4 result = Identity4();
+
+	result.m00 = s.x;
+	result.m11 = s.y;
+	result.m22 = s.z;
+
+	return result;
+}
+
+inline mat4 perspective(float fov, float aspect, float near, float far)
+{
+	mat4 result;
+
+	float scale = tanf(DegToRad(fov * 0.5f)) * near;
+
+	float right = aspect * scale;
+	float left  = -right;
+	float top   = scale;
+	float bot   = -top;
+
+	result.m00 = near / right;
+	result.m11 = near / top;
+	result.m22 = far == INFINITY ? -1.0f : -(far + near) / (far - near);
+	result.m32 = far == INFINITY ? -2.0f * near : -2.0f * far * near / (far - near);
+	result.m23 = -1.0f;
+
+	return result;
+}
+
+inline mat4 translate(const vec3& t)
+{
+	mat4 result = Identity4();
+
+	result.m30 = t.x;
+	result.m31 = t.y;
+	result.m32 = t.z;
+
+	return result;
+}
+
+inline mat4 look(const vec3& pos, const vec3& dir, const vec3& up)
+{
+	mat4 result;
+
+	vec3 r = Normalize(Cross(up, dir));
+	vec3 u = Cross(dir, r);
+
+	mat4 RUD = Identity4();
+	RUD.m00 = r.x;
+	RUD.m10 = r.y;
+	RUD.m20 = r.z;
+	RUD.m01 = u.x;
+	RUD.m11 = u.y;
+	RUD.m21 = u.z;
+	RUD.m02 = dir.x;
+	RUD.m12 = dir.y;
+	RUD.m22 = dir.z;
+
+	vec3 oppPos = {-pos.x, -pos.y, -pos.z};	
+	result = RUD * translate(oppPos);
+
+	return result;
+}
+
+inline mat4 lookat(const vec3& pos, const vec3& target, const vec3& up)
+{
+	mat4 result;
+
+	vec3 dir = Normalize(pos - target);
+	result = look(pos, dir, up);
+
+	return result;
+}
+
+
 mat4 SetViewDirection(vec3 position, vec3 direction, vec3 up)
 {
     mat4 viewMatrix;

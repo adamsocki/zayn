@@ -130,7 +130,6 @@ int main(void)
         glfwTerminate();
         return -1;
     }
-  
 
     /* Make the window's context current */
     glfwMakeContextCurrent(Zayn->window);
@@ -148,7 +147,7 @@ int main(void)
     struct timespec spec;
     clock_gettime(CLOCK_MONOTONIC, &spec);
 
-     // Milliseconds
+    // Milliseconds
     double startTime = (spec.tv_sec * 1000.0) + (spec.tv_nsec / 1.0e6);
     double gameTime = 0.0;
     double systemTime = startTime;
@@ -215,7 +214,7 @@ int main(void)
 
     }
 
-    RenderCleanup(Zayn);
+    RenderCleanup();
 
     glfwDestroyWindow(Zayn->window);
     glfwTerminate();
@@ -224,6 +223,7 @@ int main(void)
 
 void framebuffer_size_callback(GLFWwindow* window, int width, int height)
 {
+    
     // make sure the viewport matches the new window dimensions; note that width and 
     // height will be significantly larger than specified on retina displays.
     // glViewport(0, 0, width, height);
@@ -235,6 +235,9 @@ void framebuffer_size_callback(GLFWwindow* window, int width, int height)
     auto zaynMem = reinterpret_cast<ZaynMemory*>(glfwGetWindowUserPointer(window));
     std::cout << "fbscb" << std::endl;
     zaynMem->vkFramebufferResized = true;
+    Zayn->windowSize.x = width;
+    Zayn->windowSize.y = height;
     // auto app = reinterpret_cast<HelloTriangleApplication*>(glfwGetWindowUserPointer(window));
-        // app->framebufferResized = true;
+    // app->framebufferResized = true;
+
 }

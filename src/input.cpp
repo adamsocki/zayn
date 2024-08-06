@@ -152,7 +152,7 @@ void keyCallback(GLFWwindow* window, int key, int scancode, int action, int mods
         event.index = inputKey;
         if (key == GLFW_KEY_A)
         {
-            // std::cout << "A Is for Asshole: " << key << std::endl;
+            std::cout << "A Is for Asshole: " << key << std::endl;
             
         }
         event.discreteValue = true;
