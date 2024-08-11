@@ -29,6 +29,7 @@ void InGameCameraInit()
     cam->pos = glm::vec3(0, 0, 0.5);
     cam->front = glm::vec3(-1, 0, 0);
     cam->up = glm::vec3(0, 0, 1);
+    cam->right = glm::vec3(0, 1, 0);
 }
 
 void FirstPersonCameraController()

@@ -48,8 +48,8 @@ struct Vertex_
 struct UniformBufferObject
 {
     mat4 model;
-    mat4 view;
-    mat4 proj;
+    glm::mat4 view;
+    glm::mat4 proj;
 };
 
 struct Vertex

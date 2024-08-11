@@ -4,17 +4,17 @@
 #include <fstream>
 
 
-#ifdef NDEBUG
-const bool enableValidationLayers = false;
-#else
-const bool enableValidationLayers = true;
-#endif
+// #ifdef NDEBUG
+// const bool enableValidationLayers = false;
+// #else
+// const bool enableValidationLayers = true;
+// #endif
 
-#if WINDOWS
-const std::vector<const char *> deviceExtensions = {VK_KHR_SWAPCHAIN_EXTENSION_NAME};
-#elif MAC
-const std::vector<const char *> deviceExtensions = {VK_KHR_SWAPCHAIN_EXTENSION_NAME, "VK_KHR_portability_subset"};
-#endif
+// #if WINDOWS
+// const std::vector<const char *> deviceExtensions = {VK_KHR_SWAPCHAIN_EXTENSION_NAME};
+// #elif MAC
+// const std::vector<const char *> deviceExtensions = {VK_KHR_SWAPCHAIN_EXTENSION_NAME, "VK_KHR_portability_subset"};
+// #endif
 
 const int MAX_FRAMES_IN_FLIGHT = 2;
 
@@ -58,12 +58,12 @@ struct UniformBufferObjectDynamic
    
 }  uboDynamic;
 
-struct SwapChainSupportDetails
-{
-    VkSurfaceCapabilitiesKHR capabilities;
-    std::vector<VkSurfaceFormatKHR> formats;
-    std::vector<VkPresentModeKHR> presentModes;
-};
+// struct SwapChainSupportDetails
+// {
+//     VkSurfaceCapabilitiesKHR capabilities;
+//     std::vector<VkSurfaceFormatKHR> formats;
+//     std::vector<VkPresentModeKHR> presentModes;
+// };
 
 void* alignedAlloc(size_t size, size_t alignment)
 {
@@ -100,7 +100,7 @@ void DestroyDebugUtilsMessengerEXT(VkInstance instance, VkDebugUtilsMessengerEXT
     }
 }
 
-const std::vector<const char *> validationLayers = {"VK_LAYER_KHRONOS_validation"};
+// const std::vector<const char *> validationLayers = {"VK_LAYER_KHRONOS_validation"};
 
 bool checkValidationLayerSupport()
 {
@@ -168,15 +168,15 @@ std::vector<const char *> getRequiredExtensions()
     return extensions;
 }
 
-static VKAPI_ATTR VkBool32 VKAPI_CALL debugCallback(
-    VkDebugUtilsMessageSeverityFlagBitsEXT messageSeverity,
-    VkDebugUtilsMessageTypeFlagsEXT messageType,
-    const VkDebugUtilsMessengerCallbackDataEXT *pCallbackData,
-    void *pUserData)
-{
-    std::cerr << "validation layer: " << pCallbackData->pMessage << std::endl;
-    return VK_FALSE;
-}
+// static VKAPI_ATTR VkBool32 VKAPI_CALL debugCallback(
+//     VkDebugUtilsMessageSeverityFlagBitsEXT messageSeverity,
+//     VkDebugUtilsMessageTypeFlagsEXT messageType,
+//     const VkDebugUtilsMessengerCallbackDataEXT *pCallbackData,
+//     void *pUserData)
+// {
+//     std::cerr << "validation layer: " << pCallbackData->pMessage << std::endl;
+//     return VK_FALSE;
+// }
 
 void populateDebugMessengerCreateInfo(VkDebugUtilsMessengerCreateInfoEXT &createInfo)
 {
@@ -244,16 +244,16 @@ int rateDeviceSuitability(VkPhysicalDevice device)
 
     return score;
 }
-struct QueueFamilyIndices
-{
-    std::optional<uint32_t> graphicsFamily;
-    std::optional<uint32_t> presentFamily;
+// struct QueueFamilyIndices
+// {
+//     std::optional<uint32_t> graphicsFamily;
+//     std::optional<uint32_t> presentFamily;
 
-    bool isComplete()
-    {
-        return graphicsFamily.has_value() && presentFamily.has_value();
-    }
-};
+//     bool isComplete()
+//     {
+//         return graphicsFamily.has_value() && presentFamily.has_value();
+//     }
+// };
 
 VkFormat FindSupportedFormat(const std::vector<VkFormat>& candidates, VkImageTiling tiling, VkFormatFeatureFlags features, ZaynMemory* zaynMem) 
 {
@@ -1214,10 +1214,7 @@ void CopyBufferToImage(VkBuffer buffer, VkImage image, uint32_t width, uint32_t 
     region.imageSubresource.layerCount = 1;
 
     region.imageOffset = {0, 0, 0};
-    region.imageExtent = {
-        width,
-        height,
-        1};
+    region.imageExtent = {width, height, 1};
 
     vkCmdCopyBufferToImage(
         commandBuffer,
@@ -1417,11 +1414,9 @@ void CreateTextureImage(ZaynMemory* zaynMem)
     TransitionImageLayout(zaynMem->vkTextureImage, VK_FORMAT_R8G8B8A8_SRGB, VK_IMAGE_LAYOUT_UNDEFINED, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, zaynMem->vkMipLevels, zaynMem);
     CopyBufferToImage(stagingBuffer, zaynMem->vkTextureImage, static_cast<uint32_t>(texWidth), static_cast<uint32_t>(texHeight), zaynMem);
 
-
     vkDestroyBuffer(zaynMem->vkDevice, stagingBuffer, nullptr);
     vkFreeMemory(zaynMem->vkDevice, stagingBufferMemory, nullptr);
     GenerateMipmaps(zaynMem->vkTextureImage, VK_FORMAT_R8G8B8A8_SRGB, texWidth, texHeight, zaynMem->vkMipLevels, zaynMem);
-
 }
 
 void CreateTextureImageView(ZaynMemory *zaynMem)
@@ -1510,8 +1505,6 @@ void CreateUniformBuffers_x(ZaynMemory *zaynMem)
     zaynMem->vkUniformBuffers2.resize(MAX_FRAMES_IN_FLIGHT);
     zaynMem->vkUniformBuffers2Memory.resize(MAX_FRAMES_IN_FLIGHT);
     zaynMem->vkUniformBuffers2Mapped.resize(MAX_FRAMES_IN_FLIGHT);
-
-
 
     for (size_t i = 0; i < MAX_FRAMES_IN_FLIGHT; i++)
     {
@@ -1791,44 +1784,44 @@ void VulkanInitCode(ZaynMemory* zaynMem)
     SetupDebugMessenger();    
 }
 
-void InitRender_Learn(ZaynMemory *zaynMem)
+void InitRender_Learn()
 {
 
-    VulkanInitCode(zaynMem);            // is SAME
+    VulkanInitCode(Zayn);            // is SAME
         
-    CreateSurface(zaynMem);             // is SAME
+    CreateSurface(Zayn);             // is SAME
 
-    PickPhysicalDevice(zaynMem);        // is SAME  // <-- @TODO: May need to modify to account for other machines like rPi
-    CreateLogicalDevice(zaynMem);       // is SAME
-    CreateSwapChain(zaynMem);
-    CreateImageViews(zaynMem);
-    CreateRenderPass(zaynMem);
+    PickPhysicalDevice(Zayn);        // is SAME  // <-- @TODO: May need to modify to account for other machines like rPi
+    CreateLogicalDevice(Zayn);       // is SAME
+    CreateSwapChain(Zayn);
+    CreateImageViews(Zayn);
+    CreateRenderPass(Zayn);
     
-    CreateDescriptorSetLayout(zaynMem);
+    CreateDescriptorSetLayout(Zayn);
     CreateGraphicsPipelineLayout();
     CreateGraphicsPipeline("/Users/socki/dev/zayn/src/renderer/shaders/vkShader_3d_INIT_pvert.spv", "/Users/socki/dev/zayn/src/renderer/shaders/vkShader_3d_INIT_pfrag.spv", &Zayn->vkGraphicsPipeline);
     // CreateGraphicsPipeline("/Users/socki/dev/zayn/src/renderer/shaders/vkShader_4d_INIT_pvert.spv", "/Users/socki/dev/zayn/src/renderer/shaders/vkShader_4d_INIT_pfrag.spv", &Zayn->vkGraphicsPipeline2);
 
-    CreateCommandPool(zaynMem);
-    CreateDepthResources(zaynMem);
-    CreateFrameBuffers(zaynMem);
+    CreateCommandPool(Zayn);
+    CreateDepthResources(Zayn);
+    CreateFrameBuffers(Zayn);
 
     LoadAssets();
 
-    CreateTextureImage(zaynMem);
-    CreateTextureImageView(zaynMem);
-    CreateTextureSampler(zaynMem);
+    CreateTextureImage(Zayn);
+    CreateTextureImageView(Zayn);
+    CreateTextureSampler(Zayn);
     LoadModel();
-    CreateVertexBuffer(zaynMem);
-    CreateIndexBuffer(zaynMem);
+    CreateVertexBuffer(Zayn);
+    CreateIndexBuffer(Zayn);
     CreateInstanceBuffer();
-    CreateUniformBuffers_x(zaynMem);
+    CreateUniformBuffers_x(Zayn);
     CreateDynamicUniformBuffers();
-    CreateDescriptorPool(zaynMem);
-    CreateDescriptorSets_x(zaynMem);
+    CreateDescriptorPool(Zayn);
+    CreateDescriptorSets_x(Zayn);
 
-    CreateCommandBuffers(zaynMem);
-    CreateSyncObjects(zaynMem);
+    CreateCommandBuffers(Zayn);
+    CreateSyncObjects(Zayn);
 }
 
 void CleanUpSwapChain(ZaynMemory *zaynMem)

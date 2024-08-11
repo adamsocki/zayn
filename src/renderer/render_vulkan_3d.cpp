@@ -3,28 +3,28 @@
 #include <set>
 #include <fstream>
 
-#ifdef NDEBUG
-const bool enableValidationLayers = false;
-#else
-const bool enableValidationLayers = true;
-#endif
+// #ifdef NDEBUG
+// const bool enableValidationLayers = false;
+// #else
+// const bool enableValidationLayers = true;
+// #endif
 
-#if WINDOWS
-const std::vector<const char *> deviceExtensions = {VK_KHR_SWAPCHAIN_EXTENSION_NAME};
-#elif MAC
-const std::vector<const char *> deviceExtensions = {VK_KHR_SWAPCHAIN_EXTENSION_NAME, "VK_KHR_portability_subset"};
-#endif
+// #if WINDOWS
+// const std::vector<const char *> deviceExtensions = {VK_KHR_SWAPCHAIN_EXTENSION_NAME};
+// #elif MAC
+// const std::vector<const char *> deviceExtensions = {VK_KHR_SWAPCHAIN_EXTENSION_NAME, "VK_KHR_portability_subset"};
+// #endif
 
 // const int MAX_FRAMES_IN_FLIGHT = 2;
 
 
 
-struct SwapChainSupportDetails
-{
-    VkSurfaceCapabilitiesKHR capabilities;
-    std::vector<VkSurfaceFormatKHR> formats;
-    std::vector<VkPresentModeKHR> presentModes;
-};
+// struct SwapChainSupportDetails
+// {
+//     VkSurfaceCapabilitiesKHR capabilities;
+//     std::vector<VkSurfaceFormatKHR> formats;
+//     std::vector<VkPresentModeKHR> presentModes;
+// };
 
 VkResult CreateDebugUtilsMessengerEXT(VkInstance instance, const VkDebugUtilsMessengerCreateInfoEXT *pCreateInfo, const VkAllocationCallbacks *pAllocator, VkDebugUtilsMessengerEXT *pDebugMessenger)
 {
@@ -48,7 +48,7 @@ void DestroyDebugUtilsMessengerEXT(VkInstance instance, VkDebugUtilsMessengerEXT
     }
 }
 
-const std::vector<const char *> validationLayers = {"VK_LAYER_KHRONOS_validation"};
+// const std::vector<const char *> validationLayers = {"VK_LAYER_KHRONOS_validation"};
 
 bool checkValidationLayerSupport()
 {
@@ -118,15 +118,15 @@ std::vector<const char *> getRequiredExtensions()
     return extensions;
 }
 
-static VKAPI_ATTR VkBool32 VKAPI_CALL debugCallback(
-    VkDebugUtilsMessageSeverityFlagBitsEXT messageSeverity,
-    VkDebugUtilsMessageTypeFlagsEXT messageType,
-    const VkDebugUtilsMessengerCallbackDataEXT *pCallbackData,
-    void *pUserData)
-{
-    std::cerr << "validation layer: " << pCallbackData->pMessage << std::endl;
-    return VK_FALSE;
-}
+// static VKAPI_ATTR VkBool32 VKAPI_CALL debugCallback(
+//     VkDebugUtilsMessageSeverityFlagBitsEXT messageSeverity,
+//     VkDebugUtilsMessageTypeFlagsEXT messageType,
+//     const VkDebugUtilsMessengerCallbackDataEXT *pCallbackData,
+//     void *pUserData)
+// {
+//     std::cerr << "validation layer: " << pCallbackData->pMessage << std::endl;
+//     return VK_FALSE;
+// }
 
 void PopulateDebugMessengerCreateInfo(VkDebugUtilsMessengerCreateInfoEXT &createInfo)
 {
@@ -148,7 +148,7 @@ void SetupDebugMessenger(ZaynMemory *zaynMem)
     }
 
     VkDebugUtilsMessengerCreateInfoEXT createInfo;
-    populateDebugMessengerCreateInfo(createInfo);
+    PopulateDebugMessengerCreateInfo(createInfo);
 
     VkAllocationCallbacks pAllocator = {};
 
@@ -197,16 +197,16 @@ int rateDeviceSuitability(VkPhysicalDevice device)
     return score;
 }
 
-struct QueueFamilyIndices
-{
-    std::optional<uint32_t> graphicsFamily;
-    std::optional<uint32_t> presentFamily;
+// struct QueueFamilyIndices
+// {
+//     std::optional<uint32_t> graphicsFamily;
+//     std::optional<uint32_t> presentFamily;
 
-    bool isComplete()
-    {
-        return graphicsFamily.has_value() && presentFamily.has_value();
-    }
-};
+//     bool isComplete()
+//     {
+//         return graphicsFamily.has_value() && presentFamily.has_value();
+//     }
+// };
 
 QueueFamilyIndices findQueueFamilies(VkPhysicalDevice device, ZaynMemory *zaynMem)
 {
@@ -382,7 +382,7 @@ void CreateVKInstance(ZaynMemory *zaynMem)
         createInfo.enabledLayerCount = static_cast<uint32_t>(validationLayers.size());
         createInfo.ppEnabledLayerNames = validationLayers.data();
 
-        populateDebugMessengerCreateInfo(debugCreateInfo);
+        PopulateDebugMessengerCreateInfo(debugCreateInfo);
         createInfo.pNext = (VkDebugUtilsMessengerCreateInfoEXT *)&debugCreateInfo;
     }
     else
@@ -1462,38 +1462,38 @@ void EndSwapChainRenderPass(ZaynMemory* zaynMem, VkCommandBuffer commandBuffer)
 
 
 
-void InitRender_Learn(ZaynMemory *zaynMem)
+void InitRender_Learn()
 {
 
-    VulkanInitDevice(zaynMem); // iTHis is the contstructor code for the online video
+    VulkanInitDevice(Zayn); // iTHis is the contstructor code for the online video
 
-    MySwapChainCreation(zaynMem);
+    MySwapChainCreation(Zayn);
 
-    CreateDescriptorSetLayout(zaynMem);
+    CreateDescriptorSetLayout(Zayn);
 
-    CreatePipelineLayout(zaynMem);
+    CreatePipelineLayout(Zayn);
     
 
 
     Builder _modelBuilder = {};
 
 
-    CreateModelFromFile(&zaynMem->vkDevice, "/Users/socki/dev/zayn/models/smooth_vase.obj", &zaynMem->model2, zaynMem);
-    CreateModelFromFile(&zaynMem->vkDevice, "/Users/socki/dev/zayn/models/casette_model_very_simple.obj", &zaynMem->casette_model, zaynMem);
+    CreateModelFromFile(&Zayn->vkDevice, "/Users/socki/dev/zayn/models/smooth_vase.obj", &Zayn->model2, Zayn);
+    CreateModelFromFile(&Zayn->vkDevice, "/Users/socki/dev/zayn/models/casette_model_very_simple.obj", &Zayn->casette_model, Zayn);
     
 
 
-    CreateDescriptorPools(zaynMem);
-    CreateDescriptorSets(zaynMem);
+    CreateDescriptorPools(Zayn);
+    CreateDescriptorSets(Zayn);
 
-    CreatePipeline(zaynMem);
+    CreatePipeline(Zayn);
 
-    CreateGraphicsPipeline(zaynMem, "/Users/socki/dev/zayn/src/renderer/shaders/vkShader_04_vert.spv", "/Users/socki/dev/zayn/src/renderer/shaders/vkShader_04_frag.spv", &zaynMem->MyPipelineConfigInfo);
+    CreateGraphicsPipeline(Zayn, "/Users/socki/dev/zayn/src/renderer/shaders/vkShader_04_vert.spv", "/Users/socki/dev/zayn/src/renderer/shaders/vkShader_04_frag.spv", &Zayn->MyPipelineConfigInfo);
 
-    CreateCommandBuffers(zaynMem);
+    CreateCommandBuffers(Zayn);
 
     VkPhysicalDeviceProperties deviceProperties; // Create a struct to hold properties
-    vkGetPhysicalDeviceProperties(zaynMem->vkPhysicalDevice, &deviceProperties);
+    vkGetPhysicalDeviceProperties(Zayn->vkPhysicalDevice, &deviceProperties);
 
     // Now you can access the properties:
     std::cout << "Max Push Constant Size: "
@@ -1501,60 +1501,60 @@ void InitRender_Learn(ZaynMemory *zaynMem)
               << std::endl; // Model model;
 }
 
-void UpdateRender_Learn(ZaynMemory *zaynMem)
+void UpdateRender_Learn()
 {
-   if (BeginFrame(zaynMem) )
+   if (BeginFrame(Zayn) )
     {
-        Monkey *testMonkey = GetEntity(&Casette->em, Monkey, zaynMem->monkeyHandle1);
-        Casette_Entity *testCasette = GetEntity(&Casette->em, Casette_Entity, zaynMem->casette_handle_1);
+        Monkey *testMonkey = GetEntity(&Casette->em, Monkey, Zayn->monkeyHandle1);
+        Casette_Entity *testCasette = GetEntity(&Casette->em, Casette_Entity, Zayn->casette_handle_1);
         
         // UPDATE
-        UpdateUniformBuffer(zaynMem->vkCurrentFrame, zaynMem);
+        UpdateUniformBuffer(Zayn->vkCurrentFrame, Zayn);
         
         // RENDER
 
-        BeginSwapChainRenderPass(zaynMem, zaynMem->vkCommandBuffers[zaynMem->vkCurrentFrame]);
+        BeginSwapChainRenderPass(Zayn, Zayn->vkCommandBuffers[Zayn->vkCurrentFrame]);
 
 
-        RenderEntity_3D(zaynMem, zaynMem->vkCommandBuffers[zaynMem->vkCurrentFrame], testMonkey);
-        RenderEntity_3D(zaynMem, zaynMem->vkCommandBuffers[zaynMem->vkCurrentFrame], testCasette);
+        RenderEntity_3D(Zayn, Zayn->vkCommandBuffers[Zayn->vkCurrentFrame], testMonkey);
+        RenderEntity_3D(Zayn, Zayn->vkCommandBuffers[Zayn->vkCurrentFrame], testCasette);
 
-        EndSwapChainRenderPass(zaynMem, zaynMem->vkCommandBuffers[zaynMem->vkCurrentFrame]);
-        EndFrame(zaynMem);
+        EndSwapChainRenderPass(Zayn, Zayn->vkCommandBuffers[Zayn->vkCurrentFrame]);
+        EndFrame(Zayn);
     }
     
 }
 
-void RenderCleanup(ZaynMemory *zaynMem)
+void RenderCleanup()
 {
 
-    vkDestroyShaderModule(zaynMem->vkDevice, zaynMem->vkVertShaderModule, nullptr);
-    vkDestroyShaderModule(zaynMem->vkDevice, zaynMem->vkFragShaderModule, nullptr);
-    vkDestroyPipeline(zaynMem->vkDevice, zaynMem->vkGraphicsPipeline, nullptr);
-    vkDestroyDevice(zaynMem->vkDevice, nullptr);
+    vkDestroyShaderModule(Zayn->vkDevice, Zayn->vkVertShaderModule, nullptr);
+    vkDestroyShaderModule(Zayn->vkDevice, Zayn->vkFragShaderModule, nullptr);
+    vkDestroyPipeline(Zayn->vkDevice, Zayn->vkGraphicsPipeline, nullptr);
+    vkDestroyDevice(Zayn->vkDevice, nullptr);
     if (enableValidationLayers)
     {
-        DestroyDebugUtilsMessengerEXT(zaynMem->vkInstance, zaynMem->vkDebugMessenger, nullptr);
+        DestroyDebugUtilsMessengerEXT(Zayn->vkInstance, Zayn->vkDebugMessenger, nullptr);
     }
 
-    vkDeviceWaitIdle(zaynMem->vkDevice);
+    vkDeviceWaitIdle(Zayn->vkDevice);
 
-    vkDestroyBuffer(zaynMem->vkDevice, zaynMem->vkVertexBuffer, nullptr);
-    vkFreeMemory(zaynMem->vkDevice, zaynMem->vkVertexBufferMemory, nullptr);
+    vkDestroyBuffer(Zayn->vkDevice, Zayn->vkVertexBuffer, nullptr);
+    vkFreeMemory(Zayn->vkDevice, Zayn->vkVertexBufferMemory, nullptr);
 
-    if (zaynMem->vkHasIndexBuffer)
+    if (Zayn->vkHasIndexBuffer)
     {
-        vkDestroyBuffer(zaynMem->vkDevice, zaynMem->vkIndexBuffer, nullptr);
-        vkFreeMemory(zaynMem->vkDevice, zaynMem->vkIndexBufferMemory, nullptr);
+        vkDestroyBuffer(Zayn->vkDevice, Zayn->vkIndexBuffer, nullptr);
+        vkFreeMemory(Zayn->vkDevice, Zayn->vkIndexBufferMemory, nullptr);
     }
 
-    vkDestroyDescriptorSetLayout(zaynMem->vkDevice, zaynMem->vkDescriptorSetLayout, nullptr);
+    vkDestroyDescriptorSetLayout(Zayn->vkDevice, Zayn->vkDescriptorSetLayout, nullptr);
 
-    for (size_t i = 0; i < zaynMem->VK_MAX_FRAMES_IN_FLIGHT; i++) 
+    for (size_t i = 0; i < Zayn->VK_MAX_FRAMES_IN_FLIGHT; i++) 
     {
-        vkDestroyBuffer(zaynMem->vkDevice, zaynMem->vkUniformBuffers[i], nullptr);
-        vkFreeMemory(zaynMem->vkDevice, zaynMem->vkUniformBuffersMemory[i], nullptr);
+        vkDestroyBuffer(Zayn->vkDevice, Zayn->vkUniformBuffers[i], nullptr);
+        vkFreeMemory(Zayn->vkDevice, Zayn->vkUniformBuffersMemory[i], nullptr);
     }
 
-    vkDestroyDescriptorSetLayout(zaynMem->vkDevice, zaynMem->vkDescriptorSetLayout, nullptr);
+    vkDestroyDescriptorSetLayout(Zayn->vkDevice, Zayn->vkDescriptorSetLayout, nullptr);
 }

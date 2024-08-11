@@ -24,6 +24,7 @@ struct Camera
     glm::vec3 pos;
     glm::vec3 front;
     glm::vec3 up;
+    glm::vec3 right;
 
     int32 frameCount;
 
@@ -34,7 +35,6 @@ struct Camera
 
     // ortho
     real32 left;
-    real32 right;
     real32 top;
     real32 bottom;
     real32 near;

@@ -1008,6 +1008,108 @@ inline mat4 invert(mat4 src) {
 
 // ADDED FROM GALAXY
 
+inline float dot(const quaternion& q1, const quaternion& q2)
+{
+	float result;
+
+	#if QM_USE_SSE
+
+	__m128 r = _mm_mul_ps(q1.packed, q2.packed);
+	r = _mm_hadd_ps(r, r);
+	r = _mm_hadd_ps(r, r);
+	_mm_store_ss(&result, r);
+
+	#else
+
+	result = q1.x * q2.x + q1.y * q2.y + q1.z * q2.z + q1.w * q2.w;
+
+	#endif
+
+	return result;
+}
+inline float dot(const vec2& v1, const vec2& v2)
+{
+	float result;
+
+	result = v1.x * v2.x + v1.y * v2.y;
+
+	return result;
+}
+inline float dot(const vec3& v1, const vec3& v2)
+{
+	float result;
+
+	result = v1.x * v2.x + v1.y * v2.y + v1.z * v2.z;
+
+	return result;
+}
+inline float dot(const vec4& v1, const vec4& v2)
+{
+	float result;
+
+	#if QM_USE_SSE
+
+	__m128 r = _mm_mul_ps(v1.packed, v2.packed);
+	r = _mm_hadd_ps(r, r);
+	r = _mm_hadd_ps(r, r);
+	_mm_store_ss(&result, r);
+
+	#else
+
+	result = v1.x * v2.x + v1.y * v2.y + v1.z * v2.z + v1.w * v2.w;
+
+	#endif
+
+	return result;
+}
+inline float length(const vec2& v)
+{
+	float result;
+
+	result = sqrtf(dot(v, v));
+
+	return result;
+}
+inline float length(const vec3& v)
+{
+	float result;
+
+	result = sqrtf(dot(v, v));
+
+	return result;
+}
+inline float length(const vec4& v)
+{
+	float result;
+
+	result = sqrtf(dot(v, v));
+
+	return result;
+}
+
+inline vec3 normalize(const vec3& v)
+{
+	vec3 result;
+
+	float len = length(v);
+	if(len != 0.0f)
+		result = v / len;
+
+	return result;
+}
+
+inline vec4 normalize(const vec4& v)
+{
+	vec4 result;
+
+	float len = length(v);
+		result = v / len;
+
+	return result;
+}
+
+
+
 inline mat4 rotate(const vec3& axis, float angle)
 {
 	mat4 result = Identity4();

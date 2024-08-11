@@ -172,7 +172,45 @@ void UpdateAndRenderCasette(ZaynMemory *zaynMem)
     {
         cam->pos -= cam->front * 0.05f;
     }
+    if (InputHeld(Keyboard, Input_A))
+    {
+        cam->pos.y +=   0.05f;
+    }
+    if (InputHeld(Keyboard, Input_D))
+    {
+        cam->pos.y -= 0.05f;
+    }
 
+    // cam->right = glm::normalize(glm::cross(cam->front, cam->up));
+
+    
+
+    // if (InputHeld(Keyboard, Input_A))
+	// {
+	// 	Zayn->gameCamera.pos.z += 0.1f * Zayn->deltaTime;
+	// }
+	// if (InputHeld(Keyboard, Input_D))
+	// {
+	// 	Zayn->gameCamera.pos.z -= 0.1f * Zayn->deltaTime;
+	// }
+
+    // if (InputHeld(Keyboard, Input_Q))
+	// {
+	// 	Zayn->gameCamera.pos.y += 0.1f * Zayn->deltaTime;
+	// }
+	// if (InputHeld(Keyboard, Input_E))
+	// {
+	// 	Zayn->gameCamera.pos.y -= 0.1f * Zayn->deltaTime;
+	// }
+
+	// if (InputHeld(Keyboard, Input_W))
+	// {
+	// 	Zayn->gameCamera.pos.x += 0.1f * Zayn->deltaTime;
+	// }
+	// if (InputHeld(Keyboard, Input_S))
+	// {
+	// 	Zayn->gameCamera.pos.x -= 0.1f * Zayn->deltaTime;
+	// }
     UpdateRender_Learn();
 
     // ********

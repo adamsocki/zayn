@@ -2,6 +2,8 @@ typedef int32_t vkh_bool_t;
 #define VKH_TRUE  1
 #define VKH_FALSE 0
 
+#define VKH_VALIDATION_LAYERS 1
+
 #define FRAMES_IN_FLIGHT 2
 #define CAMERA_FOV 45.0f
 
@@ -9,10 +11,15 @@ typedef int32_t vkh_bool_t;
 #define CAMERA_MIN_TILT 15.0f
 #define CAMERA_MAX_TILT 89.0f
 #define CAMERA_MAX_POSITION 7000.0f
+
 struct Vertex_NEW
 {
 	vec3 pos;
 	vec2 texCoord;
+
+	// bool operator==(const Vertex_NEW& other) const {
+    //     return pos == other.pos && texCoord == other.texCoord;
+    // }
 };
 
 //----------------------------------------------------------------------------//
@@ -20,9 +27,9 @@ struct Vertex_NEW
 // mirrors camera buffer on GPU
 struct CameraGPU
 {
-	mat4 view;
-	mat4 proj;
-	mat4 viewProj;
+	glm::mat4 view;
+	glm::mat4 proj;
+	glm::mat4 viewProj;
 };
 
 //----------------------------------------------------------------------------//
@@ -37,7 +44,7 @@ struct GridParamsVertGPU
 struct GridParamsFragGPU
 {
 	vec2 offset;
-	int32 numCells;
+	 int32 numCells;
 	real32 thickness;
 	real32 scroll;
 };
@@ -48,6 +55,7 @@ struct DrawParams
 	{
 		vec3 pos;
 		vec3 up;
+		vec3 right;
 		vec3 target;
 
 		real32 dist;
@@ -60,6 +68,7 @@ struct GameCamera
 {
 	vec3 pos;
 	vec3 up;
+	vec3 right;
 	vec3 center;
 	vec3 targetCenter;
 
@@ -153,6 +162,11 @@ struct VKHdescriptorInfo
 
 };
 
+struct VKHmodelData
+{
+
+};
+
 struct VKHdescriptorSets
 {
 	//intermediate:
@@ -209,6 +223,36 @@ struct DrawState
 	//particle pipeline objects:
 	VKHgraphicsPipeline* particlePipeline;
 	VKHdescriptorSets* particleDescriptorSets;
+
+	//model1 pipeline objects:
+	VKHgraphicsPipeline* model1Pipeline;
+	VKHdescriptorSets* model1DescriptorSets;
+
+	//model1 pipeline objects:
+	VKHgraphicsPipeline* quadTexture1Pipeline;
+	VKHdescriptorSets* quadTexture1DescriptorSets;
+	VkBuffer quadTexture1VertexBuffer;
+	VkDeviceMemory quadTexture1VertexBufferMemory;
+	VkBuffer quadTexture1IndexBuffer;
+	VkDeviceMemory quadTexture1IndexBufferMemory;
+	VkImage quadTexture1Image;
+	VkDeviceMemory quadTexture1ImageMemory;
+	VkSampler quadTexture1TextureSampler;
+	VkImageView quadTexture1TextureImageView;
+
+
+	//model1 vertex buffers:
+	std::vector<Vertex_NEW> model1vertices;
+	std::vector<uint32_t> model1indices;
+	VkImage model1Image;
+	VkDeviceMemory model1ImageMemory;
+	VkImageView model1TextureImageView;
+	VkSampler model1TextureSampler;
+
+	VkBuffer model1VertexBuffer;
+	VkDeviceMemory model1VertexBufferMemory;
+	VkBuffer model1IndexBuffer;
+	VkDeviceMemory model1IndexBufferMemory;
 
 	VkDeviceSize particleBufferSize;
 	VkBuffer particleBuffer;
